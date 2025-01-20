@@ -2,79 +2,37 @@
 
 import React, { useState } from "react";
 import ReactGridLayout, { Layout } from "react-grid-layout";
-import CustomPlotlyChart from "@/app/components/chart/customPlotlyChart";
-import Tabs from "@/app/components/dashboard/tabs";
+import ChartWidget from "@/app/components/dashboard/chartWidget";
 import { v4 as uuidv4 } from "uuid";
 
 const MAX_WIDGETS = 6;
 
 const Dashboard = () => {
-  const [currentTab, setCurrentTab] = useState("Dashboard 1");
-  const [tabs, setTabs] = useState(["Dashboard 1", "Dashboard 2", "+"]);
-
-  const [layouts, setLayouts] = useState<{ [key: string]: Layout[] }>({});
-  const [widgets, setWidgets] = useState<{ [key: string]: any[] }>({});
-
+  const [currentTab, setCurrentTab] = useState<string>("Dashboard 1");
+  const [layouts, setLayouts] = useState<{ [key: string]: Layout[] }>({
+    "Dashboard 1": [],
+  });
+  const [widgets, setWidgets] = useState<{ [key: string]: any[] }>({
+    "Dashboard 1": [],
+  });
   const [selectedType, setSelectedType] = useState<
     "line" | "bar" | "pie" | "doughnut"
   >("bar");
 
-  const getChartData = (type: "line" | "bar" | "pie" | "doughnut") => {
-    if (type === "pie" || type === "doughnut") {
-      return [
-        {
-          labels: ["January", "February", "March", "April"],
-          values: [65, 59, 80, 81],
-          type: "pie",
-          hole: type === "doughnut" ? 0.4 : 0,
-        },
-      ];
-    }
-    return [
+  const chartData = {
+    labels: ["January", "February", "March", "April"],
+    datasets: [
       {
-        x: ["January", "February", "March", "April"],
-        y: [65, 59, 80, 81],
-        type: type,
-        mode: type === "line" ? "lines" : undefined,
-        marker: { size: 10 },
+        label: "Sales",
+        data: [65, 59, 80, 81],
+        backgroundColor: [
+          "rgba(75,192,192,0.4)",
+          "rgba(255,99,132,0.4)",
+          "rgba(54,162,235,0.4)",
+          "rgba(255,206,86,0.4)",
+        ],
       },
-    ];
-  };
-
-  const chartLayout = {
-    title: "Custom Chart",
-    xaxis: { title: "X Axis" },
-    yaxis: { title: "Y Axis" },
-    showlegend: true,
-  };
-
-  const chartConfig = { responsive: true };
-
-  const handleSelectTab = (tab: string) => {
-    setCurrentTab(tab);
-  };
-
-  const handleAddTab = (newTabName: string) => {
-    setTabs((prevTabs) => [...prevTabs.slice(0, -1), newTabName, "+"]);
-    setLayouts((prev) => ({ ...prev, [newTabName]: [] }));
-    setWidgets((prev) => ({ ...prev, [newTabName]: [] }));
-    setCurrentTab(newTabName);
-  };
-
-  const handleRemoveTab = (tabName: string) => {
-    if (tabName === "+" || tabs.length <= 2) return;
-    setTabs((prevTabs) => prevTabs.filter((tab) => tab !== tabName));
-    setLayouts((prev) => {
-      const { [tabName]: _, ...rest } = prev;
-      return rest;
-    });
-    setWidgets((prev) => {
-      const { [tabName]: _, ...rest } = prev;
-      return rest;
-    });
-    if (currentTab === tabName) {
-      setCurrentTab(tabs[0]);
-    }
+    ],
   };
 
   const addWidget = () => {
@@ -87,9 +45,7 @@ const Dashboard = () => {
     const newWidget = {
       id,
       type: selectedType,
-      data: getChartData(selectedType),
-      layout: chartLayout,
-      config: chartConfig,
+      data: chartData,
     };
 
     setWidgets((prev) => ({
@@ -101,7 +57,7 @@ const Dashboard = () => {
       ...prev,
       [currentTab]: [
         ...(prev[currentTab] || []),
-        { i: id, x: 0, y: Infinity, w: 4, h: 2 },
+        { i: id, x: 0, y: Infinity, w: 4, h: 2 }, // 초기 크기 설정
       ],
     }));
   };
@@ -120,20 +76,19 @@ const Dashboard = () => {
     }));
   };
 
+  const handleResizeStop = (layout: Layout[]) => {
+    setLayouts((prev) => ({
+      ...prev,
+      [currentTab]: layout,
+    }));
+    console.log("Updated layout after resizing:", layout);
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
       <header className="text-center mb-8">
         <h1 className="text-3xl font-bold text-gray-800">Custom Dashboard</h1>
       </header>
-
-      <div className="mb-6">
-        <Tabs
-          tabs={tabs}
-          onSelect={handleSelectTab}
-          onAddTab={handleAddTab}
-          onRemoveTab={handleRemoveTab}
-        />
-      </div>
 
       <div className="flex items-center justify-center gap-4 mb-6">
         <select
@@ -167,10 +122,11 @@ const Dashboard = () => {
         onLayoutChange={(newLayout) =>
           setLayouts((prev) => ({ ...prev, [currentTab]: newLayout }))
         }
+        onResizeStop={handleResizeStop} // 크기 조절 이벤트
         draggableHandle=".drag-handle"
         draggableCancel=".remove-button"
+        isResizable={true} // 크기 조절 활성화
         isDraggable={true}
-        isResizable={true}
       >
         {widgets[currentTab]?.map((widget) => (
           <div
@@ -188,11 +144,7 @@ const Dashboard = () => {
                 Remove
               </button>
             </div>
-            <CustomPlotlyChart
-              data={widget.data}
-              layout={widget.layout}
-              config={widget.config}
-            />
+            <ChartWidget type={widget.type} data={widget.data} />
           </div>
         ))}
       </ReactGridLayout>
