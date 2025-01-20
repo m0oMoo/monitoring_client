@@ -1,0 +1,11 @@
+.layout {
+  position: relative; /* Grid Layout의 기본 위치 */
+  overflow: visible; /* 드래그 가능한 공간 제한 해제 */
+}
+
+.grid-item {
+  display: flex; /* 아이템 내용 중앙 정렬 */
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
