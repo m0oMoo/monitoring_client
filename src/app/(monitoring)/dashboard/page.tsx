@@ -4,11 +4,13 @@ import React, { useState } from "react";
 import ReactGridLayout, { Layout } from "react-grid-layout";
 import ChartWidget from "@/app/components/dashboard/chartWidget";
 import { v4 as uuidv4 } from "uuid";
+import Tabs from "@/app/components/dashboard/tabs";
 
 const MAX_WIDGETS = 6;
 
 const Dashboard = () => {
   const [currentTab, setCurrentTab] = useState<string>("Dashboard 1");
+  const [tabs, setTabs] = useState(["Dashboard 1", "Dashboard 2", "+"]);
   const [layouts, setLayouts] = useState<{ [key: string]: Layout[] }>({
     "Dashboard 1": [],
   });
@@ -33,6 +35,38 @@ const Dashboard = () => {
         ],
       },
     ],
+  };
+
+  const handleSelectTab = (tab: string) => {
+    setCurrentTab(tab);
+  };
+
+  const handleAddTab = (newTabName: string) => {
+    setTabs((prevTabs) => [...prevTabs.slice(0, -1), newTabName, "+"]);
+    setLayouts((prev) => ({ ...prev, [newTabName]: [] }));
+    setWidgets((prev) => ({ ...prev, [newTabName]: [] }));
+    setCurrentTab(newTabName);
+  };
+
+  const handleRemoveTab = (tabName: string) => {
+    if (tabName === "+") return;
+
+    setTabs((prevTabs) => prevTabs.filter((tab) => tab !== tabName));
+    setLayouts((prev) => {
+      const { [tabName]: _, ...rest } = prev;
+      return rest;
+    });
+    setWidgets((prev) => {
+      const { [tabName]: _, ...rest } = prev;
+      return rest;
+    });
+
+    if (currentTab === tabName) {
+      const remainingTabs = tabs.filter(
+        (tab) => tab !== tabName && tab !== "+"
+      );
+      setCurrentTab(remainingTabs[0] || "");
+    }
   };
 
   const addWidget = () => {
@@ -89,7 +123,14 @@ const Dashboard = () => {
       <header className="text-center mb-8">
         <h1 className="text-3xl font-bold text-gray-800">Custom Dashboard</h1>
       </header>
-
+      <div className="mb-6">
+        <Tabs
+          tabs={tabs}
+          onSelect={handleSelectTab}
+          onAddTab={handleAddTab}
+          onRemoveTab={handleRemoveTab}
+        />
+      </div>
       <div className="flex items-center justify-center gap-4 mb-6">
         <select
           value={selectedType}
