@@ -9,3 +9,18 @@
   justify-content: center;
   align-items: center;
 }
+
+.react-grid-item {
+  position: relative;
+  border: 1px solid #ddd;
+}
+
+.react-resizable-handle {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  background: #ccc;
+  bottom: 0;
+  right: 0;
+  cursor: se-resize; /* 모서리 드래그 커서 */
+}
