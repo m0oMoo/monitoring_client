@@ -9,42 +9,37 @@ import { v4 as uuidv4 } from "uuid";
 const MAX_WIDGETS = 6;
 
 const Dashboard2 = () => {
-  const [tabs, setTabs] = useState(["Dashboard 1", "Dashboard 2"]);
   const [currentTab, setCurrentTab] = useState("Dashboard 1");
-
-  const initialLayouts: { [key: string]: Layout[] } = {
-    "Dashboard 1": [],
-    "Dashboard 2": [],
-  };
-
-  const [layouts, setLayouts] = useState<{ [key: string]: Layout[] }>(
-    initialLayouts
-  );
-  const [widgets, setWidgets] = useState<{ [key: string]: any[] }>(
-    initialLayouts
-  );
+  const [tabs, setTabs] = useState(["Dashboard 1", "Dashboard 2", "+"]);
+  const [layouts, setLayouts] = useState<{ [key: string]: Layout[] }>({});
+  const [widgets, setWidgets] = useState<{ [key: string]: any[] }>({});
   const [selectedType, setSelectedType] = useState<
     "line" | "bar" | "pie" | "doughnut"
   >("line");
 
-  // 샘플 데이터
-  const getChartData = (type: string) => {
+  const getChartData = (type: "line" | "bar" | "pie" | "doughnut") => {
+    const commonData = {
+      labels: ["January", "February", "March", "April"],
+      values: [65, 59, 80, 81],
+    };
+
     if (type === "pie" || type === "doughnut") {
       return [
         {
-          labels: ["January", "February", "March", "April"],
-          values: [65, 59, 80, 81],
+          labels: commonData.labels,
+          values: commonData.values,
           type: "pie",
-          hole: type === "doughnut" ? 0.4 : 0, // 도넛 차트 설정
+          hole: type === "doughnut" ? 0.4 : 0,
         },
       ];
     }
+
     return [
       {
-        x: ["January", "February", "March", "April"],
-        y: [65, 59, 80, 81],
+        x: commonData.labels,
+        y: commonData.values,
         type: type,
-        mode: type === "line" ? "lines" : undefined, // 선 차트 모드
+        mode: type === "line" ? "lines+markers" : undefined,
         marker: { size: 10 },
       },
     ];
@@ -59,7 +54,38 @@ const Dashboard2 = () => {
 
   const chartConfig = { responsive: true };
 
-  // 위젯 추가
+  const handleSelectTab = (tab: string) => {
+    setCurrentTab(tab);
+  };
+
+  const handleAddTab = (newTabName: string) => {
+    setTabs((prevTabs) => [...prevTabs.slice(0, -1), newTabName, "+"]);
+    setLayouts((prev) => ({ ...prev, [newTabName]: [] }));
+    setWidgets((prev) => ({ ...prev, [newTabName]: [] }));
+    setCurrentTab(newTabName);
+  };
+
+  const handleRemoveTab = (tabName: string) => {
+    if (tabName === "+") return;
+
+    setTabs((prevTabs) => prevTabs.filter((tab) => tab !== tabName));
+    setLayouts((prev) => {
+      const { [tabName]: _, ...rest } = prev;
+      return rest;
+    });
+    setWidgets((prev) => {
+      const { [tabName]: _, ...rest } = prev;
+      return rest;
+    });
+
+    if (currentTab === tabName) {
+      const remainingTabs = tabs.filter(
+        (tab) => tab !== tabName && tab !== "+"
+      );
+      setCurrentTab(remainingTabs[0] || "");
+    }
+  };
+
   const addWidget = () => {
     if ((widgets[currentTab] || []).length >= MAX_WIDGETS) {
       alert(`You can only add up to ${MAX_WIDGETS} widgets.`);
@@ -89,7 +115,6 @@ const Dashboard2 = () => {
     }));
   };
 
-  // 위젯 삭제
   const removeWidget = (id: string) => {
     setWidgets((prev) => ({
       ...prev,
@@ -111,7 +136,12 @@ const Dashboard2 = () => {
       </header>
 
       <div className="mb-6">
-        <Tabs tabs={tabs} onSelect={setCurrentTab} />
+        <Tabs
+          tabs={tabs}
+          onSelect={handleSelectTab}
+          onAddTab={handleAddTab}
+          onRemoveTab={handleRemoveTab}
+        />
       </div>
 
       <div className="flex items-center justify-center gap-4 mb-6">
@@ -137,46 +167,44 @@ const Dashboard2 = () => {
         </button>
       </div>
 
-      <div className="border border-gray-200">
-        <ReactGridLayout
-          className="layout"
-          layout={layouts[currentTab]}
-          cols={12}
-          rowHeight={150}
-          width={1500}
-          onLayoutChange={(newLayout) =>
-            setLayouts((prev) => ({ ...prev, [currentTab]: newLayout }))
-          }
-          draggableHandle=".drag-handle"
-          draggableCancel=".remove-button"
-          isDraggable={true}
-          isResizable={true}
-        >
-          {widgets[currentTab]?.map((widget) => (
-            <div
-              key={widget.id}
-              className="flex flex-col justify-between bg-white p-5 border border-gray-200 rounded-lg shadow"
-            >
-              <div className="flex justify-between">
-                <div className="drag-handle cursor-move text-gray-500">
-                  <h2 className="text-lg font-semibold">{widget.type} Chart</h2>
-                </div>
-                <button
-                  className="remove-button text-red-500"
-                  onClick={() => removeWidget(widget.id)}
-                >
-                  Remove
-                </button>
+      <ReactGridLayout
+        className="layout"
+        layout={layouts[currentTab]}
+        cols={12}
+        rowHeight={150}
+        width={1500}
+        onLayoutChange={(newLayout) =>
+          setLayouts((prev) => ({ ...prev, [currentTab]: newLayout }))
+        }
+        draggableHandle=".drag-handle"
+        draggableCancel=".remove-button"
+        isDraggable={true}
+        isResizable={true}
+      >
+        {widgets[currentTab]?.map((widget) => (
+          <div
+            key={widget.id}
+            className="flex flex-col justify-between bg-white p-5 border border-gray-200 rounded-lg shadow"
+          >
+            <div className="flex justify-between">
+              <div className="drag-handle cursor-move text-gray-500">
+                <h2 className="text-lg font-semibold">{widget.type} Chart</h2>
               </div>
-              <CustomPlotlyChart
-                data={widget.data}
-                layout={widget.layout}
-                config={widget.config}
-              />
+              <button
+                className="remove-button text-red-500"
+                onClick={() => removeWidget(widget.id)}
+              >
+                Remove
+              </button>
             </div>
-          ))}
-        </ReactGridLayout>
-      </div>
+            <CustomPlotlyChart
+              data={widget.data}
+              layout={widget.layout}
+              config={widget.config}
+            />
+          </div>
+        ))}
+      </ReactGridLayout>
     </div>
   );
 };
