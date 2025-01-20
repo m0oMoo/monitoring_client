@@ -4,10 +4,12 @@ const Tabs = ({
   tabs,
   onSelect,
   onAddTab,
+  onRemoveTab,
 }: {
   tabs: string[];
   onSelect: (tab: string) => void;
   onAddTab: (newTabName: string) => void;
+  onRemoveTab: (tabName: string) => void;
 }) => {
   const [activeTab, setActiveTab] = useState(tabs[0]);
   const [isAdding, setIsAdding] = useState(false);
@@ -27,6 +29,20 @@ const Tabs = ({
     }
   };
 
+  const handleRemoveTab = (tabName: string) => {
+    onRemoveTab(tabName);
+    if (activeTab === tabName) {
+      // 삭제된 탭이 현재 활성화된 탭일 경우, 첫 번째 탭을 활성화
+      const remainingTabs = tabs.filter(
+        (tab) => tab !== tabName && tab !== "+"
+      );
+      setActiveTab(remainingTabs[0] || "");
+      if (remainingTabs[0]) {
+        onSelect(remainingTabs[0]);
+      }
+    }
+  };
+
   return (
     <div className="flex items-center">
       {tabs.map((tab, index) =>
@@ -40,15 +56,24 @@ const Tabs = ({
             ➕
           </button>
         ) : (
-          <button
-            key={tab}
-            onClick={() => handleTabClick(tab)}
-            className={`border border-b-0 rounded-t-lg border-gray-300
-            p-2 bg-white
-            ${activeTab === tab ? "active p-3 bg-gray-200" : ""}`}
-          >
-            {tab}
-          </button>
+          <div key={tab} className="relative group">
+            <button
+              onClick={() => handleTabClick(tab)}
+              className={`border border-b-0 rounded-t-lg border-gray-300
+              p-2 bg-white
+              ${activeTab === tab ? "active p-3 bg-gray-200" : ""}`}
+            >
+              {tab}
+            </button>
+            {tabs.filter((t) => t !== "+").length > 1 && (
+              <button
+                onClick={() => handleRemoveTab(tab)}
+                className="absolute top-0 right-0 translate-x-1/2 -translate-y-1/2 bg-red-500 text-white text-sm px-1 rounded-full opacity-0 group-hover:opacity-100"
+              >
+                ×
+              </button>
+            )}
+          </div>
         )
       )}
       {isAdding && (
