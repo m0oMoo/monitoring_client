@@ -19,12 +19,12 @@ const Btn = ({
 
   // 색상별 스타일
   const colorClasses = {
-    gray: "bg-gray-6 hover:bg-gray-5",
-    pink: "bg-pink-5 hover:bg-pink-4",
-    blue: "bg-blue-7 hover:bg-blue-6",
-    green: "bg-green-6 hover:bg-green-5",
-    yellow: "bg-yellow-7 hover:bg-yellow-6",
-    red: "bg-red-6 hover:bg-red-5",
+    gray: "bg-gray-5 hover:bg-gray-4 active:bg-gray-6",
+    pink: "bg-pink-5 hover:bg-pink-4 active:bg-pink-6",
+    blue: "bg-blue-7 hover:bg-blue-6 active:bg-blue-8",
+    green: "bg-green-6 hover:bg-green-5 active:bg-green-7",
+    yellow: "bg-yellow-7 hover:bg-yellow-6 active:bg-yellow-8",
+    red: "bg-red-6 hover:bg-red-5 active:bg-red-7",
   }[color];
 
   return (
