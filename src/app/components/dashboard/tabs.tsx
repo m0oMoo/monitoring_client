@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { MdAdd, MdClose } from "react-icons/md";
+import Btn from "../button/basic/btn";
 
 const Tabs = ({
   tabs,
@@ -11,9 +13,9 @@ const Tabs = ({
   onAddTab: (newTabName: string) => void;
   onRemoveTab: (tabName: string) => void;
 }) => {
-  const [activeTab, setActiveTab] = useState(tabs[0]);
-  const [isAdding, setIsAdding] = useState(false);
-  const [newTabName, setNewTabName] = useState("");
+  const [activeTab, setActiveTab] = useState<string>(tabs[0]);
+  const [isAdding, setIsAdding] = useState<boolean>(false);
+  const [newTabName, setNewTabName] = useState<string>("");
 
   const handleTabClick = (tab: string) => {
     setActiveTab(tab);
@@ -32,7 +34,6 @@ const Tabs = ({
   const handleRemoveTab = (tabName: string) => {
     onRemoveTab(tabName);
     if (activeTab === tabName) {
-      // 삭제된 탭이 현재 활성화된 탭일 경우, 첫 번째 탭을 활성화
       const remainingTabs = tabs.filter(
         (tab) => tab !== tabName && tab !== "+"
       );
@@ -51,16 +52,16 @@ const Tabs = ({
             key={`add-tab-${index}`}
             onClick={() => setIsAdding(true)}
             className="border border-b-0 rounded-t-lg border-gray-300
-            p-2 bg-white text-gray-600"
+            p-2 bg-white text-gray-600 flex items-center"
           >
-            ➕
+            <MdAdd size={20} />
           </button>
         ) : (
           <div key={tab} className="relative group">
             <button
               onClick={() => handleTabClick(tab)}
               className={`border border-b-0 rounded-t-lg border-gray-300
-              p-2 bg-white
+              p-2 bg-white flex items-center
               ${activeTab === tab ? "active p-3 bg-gray-200" : ""}`}
             >
               {tab}
@@ -68,16 +69,17 @@ const Tabs = ({
             {tabs.filter((t) => t !== "+").length > 1 && (
               <button
                 onClick={() => handleRemoveTab(tab)}
-                className="absolute top-0 right-0 translate-x-1/2 -translate-y-1/2 bg-red-500 text-white text-sm px-1 rounded-full opacity-0 group-hover:opacity-100"
+                className="absolute top-0 right-0 translate-x-1/2 -translate-y-1/2 bg-red-5 text-white 
+                text-sm p-1 rounded-full opacity-0 group-hover:opacity-100 flex items-center z-50"
               >
-                ×
+                <MdClose size={12} />
               </button>
             )}
           </div>
         )
       )}
       {isAdding && (
-        <div className="ml-4 flex items-center">
+        <div className="ml-4 flex gap-2 items-center">
           <input
             type="text"
             value={newTabName}
@@ -85,18 +87,12 @@ const Tabs = ({
             placeholder="New Tab Name"
             className="border p-2 rounded"
           />
-          <button
-            onClick={handleAddTab}
-            className="ml-2 px-3 py-2 bg-blue-500 text-white rounded"
-          >
-            Add
-          </button>
-          <button
+          <Btn onClick={handleAddTab} title={"Add"} color={"blue"} />
+          <Btn
             onClick={() => setIsAdding(false)}
-            className="ml-2 px-3 py-2 bg-red-500 text-white rounded"
-          >
-            Cancel
-          </button>
+            title={"Cancel"}
+            color={"red"}
+          />
         </div>
       )}
     </div>
