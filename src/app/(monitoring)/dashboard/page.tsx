@@ -5,18 +5,28 @@ import ReactGridLayout, { Layout } from "react-grid-layout";
 import ChartWidget from "@/app/components/dashboard/chartWidget";
 import { v4 as uuidv4 } from "uuid";
 import Tabs from "@/app/components/dashboard/tabs";
+import Btn from "@/app/components/button/basic/btn";
+import { MdDelete } from "react-icons/md";
+import SnapshotManager from "@/app/components/dashboard/snapshotManager";
 
 const MAX_WIDGETS = 6;
 
 const Dashboard = () => {
   const [currentTab, setCurrentTab] = useState<string>("Dashboard 1");
-  const [tabs, setTabs] = useState(["Dashboard 1", "Dashboard 2", "+"]);
+  const [tabs, setTabs] = useState<string[]>([
+    "Dashboard 1",
+    "Dashboard 2",
+    "+",
+  ]);
   const [layouts, setLayouts] = useState<{ [key: string]: Layout[] }>({
     "Dashboard 1": [],
   });
   const [widgets, setWidgets] = useState<{ [key: string]: any[] }>({
     "Dashboard 1": [],
   });
+  const [snapshots, setSnapshots] = useState<
+    { layout: Layout[]; tab: string; timestamp: string }[]
+  >([]);
   const [selectedType, setSelectedType] = useState<
     "line" | "bar" | "pie" | "doughnut"
   >("bar");
@@ -91,7 +101,7 @@ const Dashboard = () => {
       ...prev,
       [currentTab]: [
         ...(prev[currentTab] || []),
-        { i: id, x: 0, y: Infinity, w: 4, h: 2 }, // 초기 크기 설정
+        { i: id, x: 0, y: Infinity, w: 4, h: 2 },
       ],
     }));
   };
@@ -110,12 +120,32 @@ const Dashboard = () => {
     }));
   };
 
+  const handleSaveSnapshot = () => {
+    const timestamp = new Date().toLocaleString();
+    const currentSnapshot = {
+      layout: layouts[currentTab],
+      tab: currentTab,
+      timestamp,
+    };
+    setSnapshots((prev) => [...prev, currentSnapshot]);
+  };
+
+  const handleDeleteSnapshot = (index: number) => {
+    setSnapshots((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleRestoreSnapshot = (snapshot: Layout[]) => {
+    setLayouts((prev) => ({
+      ...prev,
+      [currentTab]: snapshot,
+    }));
+  };
+
   const handleResizeStop = (layout: Layout[]) => {
     setLayouts((prev) => ({
       ...prev,
       [currentTab]: layout,
     }));
-    console.log("Updated layout after resizing:", layout);
   };
 
   return (
@@ -131,6 +161,7 @@ const Dashboard = () => {
           onRemoveTab={handleRemoveTab}
         />
       </div>
+
       <div className="flex items-center justify-center gap-4 mb-6">
         <select
           value={selectedType}
@@ -138,6 +169,7 @@ const Dashboard = () => {
             setSelectedType(
               e.target.value as "line" | "bar" | "pie" | "doughnut"
             )
+            
           }
           className="px-4 py-2 border border-gray-300 rounded"
         >
@@ -146,12 +178,14 @@ const Dashboard = () => {
           <option value="pie">Pie Chart</option>
           <option value="doughnut">Doughnut Chart</option>
         </select>
-        <button
-          className="px-4 py-2 bg-blue-500 text-white rounded"
-          onClick={addWidget}
-        >
-          Add Widget
-        </button>
+        <Btn title={"Add Widget"} onClick={addWidget} color={"gray"} />
+        {/* <SnapshotManager
+          layout={layouts[currentTab]}
+          snapshots={snapshots}
+          onSave={handleSaveSnapshot}
+          onRestore={handleRestoreSnapshot}
+          onDelete={handleDeleteSnapshot}
+        /> */}
       </div>
 
       <ReactGridLayout
@@ -163,10 +197,10 @@ const Dashboard = () => {
         onLayoutChange={(newLayout) =>
           setLayouts((prev) => ({ ...prev, [currentTab]: newLayout }))
         }
-        onResizeStop={handleResizeStop} // 크기 조절 이벤트
+        onResizeStop={handleResizeStop}
         draggableHandle=".drag-handle"
         draggableCancel=".remove-button"
-        isResizable={true} // 크기 조절 활성화
+        isResizable={true}
         isDraggable={true}
       >
         {widgets[currentTab]?.map((widget) => (
@@ -174,15 +208,15 @@ const Dashboard = () => {
             key={widget.id}
             className="flex flex-col justify-between bg-white p-5 border border-gray-200 rounded-lg shadow"
           >
-            <div className="flex justify-between">
+            <div className="flex justify-between items-center">
               <div className="drag-handle cursor-move text-gray-500">
                 <h2 className="text-lg font-semibold">{widget.type} Chart</h2>
               </div>
               <button
-                className="remove-button text-red-500"
+                className="remove-button text-gray-4 hover:text-red-5"
                 onClick={() => removeWidget(widget.id)}
               >
-                Remove
+                <MdDelete size={20} />
               </button>
             </div>
             <ChartWidget type={widget.type} data={widget.data} />
