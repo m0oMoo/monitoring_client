@@ -1,0 +1,26 @@
+.layout {
+  position: relative; /* Grid Layout의 기본 위치 */
+  overflow: visible; /* 드래그 가능한 공간 제한 해제 */
+}
+
+.grid-item {
+  display: flex; /* 아이템 내용 중앙 정렬 */
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.react-grid-item {
+  position: relative;
+  border: 1px solid #ddd;
+}
+
+.react-resizable-handle {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  background: #ccc;
+  bottom: 0;
+  right: 0;
+  cursor: se-resize; /* 모서리 드래그 커서 */
+}
