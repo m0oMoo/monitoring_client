@@ -28,18 +28,19 @@ ChartJS.register(
 type ChartWidgetProps = {
   type: "bar" | "line" | "pie" | "doughnut"; // 지원할 차트 유형
   data: any; // 차트 데이터
+  options?: any;
 };
 
-const ChartWidget = ({ type, data }: ChartWidgetProps) => {
+const ChartWidget = ({ type, data, options }: ChartWidgetProps) => {
   switch (type) {
     case "bar":
-      return <Bar data={data} />;
+      return <Bar data={data} options={options} />;
     case "line":
-      return <Line data={data} />;
+      return <Line data={data} options={options} />;
     case "pie":
-      return <Pie data={data} />;
+      return <Pie data={data} options={options} />;
     case "doughnut":
-      return <Doughnut data={data} />;
+      return <Doughnut data={data} options={options} />;
     default:
       return <p>Invalid chart type</p>;
   }
