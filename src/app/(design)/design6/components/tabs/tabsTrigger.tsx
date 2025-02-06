@@ -22,7 +22,7 @@ export const TabsTrigger: React.FC<TabsTriggerProps> = ({
       className={`${className} px-4 py-2 border-b-2 transition ${
         activeTab === value
           ? "border-white text-white"
-          : "border-transparent text-gray-400 hover:text-white"
+          : "border-transparent border-gray-5 text-gray-5 hover:text-white"
       }`}
       onClick={() => setActiveTab(value)}
     >
