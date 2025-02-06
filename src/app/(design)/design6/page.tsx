@@ -3,18 +3,20 @@
 import { useEffect, useState } from "react";
 import {
   BarChart,
-  Camera,
+  LifeBuoy,
   LineChart,
   PieChart,
   Save,
-  Trash2,
+  File,
+  ChevronUp,
+  ChevronDown,
 } from "lucide-react";
-import { TabsList } from "./components/tabs/tabsList";
-import { TabsTrigger } from "./components/tabs/tabsTrigger";
 import { Tabs } from "./components/tabs/tabs";
 import ChartWidget from "@/app/components/dashboard/chartWidget";
 import { CHART_DATA_7 } from "@/app/data/chartData";
 import ReactGridLayout from "react-grid-layout";
+import TabsGroup from "./components/tabs/tabsGroup";
+import DataBindingModal from "@/app/components/modal/dataBindingModal";
 
 const defaultChartData = {
   labels: ["January", "February", "March", "April"],
@@ -31,6 +33,7 @@ const chartTypes = [
   { type: "bar", icon: <BarChart size={24} /> },
   { type: "line", icon: <LineChart size={24} /> },
   { type: "pie", icon: <PieChart size={24} /> },
+  { type: "doughnut", icon: <LifeBuoy size={24} /> },
 ];
 
 const DesignPage: React.FC = () => {
@@ -44,28 +47,24 @@ const DesignPage: React.FC = () => {
       h: number;
     }[]
   >([
-    { id: "chart1", type: "bar", x: 0, y: 0, w: 3, h: 2 },
+    { id: "chart1", type: "bar", x: 0, y: 0, w: 3, h: 4 },
     { id: "chart2", type: "line", x: 3, y: 0, w: 3, h: 2 },
     { id: "chart3", type: "pie", x: 6, y: 0, w: 3, h: 2 },
-    { id: "chart4", type: "doughnut", x: 9, y: 0, w: 3, h: 2 },
-    { id: "chart5", type: "bar", x: 0, y: 2, w: 3, h: 2 },
-    { id: "chart6", type: "line", x: 3, y: 2, w: 3, h: 2 },
-    { id: "chart7", type: "pie", x: 6, y: 2, w: 3, h: 2 },
+    { id: "chart4", type: "doughnut", x: 9, y: 0, w: 2, h: 2 },
+    // { id: "chart5", type: "bar", x: 0, y: 2, w: 3, h: 4 },
+    { id: "chart6", type: "line", x: 3, y: 2, w: 3, h: 3 },
+    // { id: "chart7", type: "pie", x: 6, y: 2, w: 3, h: 4 },
   ]);
   const [isClient, setIsClient] = useState(false);
   const [selectedChart, setSelectedChart] = useState("bar");
-  const [hoveredChart, setHoveredChart] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isHeaderVisible, setIsHeaderVisible] = useState(true);
 
   useEffect(() => {
     setIsClient(true);
   }, []);
 
   if (!isClient) return null;
-
-  // 🗑️ 차트 삭제 기능
-  const removeChart = (id: string) => {
-    setCharts((prevCharts) => prevCharts.filter((chart) => chart.id !== id));
-  };
 
   const onLayoutChange = (layout: any) => {
     setCharts(
@@ -80,51 +79,50 @@ const DesignPage: React.FC = () => {
     );
   };
 
+  const toggleHeaderVisibility = () => {
+    setIsHeaderVisible((prev) => !prev);
+  };
+
   return (
     <div className="bg-[#292929] text-white min-h-screen p-6 overflow-hidden">
-      <header className="mb-4 flex justify-between items-center">
+      <header
+        className={`flex justify-between items-center transition-all duration-300 ${
+          isHeaderVisible ? "opacity-100" : "opacity-0 h-0 overflow-hidden"
+        }`}
+      >
         <h1 className="text-4xl font-bold">모니터링 대시보드</h1>
         <div className="flex space-x-3 p-1 rounded-lg shadow-md">
-          <button className="flex gap-2 border border-gray-600 bg-gray-700 p-3 rounded-lg text-white hover:bg-gray-600">
+          <button className="flex gap-2 border border-gray-4 bg-gray-7 p-3 rounded-lg text-white hover:bg-gray-6">
             <Save size={20} />
-            <p>저장</p>
+            <p className="text-lg1">저장</p>
           </button>
-          <button className="flex gap-2 border border-gray-600 bg-gray-700 p-3 rounded-lg text-white hover:bg-gray-600">
-            <Camera size={20} />
-            <p>스냅샷</p>
+          <button
+            className="flex gap-2 border border-gray-4 bg-gray-7 p-3 rounded-lg text-white hover:bg-gray-6"
+            onClick={() => setIsModalOpen(true)}
+          >
+            <File size={20} />
+            <p className="text-text-lg1">데이터 불러오기</p>
           </button>
         </div>
       </header>
-      <div className="flex justify-between items-center mb-4">
+      <div
+        className={`flex justify-between items-center transition-all duration-300 ${
+          isHeaderVisible ? "opacity-100" : "opacity-0 h-0 overflow-hidden"
+        }`}
+      >
         <Tabs
           defaultValue="dashboard1"
-          className="w-full border-b border-gray-600 pb-2 flex items-center justify-between"
+          className="w-full items-end border-b border-gray-6 pb-2 flex justify-between"
         >
-          <TabsList className="flex space-x-3 border-b border-gray-700">
-            <TabsTrigger
-              value="dashboard1"
-              className="pb-3 px-4 border-b-4 transition-all duration-200 text-gray-300 hover:text-white hover:border-white 
-        data-[state=active]:border-white data-[state=active]:text-white font-semibold"
-            >
-              📊 대시보드 1
-            </TabsTrigger>
-            <TabsTrigger
-              value="dashboard2"
-              className="pb-3 px-4 border-b-4 transition-all duration-200 text-gray-300 hover:text-white hover:border-white 
-        data-[state=active]:border-white data-[state=active]:text-white font-semibold"
-            >
-              📈 대시보드 2
-            </TabsTrigger>
-          </TabsList>
-
-          <div className="flex space-x-3 bg-gray-8 p-3 rounded-lg shadow-md border border-gray-600">
+          <TabsGroup />
+          <div className="flex space-x-3 bg-gray-9 p-3 rounded-lg shadow-md border border-gray-4">
             {chartTypes.map(({ type, icon }) => (
               <button
                 key={type}
                 className={`p-3 rounded-lg transition-all duration-200 border-2 text-lg flex items-center justify-center ${
                   selectedChart === type
-                    ? "bg-gray-600 border-white text-white shadow-md scale-105"
-                    : "bg-gray-700 border-gray-500 text-gray-300 hover:bg-gray-600 hover:border-white"
+                    ? "bg-gray-6 border-white text-white shadow-md scale-105"
+                    : "bg-gray-7 border-gray-500 text-gray-300 hover:bg-gray-600 hover:border-white"
                 }`}
                 onClick={() => setSelectedChart(type)}
               >
@@ -134,7 +132,15 @@ const DesignPage: React.FC = () => {
           </div>
         </Tabs>
       </div>
-
+      <div className="flex justify-end p-2">
+        <button onClick={toggleHeaderVisibility}>
+          {isHeaderVisible ? (
+            <ChevronUp size={24} />
+          ) : (
+            <ChevronDown size={24} />
+          )}
+        </button>
+      </div>
       <div className="w-full h-screen">
         <ReactGridLayout
           className="layout"
@@ -146,7 +152,7 @@ const DesignPage: React.FC = () => {
             h: chart.h,
           }))}
           cols={12}
-          width={window.innerWidth}
+          width={window.innerWidth - 70}
           onLayoutChange={onLayoutChange}
           draggableHandle=".drag-handle"
           isResizable={true}
@@ -158,20 +164,7 @@ const DesignPage: React.FC = () => {
             <div
               key={chart.id}
               className="relative bg-transparent p-4 flex items-center justify-center drag-handle border border-gray-700 rounded-lg h-full"
-              onMouseEnter={() => setHoveredChart(chart.id)}
-              onMouseLeave={() => setHoveredChart(null)}
             >
-              {/* 🗑️ 삭제 버튼 (hover 시에만 보이도록) */}
-              {/* {hoveredChart === chart.id && ( */}
-              {hoveredChart === "chart3" && (
-                <button
-                  className="absolute top-2 right-2 bg-red-600 p-2 rounded-full text-white hover:bg-red-500 transition-opacity opacity-0 hover:opacity-100"
-                  onClick={() => removeChart(chart.id)}
-                >
-                  <Trash2 size={16} />
-                </button>
-              )}
-
               <ChartWidget
                 type={chart.type}
                 data={CHART_DATA_7[chart.id] || defaultChartData}
@@ -194,6 +187,10 @@ const DesignPage: React.FC = () => {
           ))}
         </ReactGridLayout>
       </div>
+      <DataBindingModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      />
     </div>
   );
 };
