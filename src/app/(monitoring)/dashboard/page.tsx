@@ -7,7 +7,6 @@ import { v4 as uuidv4 } from "uuid";
 import Tabs from "@/app/components/dashboard/tabs";
 import Btn from "@/app/components/button/basic/btn";
 import { MdDelete } from "react-icons/md";
-import SnapshotManager from "@/app/components/dashboard/snapshotManager";
 
 const MAX_WIDGETS = 6;
 
@@ -169,7 +168,6 @@ const Dashboard = () => {
             setSelectedType(
               e.target.value as "line" | "bar" | "pie" | "doughnut"
             )
-            
           }
           className="px-4 py-2 border border-gray-300 rounded"
         >

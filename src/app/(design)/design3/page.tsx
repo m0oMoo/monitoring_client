@@ -1,14 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Moon, Sun, BarChart, LineChart, PieChart } from "lucide-react";
-import { DndContext, closestCenter } from "@dnd-kit/core";
-import {
-  SortableContext,
-  verticalListSortingStrategy,
-  arrayMove,
-} from "@dnd-kit/sortable";
-import SortableItem from "../components/item/sortableItem";
+import { BarChart, LineChart, PieChart } from "lucide-react";
 import { TabsList } from "./components/tabs/tabsList";
 import { TabsTrigger } from "./components/tabs/tabsTrigger";
 import { Tabs } from "./components/tabs/tabs";
@@ -34,7 +27,6 @@ const chartTypes = [
 ];
 
 const DesignPage: React.FC = () => {
-  const [darkMode, setDarkMode] = useState(true);
   const [charts, setCharts] = useState<
     {
       id: string;
@@ -71,13 +63,7 @@ const DesignPage: React.FC = () => {
   };
 
   return (
-    <div
-      className={
-        darkMode
-          ? "bg-[#292929] text-white min-h-screen p-6"
-          : "bg-white text-black min-h-screen p-6"
-      }
-    >
+    <div className={"bg-[#292929] text-white min-h-screen p-6"}>
       <header className="mb-6">
         <h1 className="text-4xl font-bold">모니터링 대시보드</h1>
       </header>
