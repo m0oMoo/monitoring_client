@@ -14,5 +14,3 @@
 // ];
 
 // export default eslintConfig;
-
-export default [];

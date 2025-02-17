@@ -1,10 +1,14 @@
-import ChartJSWidget from "../widget/chartJs";
-import D3Widget from "../widget/d3";
-import PlotlyWidget from "../widget/plotly";
+import dynamic from "next/dynamic";
+
+const ChartJSWidget = dynamic(() => import("../widget/chartJs"), {
+  ssr: false,
+});
+const D3Widget = dynamic(() => import("../widget/d3"), { ssr: false });
+const PlotlyWidget = dynamic(() => import("../widget/plotly"), { ssr: false });
 
 interface ChartComponentProps {
-  library: "chartjs" | "plotly" | "d3"; // 차트 라이브러리 선택
-  data: any; // 차트에 들어갈 데이터
+  library: "chartjs" | "plotly" | "d3";
+  data: any;
 }
 
 const ChartComponent = ({ library, data }: ChartComponentProps) => {
