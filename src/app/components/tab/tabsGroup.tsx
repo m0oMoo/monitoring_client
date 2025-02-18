@@ -2,8 +2,9 @@ import React, { useState } from "react";
 import { TabsTrigger } from "./tabsTrigger";
 
 interface TabsGroupProps {
-  tabs: { label: string; value: string }[];
-  onTabEdit: (index: any, newName: string) => void;
+  tabs: { id: string; label: string; description: string }[];
+  onTabEdit: (index: number, newName: string) => void;
+  onTabSelect: (index: number) => void;
 }
 
 const TabsGroup = ({ tabs, onTabEdit }: TabsGroupProps) => {
@@ -27,7 +28,7 @@ const TabsGroup = ({ tabs, onTabEdit }: TabsGroupProps) => {
   return (
     <div className="flex space-x-3">
       {tabs.map((tab, index) => (
-        <div key={tab.value} className="relative">
+        <div key={tab.id} className="relative">
           {editingIndex === index ? (
             <div className="flex items-center gap-2">
               <input
@@ -52,7 +53,7 @@ const TabsGroup = ({ tabs, onTabEdit }: TabsGroupProps) => {
             </div>
           ) : (
             <TabsTrigger
-              value={tab.value}
+              id={tab.id}
               className="flex items-center pb-3 px-4 border-b-4 transition-all duration-200 text-[#19324b] hover:text-[#19324b]
               data-[state=active]:border-[#19324b] data-[state=active]:text-[#19324b]"
             >
