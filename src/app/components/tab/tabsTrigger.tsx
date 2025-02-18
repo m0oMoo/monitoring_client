@@ -1,14 +1,15 @@
 import { useContext } from "react";
 import { TabsContext } from "./tabs";
+import { useRouter } from "next/navigation";
 
 interface TabsTriggerProps {
-  value: string;
+  id: string;
   children: React.ReactNode;
   className?: string;
 }
 
 export const TabsTrigger: React.FC<TabsTriggerProps> = ({
-  value,
+  id,
   children,
   className,
 }) => {
@@ -17,14 +18,20 @@ export const TabsTrigger: React.FC<TabsTriggerProps> = ({
 
   const { activeTab, setActiveTab } = context;
 
+  const router = useRouter();
+
+  const handleTavClick = () => {
+    setActiveTab(id);
+  };
+
   return (
     <button
       className={`${className} px-4 py-2 border-b-2 transition ${
-        activeTab === value
+        activeTab === id
           ? "border-[#1f3e5c] text-[#1f3e5c]"
           : "border-transparent border-gray-2 text-gray-2 hover:text-gray-5"
       }`}
-      onClick={() => setActiveTab(value)}
+      onClick={handleTavClick}
     >
       {children}
     </button>
