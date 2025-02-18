@@ -14,3 +14,7 @@
 // ];
 
 // export default eslintConfig;
+
+export default {
+  extends: ["next/core-web-vitals"],
+};
