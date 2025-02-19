@@ -20,18 +20,19 @@ export const TabsTrigger: React.FC<TabsTriggerProps> = ({
 
   const router = useRouter();
 
-  const handleTavClick = () => {
+  const handleTabClick = () => {
     setActiveTab(id);
+    router.push(`#${id}`);
   };
 
   return (
     <button
-      className={`${className} px-4 py-2 border-b-2 transition ${
+      className={`${className} px-2 py-2 border-b-2 transition ${
         activeTab === id
-          ? "border-[#1f3e5c] text-[#1f3e5c]"
+          ? "border-navy-border text-navy-text"
           : "border-transparent border-gray-2 text-gray-2 hover:text-gray-5"
       }`}
-      onClick={handleTavClick}
+      onClick={handleTabClick}
     >
       {children}
     </button>
