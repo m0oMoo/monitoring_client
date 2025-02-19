@@ -25,6 +25,23 @@ export default {
         text: "#1F1F1F",
         text2: "#4B4B4B",
         text3: "#A0A0A0",
+        ivory: {
+          bg: "#fdfdf4",
+          bg_primary: "#fdfaf2",
+          bg_secondary: "#fdfcf7",
+          text: "#fffcf2",
+          text_sub: "#fdf7e4",
+        },
+        navy: {
+          bg: "#172b41",
+          bg_primary: "#213953",
+          btn: "#26415a",
+          btn_hover: "#162f4b",
+          border: "#1f3e5c",
+          text: "#1d2e41",
+          text_hover: "#2f4e72",
+          text_disable: "#8296ad",
+        },
         gray: {
           9: "#111111",
           8: "#1F1F1F",
