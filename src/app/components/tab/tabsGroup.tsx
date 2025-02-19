@@ -35,18 +35,18 @@ const TabsGroup = ({ tabs, onTabEdit }: TabsGroupProps) => {
                 type="text"
                 value={newTabName}
                 onChange={(e) => setNewTabName(e.target.value)}
-                className="bg-transparent h-12 w-[160px] text-[#19324b] px-2
-                border-b-2 border-[#19324b] focus:outline-none"
+                className="bg-transparent h-9 w-[120px] text-[#19324b] px-2
+                border-b-2 border-[#19324b] focus:outline-none text-sm"
               />
               <button
                 onClick={() => handleSave(index)}
-                className="text-[#19324b] hover:text-[#273e55]"
+                className="text-[#19324b] hover:text-[#273e55] text-xs"
               >
                 저장
               </button>
               <button
                 onClick={handleCancel}
-                className="text-red-600 hover:text-red-500"
+                className="text-red-600 hover:text-red-500 text-xs"
               >
                 취소
               </button>
@@ -54,8 +54,8 @@ const TabsGroup = ({ tabs, onTabEdit }: TabsGroupProps) => {
           ) : (
             <TabsTrigger
               id={tab.id}
-              className="flex items-center pb-3 px-4 border-b-4 transition-all duration-200 text-[#19324b] hover:text-[#19324b]
-              data-[state=active]:border-[#19324b] data-[state=active]:text-[#19324b]"
+              className="flex items-center pb-2 px-2 border-b-2 transition-all duration-200 text-[#19324b] hover:text-[#19324b]
+              data-[state=active]:border-[#19324b] data-[state=active]:text-[#19324b] text-sm"
             >
               {tab.label}
               <span
