@@ -1,212 +1,167 @@
 "use client";
 
-import React, { useState } from "react";
-import ReactGridLayout, { Layout } from "react-grid-layout";
-import CustomPlotlyChart from "@/app/components/chart/customPlotlyChart";
-import Tabs from "@/app/components/dashboard/tabs";
-import { v4 as uuidv4 } from "uuid";
+import React, { useState, useEffect } from "react";
+import { MoreVertical, Trash2, Edit2 } from "lucide-react";
+import AddTabModal from "@/app/components/modal/addTabModal";
+import { DEFAULT_DASHBOARD_DATA } from "@/app/data/dashboardData";
+import SearchInput from "@/app/components/search/searchInput";
+import Alert from "@/app/components/alert/alert";
 
-const MAX_WIDGETS = 6;
+const Dashboard2Page = () => {
+  const [tabs, setTabs] = useState<any[]>(DEFAULT_DASHBOARD_DATA);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [editingTabIndex, setEditingTabIndex] = useState<number | null>(null);
+  const [menuOpenIndex, setMenuOpenIndex] = useState<number | null>(null);
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [selectedTabIndex, setSelectedTabIndex] = useState<number | null>(1);
+  const [alertMessage, setAlertMessage] = useState<string>("");
 
-const Dashboard2 = () => {
-  const [currentTab, setCurrentTab] = useState("Dashboard 1");
-  const [tabs, setTabs] = useState(["Dashboard 1", "Dashboard 2", "+"]);
-  const [layouts, setLayouts] = useState<{ [key: string]: Layout[] }>({});
-  const [widgets, setWidgets] = useState<{ [key: string]: any[] }>({});
-  const [selectedType, setSelectedType] = useState<
-    "line" | "bar" | "pie" | "doughnut"
-  >("line");
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(event.target.value);
+  };
 
-  const getChartData = (type: "line" | "bar" | "pie" | "doughnut") => {
-    const commonData = {
-      labels: ["January", "February", "March", "April"],
-      values: [65, 59, 80, 81],
-    };
+  const filteredTabs = tabs.filter((tab) =>
+    tab.label.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
-    if (type === "pie" || type === "doughnut") {
-      return [
-        {
-          labels: commonData.labels,
-          values: commonData.values,
-          type: "pie",
-          hole: type === "doughnut" ? 0.4 : 0,
-        },
-      ];
-    }
+  const handleTabEdit = (
+    index: number,
+    newName: string,
+    newDescription: string
+  ) => {
+    const updatedTabs = [...tabs];
+    updatedTabs[index].label = newName;
+    updatedTabs[index].description = newDescription;
+    setTabs(updatedTabs);
+    setEditingTabIndex(null);
+    setAlertMessage("탭이 수정되었습니다!");
+  };
 
-    return [
+  const handleTabDelete = (index: number) => {
+    const updatedTabs = tabs.filter((_, i) => i !== index);
+    setTabs(updatedTabs);
+    setAlertMessage("탭이 삭제되었습니다!");
+  };
+
+  const handleTabAdd = (newTabName: string, newTabDescription: string) => {
+    setTabs([
+      ...tabs,
       {
-        x: commonData.labels,
-        y: commonData.values,
-        type: type,
-        mode: type === "line" ? "lines+markers" : undefined,
-        marker: { size: 10 },
+        id: `${tabs.length + 1}`,
+        label: newTabName,
+        description: newTabDescription,
+        content: "",
       },
-    ];
+    ]);
+    setIsModalOpen(false);
+    setAlertMessage("새로운 탭이 추가되었습니다!");
   };
 
-  const chartLayout = {
-    title: "Custom Chart",
-    xaxis: { title: "X Axis" },
-    yaxis: { title: "Y Axis" },
-    showlegend: true,
-  };
+  useEffect(() => {
+    if (alertMessage) {
+      const timer = setTimeout(() => {
+        setAlertMessage("");
+      }, 1000);
 
-  const chartConfig = { responsive: true };
-
-  const handleSelectTab = (tab: string) => {
-    setCurrentTab(tab);
-  };
-
-  const handleAddTab = (newTabName: string) => {
-    setTabs((prevTabs) => [...prevTabs.slice(0, -1), newTabName, "+"]);
-    setLayouts((prev) => ({ ...prev, [newTabName]: [] }));
-    setWidgets((prev) => ({ ...prev, [newTabName]: [] }));
-    setCurrentTab(newTabName);
-  };
-
-  const handleRemoveTab = (tabName: string) => {
-    if (tabName === "+") return;
-
-    setTabs((prevTabs) => prevTabs.filter((tab) => tab !== tabName));
-    setLayouts((prev) => {
-      const { [tabName]: _, ...rest } = prev;
-      return rest;
-    });
-    setWidgets((prev) => {
-      const { [tabName]: _, ...rest } = prev;
-      return rest;
-    });
-
-    if (currentTab === tabName) {
-      const remainingTabs = tabs.filter(
-        (tab) => tab !== tabName && tab !== "+"
-      );
-      setCurrentTab(remainingTabs[0] || "");
+      return () => clearTimeout(timer);
     }
-  };
-
-  const addWidget = () => {
-    if ((widgets[currentTab] || []).length >= MAX_WIDGETS) {
-      alert(`You can only add up to ${MAX_WIDGETS} widgets.`);
-      return;
-    }
-
-    const id = uuidv4();
-    const newWidget = {
-      id,
-      type: selectedType,
-      data: getChartData(selectedType),
-      layout: chartLayout,
-      config: chartConfig,
-    };
-
-    setWidgets((prev) => ({
-      ...prev,
-      [currentTab]: [...(prev[currentTab] || []), newWidget],
-    }));
-
-    setLayouts((prev) => ({
-      ...prev,
-      [currentTab]: [
-        ...(prev[currentTab] || []),
-        { i: id, x: 0, y: Infinity, w: 4, h: 2 },
-      ],
-    }));
-  };
-
-  const removeWidget = (id: string) => {
-    setWidgets((prev) => ({
-      ...prev,
-      [currentTab]: (prev[currentTab] || []).filter(
-        (widget) => widget.id !== id
-      ),
-    }));
-
-    setLayouts((prev) => ({
-      ...prev,
-      [currentTab]: (prev[currentTab] || []).filter((item) => item.i !== id),
-    }));
-  };
+  }, [alertMessage]);
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <header className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-800">Custom Dashboard</h1>
-      </header>
-
-      <div className="mb-6">
-        <Tabs
-          tabs={tabs}
-          onSelect={handleSelectTab}
-          onAddTab={handleAddTab}
-          onRemoveTab={handleRemoveTab}
+    <div className="bg-ivory-bg_sub text-navy-text min-h-screen p-4 pt-[44px]">
+      <header className="flex justify-between items-center my-3">
+        <h1 className="text-xl font-bold tracking-wide">
+          📊 모니터링 대시보드
+        </h1>
+        <SearchInput
+          searchQuery={searchQuery}
+          onSearchChange={handleSearchChange}
         />
-      </div>
-
-      <div className="flex items-center justify-center gap-4 mb-6">
-        <select
-          value={selectedType}
-          onChange={(e) =>
-            setSelectedType(
-              e.target.value as "line" | "bar" | "pie" | "doughnut"
-            )
-          }
-          className="px-4 py-2 border border-gray-300 rounded"
-        >
-          <option value="line">Line Chart</option>
-          <option value="bar">Bar Chart</option>
-          <option value="pie">Pie Chart</option>
-          <option value="doughnut">Doughnut Chart</option>
-        </select>
-        <button
-          className="px-4 py-2 bg-blue-500 text-white rounded"
-          onClick={addWidget}
-        >
-          Add Widget
-        </button>
-      </div>
-
-      <ReactGridLayout
-        className="layout"
-        layout={layouts[currentTab]}
-        cols={12}
-        rowHeight={150}
-        width={1500}
-        onLayoutChange={(newLayout) =>
-          setLayouts((prev) => ({ ...prev, [currentTab]: newLayout }))
-        }
-        draggableHandle=".drag-handle"
-        draggableCancel=".remove-button"
-        isDraggable={true}
-        isResizable={true}
+      </header>
+      <button
+        onClick={() => setIsModalOpen(true)}
+        className="flex bg-navy-btn py-1.5 px-2 rounded-lg text-white text-sm hover:bg-navy-btn_hover mb-4 justify-self-end"
       >
-        {widgets[currentTab]?.map((widget) => (
-          <div
-            key={widget.id}
-            className="flex flex-col justify-between bg-white p-5 border border-gray-200 rounded-lg shadow"
+        + 항목 추가
+      </button>
+
+      {/* 알림 메시지 표시 */}
+      {alertMessage && <Alert message={alertMessage} />}
+
+      <div className="w-full mb-2 border-b border-0.5 border-navy-border" />
+      <ul className="space-y-2">
+        {filteredTabs.map((tab, index) => (
+          <li
+            key={tab.id}
+            onClick={() => setSelectedTabIndex(index)}
+            className={`relative p-4 cursor-pointer rounded-md hover:bg-navy-hover active:bg-navy-pressed 
+              ${
+                selectedTabIndex === index
+                  ? "bg-navy-selected_bg hover:bg-navy-selected_bg"
+                  : ""
+              }`}
           >
-            <div className="flex justify-between">
-              <div className="drag-handle cursor-move text-gray-500">
-                <h2 className="text-lg font-semibold">{widget.type} Chart</h2>
+            <div className="flex justify-between items-center">
+              <div>
+                <h3 className="font-semibold">{tab.label}</h3>
+                <p className="text-sm text-gray-500">{tab.description}</p>
               </div>
-              <button
-                className="remove-button text-red-500"
-                onClick={() => removeWidget(widget.id)}
-              >
-                Remove
-              </button>
+              <div className="relative">
+                <MoreVertical
+                  className="text-text3 cursor-pointer hover:text-text2"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setMenuOpenIndex(menuOpenIndex === index ? null : index);
+                  }}
+                />
+                {menuOpenIndex === index && (
+                  <div className="absolute right-0 mt-2 w-40 bg-white shadow-lg rounded-md z-50">
+                    <button
+                      className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setEditingTabIndex(index);
+                        setIsModalOpen(true);
+                        setMenuOpenIndex(null);
+                      }}
+                    >
+                      <Edit2 className="w-4 h-4 mr-2" /> 수정
+                    </button>
+                    <button
+                      className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (window.confirm("이 탭을 삭제하시겠습니까?")) {
+                          handleTabDelete(index);
+                        }
+                        setMenuOpenIndex(null);
+                      }}
+                    >
+                      <Trash2 className="w-4 h-4 mr-2" /> 삭제
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
-            <CustomPlotlyChart
-              data={widget.data}
-              layout={widget.layout}
-              config={widget.config}
-            />
-          </div>
+          </li>
         ))}
-      </ReactGridLayout>
+      </ul>
+
+      <AddTabModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onAddTab={handleTabAdd}
+        initialTabName={
+          editingTabIndex !== null ? tabs[editingTabIndex].label : ""
+        }
+        initialTabDescription={
+          editingTabIndex !== null ? tabs[editingTabIndex].description : ""
+        }
+        onEditTab={handleTabEdit}
+        editingIndex={editingTabIndex}
+      />
     </div>
   );
 };
 
-export default Dashboard2;
+export default Dashboard2Page;
