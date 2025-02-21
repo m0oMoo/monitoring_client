@@ -5,7 +5,7 @@ import Header from "./header";
 import LeftMenu from "./leftMenu";
 
 const Layout = ({ children }: { children: ReactNode }) => {
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState<boolean>(true);
 
   return (
     <div className="flex flex-col h-screen">
@@ -21,7 +21,6 @@ const Layout = ({ children }: { children: ReactNode }) => {
         <LeftMenu />
       </div>
 
-      {/* Main Content (메뉴가 열리면 오른쪽으로 밀리도록 설정) */}
       <main
         className={`flex-1 transition-all duration-500 ${
           menuOpen ? "ml-60" : "ml-0"
