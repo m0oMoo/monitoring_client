@@ -1,19 +1,23 @@
 import React, { useState, useEffect } from "react";
 import { SketchPicker } from "react-color";
-import { FaPalette } from "react-icons/fa";
-import Checkbox from "@/app/components/checkbox/checkbox";
 import TextInput from "@/app/components/input/textInput";
 import NumberInput from "@/app/components/input/numberInput";
 import ChartTypeSelector from "@/app/components/selector/chartTypeSelector";
 import SquareToggleBtnGroup from "@/app/components/button/toggle/squareBtnGroup";
 import ToggleSwitch from "@/app/components/button/toggle/toggleSwitch";
+import { useChartOptions } from "@/app/context/chartOptionContext";
 
 const OptionPanel = () => {
+  const {
+    chartType,
+    showLegend,
+    legendPosition,
+    legendColor,
+    titleText,
+    setOptions,
+  } = useChartOptions();
+
   const [isClient, setIsClient] = useState<boolean>(false);
-  const [showLegend, setShowLegend] = useState<boolean>(true);
-  const [legendPosition, setLegendPosition] = useState<string>("top");
-  const [legendColor, setLegendColor] = useState<string>("#000000");
-  const [titleText, setTitleText] = useState<string>("Chart Title");
   const [tooltipBgColor, setTooltipBgColor] = useState<string>("#ffffff");
   const [tooltipMode, setTooltipMode] = useState<string>("index");
   const [xGridDisplay, setXGridDisplay] = useState<boolean>(true);
@@ -31,9 +35,6 @@ const OptionPanel = () => {
   const [zoomSensitivity, setZoomSensitivity] = useState<number>(1.0);
   const [isPickerVisible, setIsPickerVisible] = useState<boolean>(false);
   const [isPickerVisible2, setIsPickerVisible2] = useState<boolean>(false);
-  const [chartType, setChartType] = useState<
-    "bar" | "line" | "pie" | "doughnut"
-  >("bar");
 
   // 임시 색상 상태를 각각 범례와 툴팁에 대해 따로 설정
   const [tempLegendColor, setTempLegendColor] = useState<string>(legendColor);
@@ -53,7 +54,7 @@ const OptionPanel = () => {
   };
 
   const confirmLegendColorChange = () => {
-    setLegendColor(tempLegendColor);
+    setOptions({ legendColor: tempLegendColor }); // 전역 상태 업데이트
     setIsPickerVisible(false); // 색상 선택 후 Picker 닫기
   };
 
@@ -70,10 +71,6 @@ const OptionPanel = () => {
     setIsPickerVisible2((prevState) => !prevState);
   };
 
-  const handleLegendChange = (checked: boolean) => {
-    setShowLegend(checked);
-  };
-
   return (
     <div className="bg-ivory-bg_sub border-l border-0.5 no-scrollbar border-navy-border pt-[44px] pl-6 w-[300px] h-[100vh] overflow-y-auto">
       {isClient && (
@@ -87,7 +84,8 @@ const OptionPanel = () => {
               <label className="text-sm2 text-text2">차트 유형</label>
               <ChartTypeSelector
                 chartType={chartType}
-                setChartType={setChartType}
+                // setChartType={setChartType}
+                setChartType={(type) => setOptions({ chartType: type })}
               />
             </div>
 
@@ -96,7 +94,8 @@ const OptionPanel = () => {
               <label className="text-sm2 text-text2">범례 표시</label>
               <ToggleSwitch
                 checked={showLegend}
-                onChange={handleLegendChange}
+                // onChange={handleLegendChange}
+                onChange={(checked) => setOptions({ showLegend: checked })}
               />
             </div>
 
@@ -107,7 +106,10 @@ const OptionPanel = () => {
                 label="범례 위치"
                 options={["top", "bottom", "right"]}
                 selected={legendPosition}
-                onChange={setLegendPosition}
+                // onChange={setLegendPosition}
+                onChange={(position) =>
+                  setOptions({ legendPosition: position })
+                }
               />
             </div>
 
@@ -117,7 +119,7 @@ const OptionPanel = () => {
               <div className="flex items-center">
                 <TextInput
                   value={legendColor}
-                  onChange={(value) => setLegendColor(value)}
+                  onChange={handleLegendColorChange}
                   placeholder="색상 코드 입력"
                   className="w-[200px]"
                 />
@@ -139,7 +141,8 @@ const OptionPanel = () => {
               <label className="text-sm2 text-text2">차트 제목</label>
               <TextInput
                 value={titleText}
-                onChange={(value) => setTitleText(value)}
+                // onChange={(value) => setTitleText(value)}
+                onChange={(value) => setOptions({ titleText: value })}
                 placeholder="차트 제목"
                 className="w-[200px]"
               />
