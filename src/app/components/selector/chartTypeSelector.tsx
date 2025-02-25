@@ -20,7 +20,7 @@ const ChartTypeSelector: React.FC<ChartTypeSelectorProps> = ({
             chartType === "pie"
               ? "bg-navy-btn text-hover"
               : "bg-ivory-bg_primary_secondary hover:bg-navy-hover active:bg-navy-pressed"
-          } rounded-xl`}
+          } rounded-xl transition duration-300`}
         >
           <PieChart size={24} />
         </button>
@@ -30,7 +30,7 @@ const ChartTypeSelector: React.FC<ChartTypeSelectorProps> = ({
             chartType === "bar"
               ? "bg-navy-btn text-hover"
               : "bg-ivory-bg_primary_secondary hover:bg-navy-hover active:bg-navy-pressed"
-          } rounded-xl`}
+          } rounded-xl transition duration-300`}
         >
           <BarChart size={24} />
         </button>
@@ -40,7 +40,7 @@ const ChartTypeSelector: React.FC<ChartTypeSelectorProps> = ({
             chartType === "line"
               ? "bg-navy-btn text-hover"
               : "bg-ivory-bg_primary_secondary hover:bg-navy-hover active:bg-navy-pressed"
-          } rounded-xl`}
+          } rounded-xl transition duration-300`}
         >
           <LineChart size={24} />
         </button>
@@ -50,7 +50,7 @@ const ChartTypeSelector: React.FC<ChartTypeSelectorProps> = ({
             chartType === "doughnut"
               ? "bg-navy-btn text-hover"
               : "bg-ivory-bg_primary_secondary hover:bg-navy-hover active:bg-navy-pressed"
-          } rounded-xl`}
+          } rounded-xl transition duration-300`}
         >
           <Circle size={24} />
         </button>
