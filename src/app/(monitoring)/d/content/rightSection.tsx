@@ -4,7 +4,7 @@ import OptionPanel from "./optionPannel";
 
 const RightSection = () => {
   const [activeTab, setActiveTab] = useState<"optionPanel" | "dataBinding">(
-    "dataBinding"
+    "optionPanel"
   );
 
   return (
