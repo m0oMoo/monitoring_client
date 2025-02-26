@@ -19,6 +19,7 @@
     "@types/react-plotly.js": "^2.6.3",
     "@types/uuid": "^10.0.0",
     "chart.js": "^4.4.7",
+    "chartjs-plugin-zoom": "^2.2.0",
     "cors": "^2.8.5",
     "d3": "^7.9.0",
     "d3-transition": "^3.0.1",
