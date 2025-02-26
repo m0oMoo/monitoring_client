@@ -4,6 +4,8 @@ import TimeRangePicker from "@/app/components/picker/timeRangePicker";
 import { useChartOptions } from "@/app/context/chartOptionContext";
 import { Chart } from "chart.js/auto";
 import zoomPlugin from "chartjs-plugin-zoom";
+import TimeRangeBar from "@/app/components/bar/timeRangeBar";
+import AddChartBar from "@/app/components/bar/addChartBar";
 
 Chart.register(zoomPlugin);
 
@@ -36,6 +38,17 @@ const ChartSection = () => {
   const [to, setTo] = useState<string | null>(null);
   const [refreshTime, setRefreshTime] = useState<number | "autoType">(10);
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
+
+  // 🔹 날짜 변경 핸들러
+  const handleTimeChange = (type: "from" | "to", value: string) => {
+    if (type === "from") setFrom(value);
+    if (type === "to") setTo(value);
+  };
+
+  // 🔹 새로고침 시간 변경 핸들러
+  const handleRefreshChange = (value: number | "autoType") => {
+    setRefreshTime(value);
+  };
 
   useEffect(() => {
     const now = new Date();
@@ -104,17 +117,17 @@ const ChartSection = () => {
       x: {
         grid: {
           display: xGridDisplay,
-          drawOnChartArea: showCrosshair,
-          drawTicks: showCrosshair,
-          color: showCrosshair ? crosshairColor : "transparent",
+          // drawOnChartArea: showCrosshair,
+          // drawTicks: showCrosshair,
+          // color: showCrosshair ? crosshairColor : "transparent",
         },
       },
       y: {
         grid: {
           display: yGridDisplay,
-          drawOnChartArea: showCrosshair,
-          drawTicks: showCrosshair,
-          color: showCrosshair ? crosshairColor : "transparent",
+          // drawOnChartArea: showCrosshair,
+          // drawTicks: showCrosshair,
+          // color: showCrosshair ? crosshairColor : "transparent",
         },
       },
     },
@@ -144,45 +157,16 @@ const ChartSection = () => {
   return (
     <div className="overflow-auto mr-[300px]">
       {/* Time Range & Refresh Control */}
-      <div
-        className="flex items-center mt-[44px] justify-between bg-transparent
-        border-b border-navy-border border-0.5 mb-4"
-      >
-        <div className="pl-4">
-          <TimeRangePicker
-            from={from}
-            to={to}
-            onChange={(type, value) => {
-              if (type === "from") setFrom(value);
-              if (type === "to") setTo(value);
-            }}
-          />
-        </div>
-        <div className="flex items-center p-4 gap-2">
-          <div className="flex flex-row">
-            <p className="text-sm2 mr-1">Last Update : </p>
-            <p className="text-sm mr-3">{lastUpdated}</p>
-          </div>
-          <label className="text-sm_bold">Refresh:</label>
-          <select
-            value={refreshTime}
-            onChange={(e) =>
-              setRefreshTime(
-                e.target.value === "autoType"
-                  ? "autoType"
-                  : Number(e.target.value)
-              )
-            }
-            className="border py-1 px-2 rounded text-sm1"
-          >
-            <option value="autoType">Auto</option>
-            <option value={5}>5s</option>
-            <option value={10}>10s</option>
-            <option value={15}>15s</option>
-            <option value={30}>30s</option>
-          </select>
-        </div>
-      </div>
+      <AddChartBar isEdit={true} />
+      <TimeRangeBar
+        from={from}
+        to={to}
+        lastUpdated={lastUpdated}
+        refreshTime={refreshTime}
+        onChange={handleTimeChange}
+        onRefreshChange={handleRefreshChange}
+        className="mt-[44psx]"
+      />
 
       <div className="px-4">
         {/* Chart Widget */}
