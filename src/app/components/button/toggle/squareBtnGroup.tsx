@@ -1,9 +1,7 @@
-import React from "react";
-
-interface ToggleButtonGroupProps {
-  options: string[];
-  selected: string;
-  onChange: (value: string) => void;
+interface ToggleButtonGroupProps<T extends string> {
+  options: T[];
+  selected: T;
+  onChange: (value: T) => void;
   label: string;
 }
 
@@ -15,12 +13,12 @@ interface ToggleButtonGroupProps {
  * @param label 그룹의 레이블
  * @returns
  */
-const SquareToggleBtnGroup: React.FC<ToggleButtonGroupProps> = ({
+const SquareToggleBtnGroup = <T extends string>({
   options,
   selected,
   onChange,
   label,
-}) => {
+}: ToggleButtonGroupProps<T>) => {
   return (
     <div className="text-sm1">
       <div className="flex">
