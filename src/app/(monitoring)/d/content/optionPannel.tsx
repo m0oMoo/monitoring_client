@@ -236,16 +236,6 @@ const OptionPanel = () => {
                 onChange={(mode) => setOptions({ tooltipMode: mode })}
               />
             </div>
-            {/* Show Gridline on Hover */}
-            {/* <div className="flex flex-col gap-1 mb-6">
-              <label className="text-sm2 text-text2">호버 시 그리드 표시</label>
-              <ToggleSwitch
-                checked={showGridlineOnHover}
-                onChange={(checked) =>
-                  setOptions({ showGridlineOnHover: checked })
-                }
-              />
-            </div> */}
             {/* Hover mode */}
             <div className="flex flex-col gap-1 mb-6">
               <label className="text-sm2 text-text2">호버 모드</label>
@@ -270,7 +260,7 @@ const OptionPanel = () => {
             </div>
             {/* Show Crosshair */}
             <div className="flex flex-col gap-1 mb-6">
-              <label className="text-sm2 text-text2">크로스헤어 표시</label>
+              <label className="text-sm2 text-text2">포인트 표시</label>
               <ToggleSwitch
                 checked={showCrosshair}
                 onChange={(checked) => setOptions({ showCrosshair: checked })}
@@ -278,7 +268,7 @@ const OptionPanel = () => {
             </div>
             {/* Crosshair Color */}
             <div className="flex flex-col gap-1 mb-6">
-              <label className="text-sm2 text-text2">크로스헤어 색상</label>
+              <label className="text-sm2 text-text2">포인트 색상</label>
               <div className="flex items-center">
                 <TextInput
                   value={crosshairColor}
@@ -304,8 +294,8 @@ const OptionPanel = () => {
               <SliderToggle
                 value={radius}
                 onChange={(value) => setOptions({ radius: value })}
-                enabled={true}
-                onToggle={() => {}}
+                enabled={showCrosshair}
+                onToggle={(enabled) => setOptions({ showCrosshair: enabled })}
                 className="w-[200px]"
               />
             </div>
@@ -315,22 +305,11 @@ const OptionPanel = () => {
               <SliderToggle
                 value={crosshairWidth}
                 onChange={(value) => setOptions({ crosshairWidth: value })}
-                enabled={showCrosshair}
-                onToggle={(enabled) => setOptions({ showCrosshair: enabled })}
+                enabled={true}
+                onToggle={() => {}}
                 className="w-[200px]"
               />
             </div>
-
-            {/* Crosshair Opacity */}
-            {/* <div className="flex flex-col gap-1 mb-6">
-              <label className="text-sm2 text-text2">크로스헤어 투명도</label>
-              <SliderToggle
-                value={crosshairOpacity}
-                onChange={(value) => setOptions({ crosshairOpacity: value })}
-                enabled={enableZoom}
-                onToggle={(enabled) => setOptions({ enableZoom: enabled })}
-              />
-            </div> */}
 
             {/* Grid Display */}
             <div className="flex flex-col gap-1 mb-6">
@@ -367,19 +346,6 @@ const OptionPanel = () => {
                 onChange={(mode) => setOptions({ zoomMode: mode })}
               />
             </div>
-
-            {/* Zoom sensitivity */}
-            {/* <div className="flex flex-col gap-1 mb-6">
-              <label className="text-sm2 text-text2">줌 민감도</label>
-              <NumberInput
-                value={zoomSensitivity.toString()}
-                onChange={(value) =>
-                  setOptions({ zoomSensitivity: Number(value) })
-                }
-                placeholder="줌 민감도"
-                className="w-[200px]"
-              />
-            </div> */}
             <div className="flex flex-col gap-1 mb-6">
               <label className="text-sm2 text-text2">줌 민감도</label>
               <SliderToggle
