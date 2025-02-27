@@ -73,7 +73,7 @@ const OptionPanel = () => {
   };
 
   const confirmTooltipColorChange = () => {
-    setOptions({ tooltipBgColor: tempLegendColor });
+    setOptions({ tooltipBgColor: tempTooltipColor });
     setIsPickerVisible2(false);
   };
 
