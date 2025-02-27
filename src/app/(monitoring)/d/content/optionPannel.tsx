@@ -1,65 +1,90 @@
 import React, { useState, useEffect } from "react";
 import { SketchPicker } from "react-color";
-import { FaPalette } from "react-icons/fa";
-import Checkbox from "@/app/components/checkbox/checkbox";
 import TextInput from "@/app/components/input/textInput";
 import NumberInput from "@/app/components/input/numberInput";
 import ChartTypeSelector from "@/app/components/selector/chartTypeSelector";
 import SquareToggleBtnGroup from "@/app/components/button/toggle/squareBtnGroup";
 import ToggleSwitch from "@/app/components/button/toggle/toggleSwitch";
+import { useChartOptions } from "@/app/context/chartOptionContext";
+import SliderToggle from "@/app/components/slider/sliderToggle";
 
 const OptionPanel = () => {
+  const {
+    chartType,
+    showLegend,
+    legendPosition,
+    legendColor,
+    titleText,
+    backgroundColor,
+    tooltipBgColor,
+    tooltipMode,
+    hoverMode,
+    zoomMode,
+    zoomSensitivity,
+    crosshairColor,
+    crosshairWidth,
+    crosshairOpacity,
+    xGridDisplay,
+    yGridDisplay,
+    showCrosshair,
+    enableZoom,
+    radius,
+    tension,
+    setOptions,
+  } = useChartOptions();
+
   const [isClient, setIsClient] = useState<boolean>(false);
-  const [showLegend, setShowLegend] = useState<boolean>(true);
-  const [legendPosition, setLegendPosition] = useState<string>("top");
-  const [legendColor, setLegendColor] = useState<string>("#000000");
-  const [titleText, setTitleText] = useState<string>("Chart Title");
-  const [tooltipBgColor, setTooltipBgColor] = useState<string>("#ffffff");
-  const [tooltipMode, setTooltipMode] = useState<string>("index");
-  const [xGridDisplay, setXGridDisplay] = useState<boolean>(true);
-  const [ySuggestedMin, setYSuggestedMin] = useState<number>(0);
-  const [ySuggestedMax, setYSuggestedMax] = useState<number>(100);
-  const [hoverMode, setHoverMode] = useState<string>("index");
-  const [showCrosshair, setShowCrosshair] = useState<boolean>(true);
-  const [crosshairColor, setCrosshairColor] = useState<string>("#ff0000");
-  const [crosshairWidth, setCrosshairWidth] = useState<number>(1);
-  const [crosshairDash, setCrosshairDash] = useState<string>("solid");
-  const [crosshairOpacity, setCrosshairOpacity] = useState<number>(1);
-  const [showGridlineOnHover, setShowGridlineOnHover] = useState<boolean>(true);
-  const [enableZoom, setEnableZoom] = useState<boolean>(true);
-  const [zoomMode, setZoomMode] = useState<string>("xy");
-  const [zoomSensitivity, setZoomSensitivity] = useState<number>(1.0);
   const [isPickerVisible, setIsPickerVisible] = useState<boolean>(false);
   const [isPickerVisible2, setIsPickerVisible2] = useState<boolean>(false);
-  const [chartType, setChartType] = useState<
-    "bar" | "line" | "pie" | "doughnut"
-  >("bar");
+  const [isPickerVisible3, setIsPickerVisible3] = useState<boolean>(false);
+  const [isPickerVisible4, setIsPickerVisible4] = useState<boolean>(false);
 
-  // 임시 색상 상태를 각각 범례와 툴팁에 대해 따로 설정
   const [tempLegendColor, setTempLegendColor] = useState<string>(legendColor);
   const [tempTooltipColor, setTempTooltipColor] =
     useState<string>(tooltipBgColor);
+  const [tempBackgroundColor, setTempBackgroundColor] =
+    useState<string>(backgroundColor);
+  const [tempCrosshairColor, setTempCrosshairColor] =
+    useState<string>(crosshairColor);
 
   useEffect(() => {
     setIsClient(true);
   }, []);
 
   const handleLegendColorChange = (color: any) => {
-    setTempLegendColor(color.hex); // 임시 범례 색상값 변경
+    setTempLegendColor(color.hex);
   };
 
   const handleTooltipColorChange = (color: any) => {
-    setTempTooltipColor(color.hex); // 임시 툴팁 색상값 변경
+    setTempTooltipColor(color.hex);
+  };
+
+  const handleBackgroundColorChange = (color: any) => {
+    setTempBackgroundColor(color.hex);
+  };
+
+  const handleCrosshairColorChange = (color: any) => {
+    setTempCrosshairColor(color.hex);
   };
 
   const confirmLegendColorChange = () => {
-    setLegendColor(tempLegendColor);
-    setIsPickerVisible(false); // 색상 선택 후 Picker 닫기
+    setOptions({ legendColor: tempLegendColor });
+    setIsPickerVisible(false);
   };
 
   const confirmTooltipColorChange = () => {
-    setTooltipBgColor(tempTooltipColor);
-    setIsPickerVisible2(false); // 색상 선택 후 Picker 닫기
+    setOptions({ tooltipBgColor: tempTooltipColor });
+    setIsPickerVisible2(false);
+  };
+
+  const confirmBackgroundColorChange = () => {
+    setOptions({ backgroundColor: tempBackgroundColor });
+    setIsPickerVisible3(false);
+  };
+
+  const confirmCrosshairColorChange = () => {
+    setOptions({ backgroundColor: tempCrosshairColor });
+    setIsPickerVisible4(false);
   };
 
   const togglePickerVisibility = () => {
@@ -70,8 +95,12 @@ const OptionPanel = () => {
     setIsPickerVisible2((prevState) => !prevState);
   };
 
-  const handleLegendChange = (checked: boolean) => {
-    setShowLegend(checked);
+  const togglePickerVisibility3 = () => {
+    setIsPickerVisible3((prevState) => !prevState);
+  };
+
+  const togglePickerVisibility4 = () => {
+    setIsPickerVisible4((prevState) => !prevState);
   };
 
   return (
@@ -87,7 +116,20 @@ const OptionPanel = () => {
               <label className="text-sm2 text-text2">차트 유형</label>
               <ChartTypeSelector
                 chartType={chartType}
-                setChartType={setChartType}
+                // setChartType={setChartType}
+                setChartType={(type) => setOptions({ chartType: type })}
+              />
+            </div>
+
+            {/* Chart title */}
+            <div className="flex flex-col gap-1 mb-6">
+              <label className="text-sm2 text-text2">차트 제목</label>
+              <TextInput
+                value={titleText}
+                // onChange={(value) => setTitleText(value)}
+                onChange={(value) => setOptions({ titleText: value })}
+                placeholder="차트 제목"
+                className="w-[200px]"
               />
             </div>
 
@@ -96,7 +138,8 @@ const OptionPanel = () => {
               <label className="text-sm2 text-text2">범례 표시</label>
               <ToggleSwitch
                 checked={showLegend}
-                onChange={handleLegendChange}
+                // onChange={handleLegendChange}
+                onChange={(checked) => setOptions({ showLegend: checked })}
               />
             </div>
 
@@ -107,8 +150,34 @@ const OptionPanel = () => {
                 label="범례 위치"
                 options={["top", "bottom", "right"]}
                 selected={legendPosition}
-                onChange={setLegendPosition}
+                // onChange={setLegendPosition}
+                onChange={(position) =>
+                  setOptions({ legendPosition: position })
+                }
               />
+            </div>
+
+            {/* Background color */}
+            <div className="flex flex-col gap-1 mb-6">
+              <label className="text-sm2 text-text2">차트 색상</label>
+              <div className="flex items-center">
+                <TextInput
+                  value={backgroundColor}
+                  onChange={handleBackgroundColorChange}
+                  placeholder="색상 코드 입력"
+                  className="w-[200px]"
+                />
+                <button
+                  onClick={togglePickerVisibility3}
+                  className="p-2 rounded-full focus:outline-none"
+                >
+                  {/* 색상 미리보기 박스 */}
+                  <div
+                    style={{ backgroundColor: tempBackgroundColor }}
+                    className="w-6 h-6 border rounded-full"
+                  />
+                </button>
+              </div>
             </div>
 
             {/* Legend color */}
@@ -117,7 +186,7 @@ const OptionPanel = () => {
               <div className="flex items-center">
                 <TextInput
                   value={legendColor}
-                  onChange={(value) => setLegendColor(value)}
+                  onChange={handleLegendColorChange}
                   placeholder="색상 코드 입력"
                   className="w-[200px]"
                 />
@@ -134,24 +203,13 @@ const OptionPanel = () => {
               </div>
             </div>
 
-            {/* Chart title */}
-            <div className="flex flex-col gap-1 mb-6">
-              <label className="text-sm2 text-text2">차트 제목</label>
-              <TextInput
-                value={titleText}
-                onChange={(value) => setTitleText(value)}
-                placeholder="차트 제목"
-                className="w-[200px]"
-              />
-            </div>
-
             {/* Tooltip background color */}
             <div className="flex flex-col gap-1 mb-6">
               <label className="text-sm2 text-text2">툴팁 배경색</label>
               <div className="flex items-center">
                 <TextInput
                   value={tooltipBgColor}
-                  onChange={(value) => setTooltipBgColor(value)}
+                  onChange={(value) => setOptions({ tooltipBgColor: value })}
                   placeholder="색상 코드 입력"
                   className="w-[200px]"
                 />
@@ -175,10 +233,9 @@ const OptionPanel = () => {
                 label="툴팁 모드"
                 options={["index", "nearest"]}
                 selected={tooltipMode}
-                onChange={setTooltipMode}
+                onChange={(mode) => setOptions({ tooltipMode: mode })}
               />
             </div>
-
             {/* Hover mode */}
             <div className="flex flex-col gap-1 mb-6">
               <label className="text-sm2 text-text2">호버 모드</label>
@@ -186,7 +243,96 @@ const OptionPanel = () => {
                 label="호버 모드"
                 options={["index", "nearest"]}
                 selected={hoverMode}
-                onChange={setHoverMode}
+                onChange={(mode) => setOptions({ hoverMode: mode })}
+              />
+            </div>
+            {/* tension */}
+            <div className="flex flex-col gap-1 mb-6">
+              <label className="text-sm2 text-text2">곡률</label>
+              <SliderToggle
+                value={tension}
+                onChange={(value) => setOptions({ tension: value })}
+                enabled={chartType === "line"}
+                onToggle={() => {}}
+                className="w-[200px]"
+                max={1}
+              />
+            </div>
+            {/* Show Crosshair */}
+            <div className="flex flex-col gap-1 mb-6">
+              <label className="text-sm2 text-text2">포인트 표시</label>
+              <ToggleSwitch
+                checked={showCrosshair}
+                onChange={(checked) => setOptions({ showCrosshair: checked })}
+              />
+            </div>
+            {/* Crosshair Color */}
+            <div className="flex flex-col gap-1 mb-6">
+              <label className="text-sm2 text-text2">포인트 색상</label>
+              <div className="flex items-center">
+                <TextInput
+                  value={crosshairColor}
+                  onChange={(color) => setOptions({ crosshairColor: color })}
+                  placeholder="색상 코드 입력"
+                  className="w-[200px]"
+                />
+                <button
+                  onClick={togglePickerVisibility4}
+                  className="p-2 rounded-full focus:outline-none"
+                >
+                  {/* 색상 미리보기 박스 */}
+                  <div
+                    style={{ backgroundColor: tempCrosshairColor }}
+                    className="w-6 h-6 border rounded-full"
+                  />
+                </button>
+              </div>
+            </div>
+            {/* dot */}
+            <div className="flex flex-col gap-1 mb-6">
+              <label className="text-sm2 text-text2">포인트 크기</label>
+              <SliderToggle
+                value={radius}
+                onChange={(value) => setOptions({ radius: value })}
+                enabled={showCrosshair}
+                onToggle={(enabled) => setOptions({ showCrosshair: enabled })}
+                className="w-[200px]"
+              />
+            </div>
+            {/* Crosshair Width */}
+            <div className="flex flex-col gap-1 mb-6">
+              <label className="text-sm2 text-text2">크로스헤어 두께</label>
+              <SliderToggle
+                value={crosshairWidth}
+                onChange={(value) => setOptions({ crosshairWidth: value })}
+                enabled={true}
+                onToggle={() => {}}
+                className="w-[200px]"
+              />
+            </div>
+
+            {/* Grid Display */}
+            <div className="flex flex-col gap-1 mb-6">
+              <label className="text-sm2 text-text2">x축 표시</label>
+              <ToggleSwitch
+                checked={xGridDisplay}
+                onChange={(checked) => setOptions({ xGridDisplay: checked })}
+              />
+            </div>
+            <div className="flex flex-col gap-1 mb-6">
+              <label className="text-sm2 text-text2">y축 표시</label>
+              <ToggleSwitch
+                checked={yGridDisplay}
+                onChange={(checked) => setOptions({ yGridDisplay: checked })}
+              />
+            </div>
+
+            {/* Enable Zoom */}
+            <div className="flex flex-col gap-1 mb-6">
+              <label className="text-sm2 text-text2">줌 활성화</label>
+              <ToggleSwitch
+                checked={enableZoom}
+                onChange={(checked) => setOptions({ enableZoom: checked })}
               />
             </div>
 
@@ -197,17 +343,16 @@ const OptionPanel = () => {
                 label="줌 모드"
                 options={["xy", "x", "y"]}
                 selected={zoomMode}
-                onChange={setZoomMode}
+                onChange={(mode) => setOptions({ zoomMode: mode })}
               />
             </div>
-
-            {/* Zoom sensitivity */}
             <div className="flex flex-col gap-1 mb-6">
               <label className="text-sm2 text-text2">줌 민감도</label>
-              <NumberInput
-                value={zoomSensitivity.toString()}
-                onChange={(value) => setZoomSensitivity(Number(value))}
-                placeholder="줌 민감도"
+              <SliderToggle
+                value={zoomSensitivity}
+                onChange={(value) => setOptions({ zoomSensitivity: value })}
+                enabled={enableZoom}
+                onToggle={(enabled) => setOptions({ enableZoom: enabled })}
                 className="w-[200px]"
               />
             </div>
@@ -236,6 +381,34 @@ const OptionPanel = () => {
               <button
                 className="mt-2 float-right px-3 py-1 shadow-md bg-white border border-gray-2 rounded text-md1"
                 onClick={confirmTooltipColorChange}
+              >
+                확인
+              </button>
+            </div>
+          )}
+          {isPickerVisible3 && (
+            <div className="absolute z-10">
+              <SketchPicker
+                color={tempBackgroundColor}
+                onChange={handleBackgroundColorChange}
+              />
+              <button
+                className="mt-2 float-right px-3 py-1 shadow-md bg-white border border-gray-2 rounded text-md1"
+                onClick={confirmBackgroundColorChange}
+              >
+                확인
+              </button>
+            </div>
+          )}
+          {isPickerVisible4 && (
+            <div className="absolute z-10">
+              <SketchPicker
+                color={tempCrosshairColor}
+                onChange={handleCrosshairColorChange}
+              />
+              <button
+                className="mt-2 float-right px-3 py-1 shadow-md bg-white border border-gray-2 rounded text-md1"
+                onClick={confirmCrosshairColorChange}
               >
                 확인
               </button>
