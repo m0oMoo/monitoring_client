@@ -1,11 +1,24 @@
 import React, { createContext, useContext, useState } from "react";
 
+export type Dataset = {
+  label: string;
+  data: number[];
+  borderColor: string;
+  backgroundColor: string;
+  tension?: number;
+  radius?: number;
+};
+
 type ChartOptions = {
   chartType: "bar" | "line" | "pie" | "doughnut";
   showLegend: boolean;
   legendPosition: "top" | "bottom" | "left" | "right";
   legendColor: string;
+  isSingleColorMode: boolean;
+  borderColor: string;
   backgroundColor: string;
+  borderColors: string[];
+  backgroundColors: string[];
   titleText: string;
   tooltipBgColor: string;
   tooltipMode: "index" | "nearest";
@@ -21,38 +34,62 @@ type ChartOptions = {
   enableZoom: boolean;
   radius: number;
   tension: number;
+  // datasets: Dataset[];
   setOptions: (options: Partial<ChartOptions>) => void;
 };
 
 const ChartOptionsContext = createContext<ChartOptions | undefined>(undefined);
-
 export const ChartOptionsProvider = ({
   children,
 }: {
   children: React.ReactNode;
 }) => {
   const [options, setOptionsState] = useState<ChartOptions>({
-    chartType: "line", // 기본 차트 유형
-    showLegend: true, // 범례 표시 여부
-    legendPosition: "top", // 기본 범례 위치
-    legendColor: "#000000", // 범례 색상
-    backgroundColor: "#8296ad", // 백그라운드 색상
-    titleText: "Chart Title", // 기본 제목
-    tooltipBgColor: "#4B4B4B", // 툴팁 배경색 (기본 흰색)
-    tooltipMode: "index", // 툴팁 모드
-    hoverMode: "index", // 호버 모드
-    zoomMode: "xy", // 줌 모드 (x, y축 둘 다)
-    zoomSensitivity: 1.0, // 줌 민감도 기본값
-    crosshairColor: "#A0A0A0", // 크로스헤어 색상 (빨강)
-    crosshairWidth: 1, // 크로스헤어 두께 (기본 1px)
-    crosshairOpacity: 1, // 크로스헤어 투명도 (1 = 불투명)
-    xGridDisplay: true, // X축 그리드 라인 표시 여부
-    yGridDisplay: true, // Y축 그리드 라인 표시 여부
-    showCrosshair: true, // 크로스헤어 표시 여부
-    enableZoom: true, // 줌 기능 활성화 여부
-    radius: 3, // 도트 크기
-    tension: 0.3, // 곡률 (line에서만 적용)
-    setOptions: () => {}, // 이후 setOptions 함수가 설정됨
+    chartType: "line",
+    showLegend: true,
+    legendPosition: "top",
+    legendColor: "#000000",
+    isSingleColorMode: false,
+    borderColor: "rgba(220, 20, 60, 1)",
+    backgroundColor: "rgba(220, 20, 60, 0.3)",
+    borderColors: ["#ff6384", "#36a2eb", "#ffcd56", "#4bc0c0", "#9966ff"], // ✅ 기본 border 색상
+    backgroundColors: [
+      "rgba(255, 99, 132, 0.2)",
+      "rgba(54, 162, 235, 0.2)" ,
+      "rgba(255, 205, 86, 0.2)",
+      "rgba(75, 192, 192, 0.2)",
+      "rgba(153, 102, 255, 0.2)",
+    ],
+    titleText: "Chart Title",
+    tooltipBgColor: "#4B4B4B",
+    tooltipMode: "index",
+    hoverMode: "index",
+    zoomMode: "xy",
+    zoomSensitivity: 1.0,
+    crosshairColor: "#A0A0A0",
+    crosshairWidth: 1,
+    crosshairOpacity: 1,
+    xGridDisplay: true,
+    yGridDisplay: true,
+    showCrosshair: true,
+    enableZoom: true,
+    radius: 3,
+    tension: 0.3,
+    // datasets: [
+    //   {
+    //     label: "Visitors",
+    //     data: [500, 600, 700, 800, 900],
+    //     borderColor: "rgba(220, 20, 60, 1)",
+    //     backgroundColor: "rgba(220, 20, 60, 0.3)",
+    //   },
+    //   {
+    //     label: "Active Users",
+    //     data: [650, 350, 250, 700, 850],
+    //     borderColor: "rgba(54, 162, 235, 1)",
+    //     backgroundColor: "rgba(54, 162, 235, 0.3)",
+    //   },
+    // ],
+    setOptions: () => {},
   });
 
   const setOptions = (newOptions: Partial<ChartOptions>) => {
