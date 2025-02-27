@@ -55,7 +55,7 @@ export const ChartOptionsProvider = ({
     borderColors: ["#ff6384", "#36a2eb", "#ffcd56", "#4bc0c0", "#9966ff"], // ✅ 기본 border 색상
     backgroundColors: [
       "rgba(255, 99, 132, 0.2)",
-      "rgba(54, 162, 235, 0.2)" ,
+      "rgba(54, 162, 235, 0.2)",
       "rgba(255, 205, 86, 0.2)",
       "rgba(75, 192, 192, 0.2)",
       "rgba(153, 102, 255, 0.2)",
