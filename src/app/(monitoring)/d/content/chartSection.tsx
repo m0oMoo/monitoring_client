@@ -1,11 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
 import ChartWidget from "@/app/components/dashboard/chartWidget";
-import TimeRangePicker from "@/app/components/picker/timeRangePicker";
+import TimeRangeBar from "@/app/components/bar/timeRangeBar";
+import AddChartBar from "@/app/components/bar/addChartBar";
 import { useChartOptions } from "@/app/context/chartOptionContext";
 import { Chart } from "chart.js/auto";
 import zoomPlugin from "chartjs-plugin-zoom";
-import TimeRangeBar from "@/app/components/bar/timeRangeBar";
-import AddChartBar from "@/app/components/bar/addChartBar";
 
 Chart.register(zoomPlugin);
 
@@ -17,27 +16,34 @@ const ChartSection = () => {
     legendPosition,
     legendColor,
     tooltipBgColor,
+    isSingleColorMode,
+    borderColor,
     backgroundColor,
+    borderColors,
+    backgroundColors,
     hoverMode,
     zoomMode,
     zoomSensitivity,
     xGridDisplay,
     yGridDisplay,
     showCrosshair,
-    crosshairColor,
     crosshairWidth,
-    crosshairOpacity,
     enableZoom,
     radius,
     tension,
   } = useChartOptions();
 
   const chartRef = useRef<Chart | null>(null);
-
   const [from, setFrom] = useState<string | null>(null);
   const [to, setTo] = useState<string | null>(null);
   const [refreshTime, setRefreshTime] = useState<number | "autoType">(10);
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
+
+  // ✅ `datasets`을 상태로 관리
+  const [datasets, setDatasets] = useState([
+    { label: "Visitors", data: [500, 600, 700, 800, 900] },
+    { label: "Active Users", data: [650, 350, 250, 700, 850] },
+  ]);
 
   // 🔹 날짜 변경 핸들러
   const handleTimeChange = (type: "from" | "to", value: string) => {
@@ -67,21 +73,23 @@ const ChartSection = () => {
     }
   }, [refreshTime]);
 
-  // 차트 데이터
+  // ✅ 차트 데이터
   const chartData = {
-    labels: ["Jan", "Feb", "Mar", "Apr", "May"],
-    datasets: [
-      {
-        label: "Sales",
-        data: [30, 50, 70, 40, 90],
-        backgroundColor: backgroundColor,
-        borderColor: crosshairColor,
-        borderWidth: crosshairWidth,
-      },
-    ],
+    labels: ["Mon", "Tue", "Wed", "Thu", "Fri"],
+    datasets: datasets.map((dataset, index) => ({
+      ...dataset,
+      borderColor: isSingleColorMode
+        ? borderColor
+        : borderColors[index % borderColors.length],
+      backgroundColor: isSingleColorMode
+        ? backgroundColor
+        : backgroundColors[index % backgroundColors.length],
+      borderWidth: crosshairWidth,
+      fill: true,
+    })),
   };
 
-  // 차트 옵션 (useChartOptions 값 적용)
+  // ✅ 차트 옵션
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
@@ -89,68 +97,31 @@ const ChartSection = () => {
       legend: {
         display: showLegend,
         position: legendPosition,
-        labels: {
-          color: legendColor,
-        },
+        labels: { color: legendColor },
       },
-      tooltip: {
-        backgroundColor: tooltipBgColor,
-      },
+      tooltip: { backgroundColor: tooltipBgColor },
       zoom: {
-        pan: {
-          enabled: enableZoom, // 차트 이동 활성화
-          mode: zoomMode,
-        },
+        pan: { enabled: enableZoom, mode: zoomMode },
         zoom: {
-          wheel: { enabled: enableZoom }, // 마우스 휠 줌
-          pinch: { enabled: enableZoom }, // 모바일 핀치 줌
-          mode: zoomMode, // 줌 모드 (xy, x, y)
+          wheel: { enabled: enableZoom },
+          pinch: { enabled: enableZoom },
+          mode: zoomMode,
           speed: zoomSensitivity,
-          limits: {
-            x: { min: "original", max: "original" }, // X축 원래 값 유지
-            y: { min: "original", max: "original" }, // Y축 원래 값 유지
-          },
         },
       },
     },
     scales: {
-      x: {
-        grid: {
-          display: xGridDisplay,
-          // drawOnChartArea: showCrosshair,
-          // drawTicks: showCrosshair,
-          // color: showCrosshair ? crosshairColor : "transparent",
-        },
-      },
-      y: {
-        grid: {
-          display: yGridDisplay,
-          // drawOnChartArea: showCrosshair,
-          // drawTicks: showCrosshair,
-          // color: showCrosshair ? crosshairColor : "transparent",
-        },
-      },
+      x: { grid: { display: xGridDisplay } },
+      y: { grid: { display: yGridDisplay } },
     },
-    interaction: {
-      mode: hoverMode,
-      intersect: false,
-    },
-    hover: {
-      mode: hoverMode,
-      intersect: false,
-    },
+    interaction: { mode: hoverMode, intersect: false },
+    hover: { mode: hoverMode, intersect: false },
     elements: {
       point: {
         radius: showCrosshair ? radius : 0,
-        backgroundColor: `rgba(${parseInt(crosshairColor.slice(1, 3), 16)}, 
-                              ${parseInt(crosshairColor.slice(3, 5), 16)}, 
-                              ${parseInt(crosshairColor.slice(5, 7), 16)}, 
-                              ${crosshairOpacity})`,
         borderWidth: crosshairWidth,
       },
-      line: {
-        tension: tension,
-      },
+      line: { tension },
     },
   };
 
@@ -169,7 +140,7 @@ const ChartSection = () => {
       />
 
       <div className="px-4">
-        {/* Chart Widget */}
+        {/* ✅ Chart Widget */}
         <div className="border rounded-lg bg-white p-6 shadow-md h-[400px] flex flex-col">
           <h2 className="text-lg font-semibold mb-2">{titleText}</h2>
           <div className="flex-1">
