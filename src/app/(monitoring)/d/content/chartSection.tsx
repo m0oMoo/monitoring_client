@@ -40,6 +40,7 @@ const ChartSection = () => {
   const id = useSearchParams();
   const dashboardId = id.get("id") || "1";
   console.log(dashboardId);
+  const chartId = id.get("chartId") || undefined;
 
   const { setChartData } = useChartStore();
 
@@ -179,8 +180,16 @@ const ChartSection = () => {
     },
   };
 
+  // ✅ 차트 데이터 저장 또는 업데이트
   const handleCreateClick = () => {
-    setChartData(dashboardId, chartData, chartOptions, chartType, titleText);
+    setChartData(
+      dashboardId,
+      chartData,
+      chartOptions,
+      chartType,
+      titleText,
+      chartId
+    );
     router.push(`/detail?id=${dashboardId}`);
   };
 
@@ -195,7 +204,6 @@ const ChartSection = () => {
         refreshTime={refreshTime}
         onChange={handleTimeChange}
         onRefreshChange={handleRefreshChange}
-        className="mt-[44psx]"
       />
 
       <div className="px-4">
