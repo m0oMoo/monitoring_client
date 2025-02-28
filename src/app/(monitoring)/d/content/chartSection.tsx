@@ -5,7 +5,8 @@ import AddChartBar from "@/app/components/bar/addChartBar";
 import { useChartOptions } from "@/app/context/chartOptionContext";
 import { Chart } from "chart.js/auto";
 import zoomPlugin from "chartjs-plugin-zoom";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useChartStore } from "@/app/store/useChartStore";
 
 Chart.register(zoomPlugin);
 
@@ -35,9 +36,12 @@ const ChartSection = () => {
     tension,
   } = useChartOptions();
 
+  const router = useRouter();
   const id = useSearchParams();
-  const dashboardId = id.get("id");
+  const dashboardId = id.get("id") || "1";
   console.log(dashboardId);
+
+  const { setChartData } = useChartStore();
 
   const chartRef = useRef<Chart | null>(null);
   const [from, setFrom] = useState<string | null>(null);
@@ -175,10 +179,15 @@ const ChartSection = () => {
     },
   };
 
+  const handleCreateClick = () => {
+    setChartData(dashboardId, chartData, chartOptions, chartType, titleText);
+    router.push(`/detail?id=${dashboardId}`);
+  };
+
   return (
     <div className="overflow-auto mr-[300px]">
       {/* Time Range & Refresh Control */}
-      <AddChartBar isEdit={true} />
+      <AddChartBar isEdit={true} onCreateClick={handleCreateClick} />
       <TimeRangeBar
         from={from}
         to={to}
