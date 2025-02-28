@@ -34,6 +34,7 @@ const ChartSection = () => {
     enableZoom,
     radius,
     tension,
+    setOptions,
   } = useChartOptions();
 
   const router = useRouter();
@@ -42,7 +43,10 @@ const ChartSection = () => {
   console.log(dashboardId);
   const chartId = id.get("chartId") || undefined;
 
-  const { setChartData } = useChartStore();
+  const { charts, setChartData } = useChartStore();
+  const existingChart = chartId
+    ? charts[dashboardId]?.find((chart) => chart.chartId === chartId)
+    : null;
 
   const chartRef = useRef<Chart | null>(null);
   const [from, setFrom] = useState<string | null>(null);
@@ -55,6 +59,17 @@ const ChartSection = () => {
     { label: "Visitors", data: [500, 600, 700, 800, 900] },
     { label: "Active Users", data: [650, 350, 250, 700, 850] },
   ]);
+
+  useEffect(() => {
+    if (!existingChart || !existingChart.chartData) return;
+
+    setOptions(existingChart.chartOptions); // ✅ 기존 상태를 유지하면서 불러오기
+
+    console.log("111", existingChart.chartOptions);
+    console.log("222", chartOptions);
+
+    console.log("🛠 Context 업데이트 완료!");
+  }, [existingChart, charts]); // ✅ charts 상태 변경 감지하여 실행
 
   useEffect(() => {
     // 대시보드 ID에 따른 datasets 설정
@@ -145,6 +160,7 @@ const ChartSection = () => {
 
   // ✅ 차트 옵션
   const chartOptions = {
+    chartType: chartType,
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
@@ -180,16 +196,44 @@ const ChartSection = () => {
     },
   };
 
+  console.log("111", chartData);
+  console.log("111", chartOptions);
+
   // ✅ 차트 데이터 저장 또는 업데이트
   const handleCreateClick = () => {
     setChartData(
       dashboardId,
       chartData,
-      chartOptions,
-      chartType,
-      titleText,
+      chartOptions, // ✅ Zustand에는 기존 Chart.js 옵션 그대로 저장
       chartId
     );
+
+    // ✅ Context에 맞게 변환하여 저장
+    setOptions({
+      chartType,
+      titleText,
+      showLegend,
+      legendPosition,
+      legendColor,
+      tooltipBgColor,
+      isSingleColorMode,
+      borderColor,
+      backgroundColor,
+      borderColors,
+      backgroundColors,
+      hoverMode,
+      zoomMode,
+      zoomSensitivity,
+      xGridDisplay,
+      yGridDisplay,
+      crosshairColor,
+      showCrosshair,
+      crosshairWidth,
+      enableZoom,
+      radius,
+      tension,
+    });
+
     router.push(`/detail?id=${dashboardId}`);
   };
 
