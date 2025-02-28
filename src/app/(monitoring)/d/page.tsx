@@ -1,17 +1,15 @@
 "use client";
 
-import React from "react";
-import RightSection from "./content/rightSection";
-import ChartSection from "./content/chartSection";
+import React, { Suspense } from "react";
 import { ChartOptionsProvider } from "@/app/context/chartOptionContext";
+import View from "./content/veiw";
 
 const DashboardDetailPage = () => {
   return (
     <ChartOptionsProvider>
-      <div className="relative min-h-screen bg-ivory-bg_sub">
-        <ChartSection />
-        <RightSection />
-      </div>
+      <Suspense>
+        <View />
+      </Suspense>
     </ChartOptionsProvider>
   );
 };
