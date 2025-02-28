@@ -258,27 +258,29 @@ const OptionPanel = () => {
             </div>
 
             {/* Background color */}
-            <div className="flex flex-col gap-1 mb-6">
-              <label className="text-sm2 text-text2">차트 색상</label>
-              <div className="flex items-center">
-                <TextInput
-                  value={backgroundColor}
-                  onChange={handleBackgroundColorChange}
-                  placeholder="색상 코드 입력"
-                  className="w-[200px]"
-                />
-                <button
-                  onClick={togglePickerVisibility3}
-                  className="p-2 rounded-full focus:outline-none"
-                >
-                  <div
-                    style={{ backgroundColor: tempBackgroundColor }}
-                    className="w-6 h-6 border rounded-full"
+            {isSingleColorMode && (
+              <div className="flex flex-col gap-1 mb-6">
+                <label className="text-sm2 text-text2">차트 색상</label>
+                <div className="flex items-center">
+                  <TextInput
+                    value={backgroundColor}
+                    onChange={handleBackgroundColorChange}
+                    placeholder="색상 코드 입력"
+                    className="w-[200px]"
                   />
-                </button>
+                  <button
+                    onClick={togglePickerVisibility3}
+                    className="p-2 rounded-full focus:outline-none"
+                  >
+                    <div
+                      style={{ backgroundColor: tempBackgroundColor }}
+                      className="w-6 h-6 border rounded-full"
+                    />
+                  </button>
+                </div>
+                {/* <ColorPaletteSelector /> */}
               </div>
-              {/* <ColorPaletteSelector /> */}
-            </div>
+            )}
 
             {/* Border color */}
             <div className="flex flex-col gap-1 mb-6">
@@ -390,7 +392,7 @@ const OptionPanel = () => {
               />
             </div>
             {/* Crosshair Color */}
-            <div className="flex flex-col gap-1 mb-6">
+            {/* <div className="flex flex-col gap-1 mb-6">
               <label className="text-sm2 text-text2">포인트 색상</label>
               <div className="flex items-center">
                 <TextInput
@@ -403,14 +405,13 @@ const OptionPanel = () => {
                   onClick={togglePickerVisibility4}
                   className="p-2 rounded-full focus:outline-none"
                 >
-                  {/* 색상 미리보기 박스 */}
                   <div
                     style={{ backgroundColor: tempCrosshairColor }}
                     className="w-6 h-6 border rounded-full"
                   />
                 </button>
               </div>
-            </div>
+            </div> */}
             {/* dot */}
             <div className="flex flex-col gap-1 mb-6">
               <label className="text-sm2 text-text2">포인트 크기</label>

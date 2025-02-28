@@ -5,6 +5,7 @@ import AddChartBar from "@/app/components/bar/addChartBar";
 import { useChartOptions } from "@/app/context/chartOptionContext";
 import { Chart } from "chart.js/auto";
 import zoomPlugin from "chartjs-plugin-zoom";
+import { useSearchParams } from "next/navigation";
 
 Chart.register(zoomPlugin);
 
@@ -26,12 +27,17 @@ const ChartSection = () => {
     zoomSensitivity,
     xGridDisplay,
     yGridDisplay,
+    crosshairColor,
     showCrosshair,
     crosshairWidth,
     enableZoom,
     radius,
     tension,
   } = useChartOptions();
+
+  const id = useSearchParams();
+  const dashboardId = id.get("id");
+  console.log(dashboardId);
 
   const chartRef = useRef<Chart | null>(null);
   const [from, setFrom] = useState<string | null>(null);
@@ -44,6 +50,49 @@ const ChartSection = () => {
     { label: "Visitors", data: [500, 600, 700, 800, 900] },
     { label: "Active Users", data: [650, 350, 250, 700, 850] },
   ]);
+
+  useEffect(() => {
+    // 대시보드 ID에 따른 datasets 설정
+    switch (dashboardId) {
+      case "1":
+        setDatasets([
+          { label: "Visitors", data: [500, 600, 700, 800, 900] },
+          { label: "Active Users", data: [650, 350, 250, 700, 850] },
+        ]);
+        break;
+      case "2":
+        setDatasets([
+          { label: "Sales", data: [400, 500, 600, 700, 800] },
+          { label: "Customers", data: [550, 450, 400, 600, 750] },
+        ]);
+        break;
+      case "3":
+        setDatasets([
+          { label: "Orders", data: [100, 200, 300, 400, 500] },
+          { label: "Revenue", data: [200, 350, 400, 450, 600] },
+        ]);
+        break;
+      case "4":
+        setDatasets([
+          { label: "Sessions", data: [50, 60, 70, 80, 90] },
+          { label: "New Users", data: [20, 13, 24, 50, 60] },
+          { label: "Old Users", data: [8, 3, 11, 5, 6] },
+        ]);
+        break;
+      case "5":
+        setDatasets([
+          { label: "Engagement", data: [20, 11, 14, 35, 40] },
+          // { label: "Bounce Rate", data: [10, 15, 20, 25, 30] },
+        ]);
+        break;
+      default:
+        setDatasets([
+          { label: "Visitors", data: [500, 600, 700, 800, 900] },
+          { label: "Active Users", data: [650, 350, 250, 700, 850] },
+        ]);
+        break;
+    }
+  }, [dashboardId]);
 
   // 🔹 날짜 변경 핸들러
   const handleTimeChange = (type: "from" | "to", value: string) => {
@@ -120,6 +169,7 @@ const ChartSection = () => {
       point: {
         radius: showCrosshair ? radius : 0,
         borderWidth: crosshairWidth,
+        // backgroundColor: crosshairColor,
       },
       line: { tension },
     },
