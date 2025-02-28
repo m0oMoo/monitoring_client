@@ -73,41 +73,33 @@ const DetailDashboard = () => {
       {/* == ChartSection == */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-2 gap-6 p-4">
         {chartDataList.length > 0 ? (
-          chartDataList.map((chart) => (
-            <div key={chart.chartId} className="flex justify-center">
-              <div className="w-full h-[400px]">
-                <ChartWidget
-                  type={chart.chartOptions.chartType} // ✅ 기본값 추가
-                  data={chart.chartData}
-                  options={{
-                    ...chart.chartOptions,
-                    borderColors:
-                      chart.chartOptions?.borderColors ??
-                      chart.chartData.datasets.map((d: any) => d.borderColor), // ✅ borderColors 추가
-                    backgroundColors:
-                      chart.chartOptions?.backgroundColors ??
-                      chart.chartData.datasets.map(
-                        (d: any) => d.backgroundColor
-                      ), // ✅ backgroundColors 추가
-                  }}
-                />
-                <div className="flex justify-between mt-2">
-                  <button
-                    onClick={() => handleEditChart(chart.chartId)}
-                    className="text-blue-500 hover:underline"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => handleDeleteChart(chart.chartId)}
-                    className="text-red-500 hover:underline"
-                  >
-                    Delete
-                  </button>
+          chartDataList.map((chart) => {
+            return (
+              <div key={chart.chartId} className="flex justify-center">
+                <div className="w-full h-[400px]">
+                  <ChartWidget
+                    type={chart.chartOptions.chartType}
+                    data={chart.chartData}
+                    options={chart.chartOptions} // ✅ 변환 없이 그대로 전달
+                  />
+                  <div className="flex justify-between mt-2">
+                    <button
+                      onClick={() => handleEditChart(chart.chartId)}
+                      className="text-blue-500 hover:underline"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleDeleteChart(chart.chartId)}
+                      className="text-red-500 hover:underline"
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))
+            );
+          })
         ) : (
           <p>No charts available</p>
         )}
