@@ -13,7 +13,7 @@ const DetailDashboard = () => {
   const dashboardId = id.get("id") || "1";
 
   const { charts, setChartData, removeChart } = useChartStore();
-  const chartDataList = charts[dashboardId] || [];
+  const chartDataList = charts[dashboardId] ?? [];
 
   const [from, setFrom] = useState<string | null>(null);
   const [to, setTo] = useState<string | null>(null);
@@ -77,9 +77,19 @@ const DetailDashboard = () => {
             <div key={chart.chartId} className="flex justify-center">
               <div className="w-full h-[400px]">
                 <ChartWidget
-                  type={chart.chartType}
+                  type={chart.chartOptions.chartType} // ✅ 기본값 추가
                   data={chart.chartData}
-                  options={chart.chartOptions}
+                  options={{
+                    ...chart.chartOptions,
+                    borderColors:
+                      chart.chartOptions?.borderColors ??
+                      chart.chartData.datasets.map((d: any) => d.borderColor), // ✅ borderColors 추가
+                    backgroundColors:
+                      chart.chartOptions?.backgroundColors ??
+                      chart.chartData.datasets.map(
+                        (d: any) => d.backgroundColor
+                      ), // ✅ backgroundColors 추가
+                  }}
                 />
                 <div className="flex justify-between mt-2">
                   <button
