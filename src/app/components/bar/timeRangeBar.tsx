@@ -25,7 +25,7 @@ const TimeRangeBar: React.FC<TimeRangeBarProps> = ({
 }) => {
   return (
     <div
-      className={`flex items-center justify-between bg-transparent
+      className={`flex items-center justify-between bg-transparent text-text
         border-b border-navy-border border-0.5 mb-4 ${className}`}
     >
       <div className="pl-4">
@@ -33,7 +33,7 @@ const TimeRangeBar: React.FC<TimeRangeBarProps> = ({
       </div>
       <div className="flex items-center p-3 gap-2">
         <div className="flex flex-row">
-          <p className="text-sm2 mr-1">Last Update : </p>
+          <p className=" text-sm2 mr-1">Last Update : </p>
           <p className="text-sm mr-3">{lastUpdated}</p>
         </div>
         <label className="text-sm_bold">Refresh:</label>
