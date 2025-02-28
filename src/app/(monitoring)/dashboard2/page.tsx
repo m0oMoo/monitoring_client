@@ -61,7 +61,8 @@ const Dashboard2Page = () => {
 
   const handleTabClick = (tab: any) => {
     console.log(tab);
-    router.push(`/d?id=${tab.id}`);
+    // router.push(`/d?id=${tab.id}`);
+    router.push(`/detail?id=${tab.id}`);
   };
 
   useEffect(() => {
