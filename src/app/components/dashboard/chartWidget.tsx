@@ -32,23 +32,51 @@ type ChartWidgetProps = {
 };
 
 const ChartWidget = ({ type, datasets, options }: ChartWidgetProps) => {
-  // ✅ `datasets`을 기반으로 `data` 생성
-  const chartData = {
-    labels: ["Mon", "Tue", "Wed", "Thu", "Fri"],
-    datasets: datasets.map((dataset, index) => ({
-      ...dataset,
-      borderColor: options?.isSingleColorMode
-        ? options?.borderColor
-        : options?.borderColors?.[index % options?.borderColors?.length],
-      backgroundColor: options?.isSingleColorMode
-        ? options?.backgroundColor
-        : options?.backgroundColors?.[
-            index % options?.backgroundColors?.length
-          ],
-      borderWidth: options?.crosshairWidth ?? 1,
-      fill: true,
-    })),
-  };
+  // ✅ 도넛/파이 차트용 데이터 변환
+  const isPieOrDoughnut = type === "pie" || type === "doughnut";
+
+  const chartData = isPieOrDoughnut
+    ? {
+        labels: datasets.map((dataset) => dataset.label), // ✅ labels 변환
+        datasets: [
+          {
+            data: datasets.map((dataset) =>
+              dataset.data.reduce((a, b) => a + b, 0)
+            ), // ✅ 모든 데이터 합산하여 변환
+            backgroundColor: options?.backgroundColors || [
+              "#ff6384",
+              "#36a2eb",
+              "#ffcd56",
+              "#4bc0c0",
+              "#9966ff",
+            ],
+            borderColor: options?.borderColors || [
+              "#ff6384",
+              "#36a2eb",
+              "#ffcd56",
+              "#4bc0c0",
+              "#9966ff",
+            ],
+            borderWidth: 1,
+          },
+        ],
+      }
+    : {
+        labels: ["Mon", "Tue", "Wed", "Thu", "Fri"], // ✅ 기본 x축 labels
+        datasets: datasets.map((dataset, index) => ({
+          ...dataset,
+          borderColor: options?.isSingleColorMode
+            ? options?.borderColor
+            : options?.borderColors?.[index % options?.borderColors?.length],
+          backgroundColor: options?.isSingleColorMode
+            ? options?.backgroundColor
+            : options?.backgroundColors?.[
+                index % options?.backgroundColors?.length
+              ],
+          borderWidth: options?.crosshairWidth ?? 1,
+          fill: true,
+        })),
+      };
 
   // ✅ 차트 옵션 정의
   const chartOptions = {
@@ -61,23 +89,13 @@ const ChartWidget = ({ type, datasets, options }: ChartWidgetProps) => {
         labels: { color: options?.legendColor ?? "#000" },
       },
       tooltip: { backgroundColor: options?.tooltipBgColor ?? "#4B4B4B" },
-      zoom: {
-        pan: {
-          enabled: options?.enableZoom ?? true,
-          mode: options?.zoomMode ?? "xy",
-        },
-        zoom: {
-          wheel: { enabled: options?.enableZoom ?? true },
-          pinch: { enabled: options?.enableZoom ?? true },
-          mode: options?.zoomMode ?? "xy",
-          speed: options?.zoomSensitivity ?? 1.0,
-        },
-      },
     },
-    scales: {
-      x: { grid: { display: options?.xGridDisplay ?? true } },
-      y: { grid: { display: options?.yGridDisplay ?? true } },
-    },
+    scales: !isPieOrDoughnut
+      ? {
+          x: { grid: { display: options?.xGridDisplay ?? true } },
+          y: { grid: { display: options?.yGridDisplay ?? true } },
+        }
+      : undefined,
     interaction: { mode: options?.hoverMode ?? "index", intersect: false },
     hover: { mode: options?.hoverMode ?? "index", intersect: false },
     elements: {
