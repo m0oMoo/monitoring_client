@@ -1,12 +1,12 @@
 import { create } from "zustand";
 import { v4 as uuidv4 } from "uuid";
+import { Dataset } from "../context/chartOptionContext";
 
 interface ChartStore {
   charts: Record<
     string,
     {
       chartId: string;
-      chartData: any;
       chartOptions: {
         chartType: "bar" | "line" | "pie" | "doughnut";
         showLegend: boolean;
@@ -33,12 +33,13 @@ interface ChartStore {
         radius: number;
         tension: number;
       };
+      datasets: Dataset[];
     }[]
   >;
   setChartData: (
     dashboardId: string,
-    chartData: any,
     chartOptions: any,
+    datasets: Dataset[],
     chartId?: string
   ) => void;
   removeChart: (dashboardId: string, chartId: string) => void;
@@ -46,27 +47,30 @@ interface ChartStore {
 
 export const useChartStore = create<ChartStore>((set) => ({
   charts: {},
-  setChartData: (dashboardId, chartData, chartOptions, chartId) => {
+  setChartData: (dashboardId, chartOptions, datasets, chartId) => {
     set((state) => {
+      // ✅ dashboardId가 존재하지 않으면 빈 배열 할당하여 오류 방지
+      const existingCharts = state.charts[dashboardId] || [];
+
       if (chartId) {
-        // ✅ 기존 차트 업데이트
-        const updatedCharts = state.charts[dashboardId].map((chart) =>
+        // ✅ 기존 차트 업데이트 (datasets 포함)
+        const updatedCharts = existingCharts.map((chart) =>
           chart.chartId === chartId
-            ? { ...chart, chartData, chartOptions } // 기존 데이터 유지
+            ? { ...chart, chartOptions, datasets }
             : chart
         );
         return { charts: { ...state.charts, [dashboardId]: updatedCharts } };
       } else {
-        // ✅ 새로운 차트 추가
+        // ✅ 새로운 차트 추가 (datasets 포함)
         const newChart = {
           chartId: uuidv4(),
-          chartData,
           chartOptions,
+          datasets,
         };
         return {
           charts: {
             ...state.charts,
-            [dashboardId]: [...(state.charts[dashboardId] || []), newChart],
+            [dashboardId]: [...existingCharts, newChart],
           },
         };
       }
@@ -76,7 +80,7 @@ export const useChartStore = create<ChartStore>((set) => ({
     set((state) => ({
       charts: {
         ...state.charts,
-        [dashboardId]: state.charts[dashboardId]?.filter(
+        [dashboardId]: (state.charts[dashboardId] || []).filter(
           (chart) => chart.chartId !== chartId
         ),
       },

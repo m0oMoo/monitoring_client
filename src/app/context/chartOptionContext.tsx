@@ -3,10 +3,6 @@ import React, { createContext, useContext, useState } from "react";
 export type Dataset = {
   label: string;
   data: number[];
-  borderColor: string;
-  backgroundColor: string;
-  tension?: number;
-  radius?: number;
 };
 
 type ChartOptions = {
@@ -34,11 +30,13 @@ type ChartOptions = {
   enableZoom: boolean;
   radius: number;
   tension: number;
-  // datasets: Dataset[];
+  datasets: Dataset[];
   setOptions: (options: Partial<ChartOptions>) => void;
+  setDatasets: (datasets: Dataset[]) => void;
 };
 
 const ChartOptionsContext = createContext<ChartOptions | undefined>(undefined);
+
 export const ChartOptionsProvider = ({
   children,
 }: {
@@ -52,7 +50,7 @@ export const ChartOptionsProvider = ({
     isSingleColorMode: false,
     borderColor: "rgba(220, 20, 60, 1)",
     backgroundColor: "rgba(220, 20, 60, 0.3)",
-    borderColors: ["#ff6384", "#36a2eb", "#ffcd56", "#4bc0c0", "#9966ff"], // ✅ 기본 border 색상
+    borderColors: ["#ff6384", "#36a2eb", "#ffcd56", "#4bc0c0", "#9966ff"],
     backgroundColors: [
       "rgba(255, 99, 132, 0.2)",
       "rgba(54, 162, 235, 0.2)",
@@ -75,29 +73,23 @@ export const ChartOptionsProvider = ({
     enableZoom: true,
     radius: 3,
     tension: 0.3,
-    // datasets: [
-    //   {
-    //     label: "Visitors",
-    //     data: [500, 600, 700, 800, 900],
-    //     borderColor: "rgba(220, 20, 60, 1)",
-    //     backgroundColor: "rgba(220, 20, 60, 0.3)",
-    //   },
-    //   {
-    //     label: "Active Users",
-    //     data: [650, 350, 250, 700, 850],
-    //     borderColor: "rgba(54, 162, 235, 1)",
-    //     backgroundColor: "rgba(54, 162, 235, 0.3)",
-    //   },
-    // ],
+    datasets: [],
     setOptions: () => {},
+    setDatasets: () => {},
   });
 
   const setOptions = (newOptions: Partial<ChartOptions>) => {
     setOptionsState((prev) => ({ ...prev, ...newOptions }));
   };
 
+  const setDatasets = (newDatasets: Dataset[]) => {
+    setOptionsState((prev) => ({ ...prev, datasets: newDatasets }));
+  };
+
   return (
-    <ChartOptionsContext.Provider value={{ ...options, setOptions }}>
+    <ChartOptionsContext.Provider
+      value={{ ...options, setOptions, setDatasets }}
+    >
       {children}
     </ChartOptionsContext.Provider>
   );

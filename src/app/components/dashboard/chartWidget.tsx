@@ -11,8 +11,8 @@ import {
   Legend,
 } from "chart.js";
 import { Bar, Line, Pie, Doughnut } from "react-chartjs-2";
+import { Dataset } from "@/app/context/chartOptionContext";
 
-// Chart.js 모듈 등록
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -26,13 +26,31 @@ ChartJS.register(
 );
 
 type ChartWidgetProps = {
-  type: "bar" | "line" | "pie" | "doughnut"; // 지원할 차트 유형
-  data: any; // 차트 데이터
+  type: "bar" | "line" | "pie" | "doughnut";
+  datasets: Dataset[];
   options?: any;
 };
 
-const ChartWidget = ({ type, data, options }: ChartWidgetProps) => {
-  // ✅ `options`를 Chart.js 형식으로 변환
+const ChartWidget = ({ type, datasets, options }: ChartWidgetProps) => {
+  // ✅ `datasets`을 기반으로 `data` 생성
+  const chartData = {
+    labels: ["Mon", "Tue", "Wed", "Thu", "Fri"],
+    datasets: datasets.map((dataset, index) => ({
+      ...dataset,
+      borderColor: options?.isSingleColorMode
+        ? options?.borderColor
+        : options?.borderColors?.[index % options?.borderColors?.length],
+      backgroundColor: options?.isSingleColorMode
+        ? options?.backgroundColor
+        : options?.backgroundColors?.[
+            index % options?.backgroundColors?.length
+          ],
+      borderWidth: options?.crosshairWidth ?? 1,
+      fill: true,
+    })),
+  };
+
+  // ✅ 차트 옵션 정의
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
@@ -42,9 +60,7 @@ const ChartWidget = ({ type, data, options }: ChartWidgetProps) => {
         position: options?.legendPosition ?? "top",
         labels: { color: options?.legendColor ?? "#000" },
       },
-      tooltip: {
-        backgroundColor: options?.tooltipBgColor ?? "#4B4B4B",
-      },
+      tooltip: { backgroundColor: options?.tooltipBgColor ?? "#4B4B4B" },
       zoom: {
         pan: {
           enabled: options?.enableZoom ?? true,
@@ -75,13 +91,13 @@ const ChartWidget = ({ type, data, options }: ChartWidgetProps) => {
 
   switch (type) {
     case "bar":
-      return <Bar data={data} options={chartOptions} />;
+      return <Bar data={chartData} options={chartOptions} />;
     case "line":
-      return <Line data={data} options={chartOptions} />;
+      return <Line data={chartData} options={chartOptions} />;
     case "pie":
-      return <Pie data={data} options={chartOptions} />;
+      return <Pie data={chartData} options={chartOptions} />;
     case "doughnut":
-      return <Doughnut data={data} options={chartOptions} />;
+      return <Doughnut data={chartData} options={chartOptions} />;
     default:
       return <p>Invalid chart type</p>;
   }

@@ -79,8 +79,8 @@ const DetailDashboard = () => {
                 <div className="w-full h-[400px]">
                   <ChartWidget
                     type={chart.chartOptions.chartType}
-                    data={chart.chartData}
-                    options={chart.chartOptions} // ✅ 변환 없이 그대로 전달
+                    datasets={chart.datasets}
+                    options={chart.chartOptions}
                   />
                   <div className="flex justify-between mt-2">
                     <button
