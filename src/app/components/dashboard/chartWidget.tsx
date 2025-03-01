@@ -62,7 +62,21 @@ const ChartWidget = ({ type, datasets, options }: ChartWidgetProps) => {
         ],
       }
     : {
-        labels: ["Mon", "Tue", "Wed", "Thu", "Fri"], // ✅ 기본 x축 labels
+        labels: [
+          "12:00",
+          "12:05",
+          "12:10",
+          "12:15",
+          "12:20",
+          "12:25",
+          "12:30",
+          "12:35",
+          "12:40",
+          "12:45",
+          "12:50",
+          "12:55",
+          "13:00",
+        ],
         datasets: datasets.map((dataset, index) => ({
           ...dataset,
           borderColor: options?.isSingleColorMode

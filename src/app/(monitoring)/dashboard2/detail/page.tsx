@@ -40,7 +40,7 @@ const DashboardDetailPage = () => {
 
   return (
     <div className="bg-ivory-bg_sub">
-      <AddChartBar isEdit={false} />
+      <AddChartBar isEdit={false} onCreateClick={() => {}} />
       {/* 🔹 TimeRangeBar 컴포넌트 사용 */}
       <TimeRangeBar
         from={from}
