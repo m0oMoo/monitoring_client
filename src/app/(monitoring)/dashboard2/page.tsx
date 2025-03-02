@@ -6,8 +6,10 @@ import AddTabModal from "@/app/components/modal/addTabModal";
 import { DEFAULT_DASHBOARD_DATA } from "@/app/data/dashboardData";
 import SearchInput from "@/app/components/search/searchInput";
 import Alert from "@/app/components/alert/alert";
+import { useRouter } from "next/navigation";
 
 const Dashboard2Page = () => {
+  const router = useRouter();
   const [tabs, setTabs] = useState<any[]>(DEFAULT_DASHBOARD_DATA);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [editingTabIndex, setEditingTabIndex] = useState<number | null>(null);
@@ -57,6 +59,12 @@ const Dashboard2Page = () => {
     setAlertMessage("새로운 탭이 추가되었습니다!");
   };
 
+  const handleTabClick = (tab: any) => {
+    console.log(tab);
+    // router.push(`/d?id=${tab.id}`);
+    router.push(`/detail?id=${tab.id}`);
+  };
+
   useEffect(() => {
     if (alertMessage) {
       const timer = setTimeout(() => {
@@ -93,7 +101,7 @@ const Dashboard2Page = () => {
         {filteredTabs.map((tab, index) => (
           <li
             key={tab.id}
-            onClick={() => setSelectedTabIndex(index)}
+            onClick={() => handleTabClick(tab)}
             className={`relative p-4 cursor-pointer rounded-md hover:bg-navy-hover active:bg-navy-pressed 
               ${
                 selectedTabIndex === index

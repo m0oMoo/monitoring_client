@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { SketchPicker } from "react-color";
+import { HexAlphaColorPicker } from "react-colorful";
 import TextInput from "@/app/components/input/textInput";
-import NumberInput from "@/app/components/input/numberInput";
 import ChartTypeSelector from "@/app/components/selector/chartTypeSelector";
 import SquareToggleBtnGroup from "@/app/components/button/toggle/squareBtnGroup";
 import ToggleSwitch from "@/app/components/button/toggle/toggleSwitch";
 import { useChartOptions } from "@/app/context/chartOptionContext";
 import SliderToggle from "@/app/components/slider/sliderToggle";
+import ColorPaletteSelector from "@/app/components/selector/colorPaletteSelector";
+import { COLOR_PALETTES } from "@/app/data/color/colorPalettes";
 
 const OptionPanel = () => {
   const {
@@ -14,7 +15,9 @@ const OptionPanel = () => {
     showLegend,
     legendPosition,
     legendColor,
+    isSingleColorMode,
     titleText,
+    borderColor,
     backgroundColor,
     tooltipBgColor,
     tooltipMode,
@@ -38,6 +41,7 @@ const OptionPanel = () => {
   const [isPickerVisible2, setIsPickerVisible2] = useState<boolean>(false);
   const [isPickerVisible3, setIsPickerVisible3] = useState<boolean>(false);
   const [isPickerVisible4, setIsPickerVisible4] = useState<boolean>(false);
+  const [isPickerVisible5, setIsPickerVisible5] = useState<boolean>(false);
 
   const [tempLegendColor, setTempLegendColor] = useState<string>(legendColor);
   const [tempTooltipColor, setTempTooltipColor] =
@@ -46,25 +50,45 @@ const OptionPanel = () => {
     useState<string>(backgroundColor);
   const [tempCrosshairColor, setTempCrosshairColor] =
     useState<string>(crosshairColor);
+  const [tempBorderColor, setTempBorderColor] = useState<string>(borderColor);
+
+  const [selectedPalette, setSelectedPalette] = useState(COLOR_PALETTES[0]);
+
+  const handlePaletteChange = (palette: any) => {
+    if (!palette || !palette.borderColors || !palette.backgroundColors) {
+      console.error("선택한 팔레트에 색상이 없습니다.");
+      return;
+    }
+
+    setSelectedPalette(palette);
+    setOptions({
+      borderColors: palette.borderColors ?? [],
+      backgroundColors: palette.backgroundColors ?? [],
+    });
+  };
 
   useEffect(() => {
     setIsClient(true);
   }, []);
 
   const handleLegendColorChange = (color: any) => {
-    setTempLegendColor(color.hex);
+    setTempLegendColor(color);
   };
 
   const handleTooltipColorChange = (color: any) => {
-    setTempTooltipColor(color.hex);
+    setTempTooltipColor(color);
   };
 
   const handleBackgroundColorChange = (color: any) => {
-    setTempBackgroundColor(color.hex);
+    setTempBackgroundColor(color);
   };
 
   const handleCrosshairColorChange = (color: any) => {
-    setTempCrosshairColor(color.hex);
+    setTempCrosshairColor(color);
+  };
+
+  const handleBorderColorChange = (color: any) => {
+    setTempBorderColor(color);
   };
 
   const confirmLegendColorChange = () => {
@@ -83,24 +107,53 @@ const OptionPanel = () => {
   };
 
   const confirmCrosshairColorChange = () => {
-    setOptions({ backgroundColor: tempCrosshairColor });
+    setOptions({ crosshairColor: tempCrosshairColor });
     setIsPickerVisible4(false);
+  };
+
+  const confirmBorderColorChange = () => {
+    setOptions({ borderColor: tempBorderColor });
+    setIsPickerVisible5(false);
   };
 
   const togglePickerVisibility = () => {
     setIsPickerVisible((prevState) => !prevState);
+    setIsPickerVisible2(false);
+    setIsPickerVisible3(false);
+    setIsPickerVisible5(false);
+    setIsPickerVisible4(false);
   };
 
   const togglePickerVisibility2 = () => {
     setIsPickerVisible2((prevState) => !prevState);
+    setIsPickerVisible(false);
+    setIsPickerVisible3(false);
+    setIsPickerVisible4(false);
+    setIsPickerVisible5(false);
   };
 
   const togglePickerVisibility3 = () => {
     setIsPickerVisible3((prevState) => !prevState);
+    setIsPickerVisible2(false);
+    setIsPickerVisible(false);
+    setIsPickerVisible5(false);
+    setIsPickerVisible4(false);
   };
 
   const togglePickerVisibility4 = () => {
     setIsPickerVisible4((prevState) => !prevState);
+    setIsPickerVisible2(false);
+    setIsPickerVisible(false);
+    setIsPickerVisible5(false);
+    setIsPickerVisible3(false);
+  };
+
+  const togglePickerVisibility5 = () => {
+    setIsPickerVisible5((prevState) => !prevState);
+    setIsPickerVisible2(false);
+    setIsPickerVisible(false);
+    setIsPickerVisible4(false);
+    setIsPickerVisible3(false);
   };
 
   return (
@@ -155,6 +208,101 @@ const OptionPanel = () => {
                   setOptions({ legendPosition: position })
                 }
               />
+            </div>
+            {/* ✅ 단일 색상 모드 토글 */}
+            <div className="flex flex-col gap-1 mb-4">
+              <label className="text-sm2 text-text2">단일 색상 모드</label>
+              <ToggleSwitch
+                checked={isSingleColorMode}
+                onChange={(checked) =>
+                  setOptions({ isSingleColorMode: checked })
+                }
+              />
+            </div>
+            <div className="flex flex-col gap-1 mb-6">
+              <label className="text-sm2 text-text2">색상 팔레트 선택</label>
+
+              {/* 드롭다운 */}
+              {/* <select
+                className="w-full p-2 border rounded-md bg-white"
+                onChange={(e) => {
+                  const selected = COLOR_PALETTES.find(
+                    (p) => p.name === e.target.value
+                  );
+                  if (selected) handlePaletteChange(selected);
+                }}
+                value={selectedPalette.name}
+              >
+                {COLOR_PALETTES.map((palette, index) => (
+                  <option key={index} value={palette.name}>
+                    {palette.name}
+                  </option>
+                ))}
+              </select> */}
+
+              {/* 팔레트 미리보기 */}
+              <div className="flex flex-wrap gap-2 mt-2">
+                {COLOR_PALETTES.map((palette, index) => (
+                  <button
+                    key={index}
+                    className="w-10 h-6 rounded border"
+                    style={{
+                      backgroundImage: `linear-gradient(to bottom, ${
+                        palette.borderColors?.join(", ") || "#000000"
+                      })`,
+                    }}
+                    onClick={() => handlePaletteChange(palette)}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* Background color */}
+            {isSingleColorMode && (
+              <div className="flex flex-col gap-1 mb-6">
+                <label className="text-sm2 text-text2">차트 색상</label>
+                <div className="flex items-center">
+                  <TextInput
+                    value={backgroundColor}
+                    onChange={handleBackgroundColorChange}
+                    placeholder="색상 코드 입력"
+                    className="w-[200px]"
+                  />
+                  <button
+                    onClick={togglePickerVisibility3}
+                    className="p-2 rounded-full focus:outline-none"
+                  >
+                    <div
+                      style={{ backgroundColor: tempBackgroundColor }}
+                      className="w-6 h-6 border rounded-full"
+                    />
+                  </button>
+                </div>
+                {/* <ColorPaletteSelector /> */}
+              </div>
+            )}
+
+            {/* Border color */}
+            <div className="flex flex-col gap-1 mb-6">
+              <label className="text-sm2 text-text2">테두리 색상</label>
+              <div className="flex items-center">
+                <TextInput
+                  value={borderColor}
+                  onChange={handleBorderColorChange}
+                  placeholder="색상 코드 입력"
+                  className="w-[200px]"
+                />
+                <button
+                  onClick={togglePickerVisibility5}
+                  className="p-2 rounded-full focus:outline-none"
+                >
+                  {/* 색상 미리보기 박스 */}
+                  <div
+                    style={{ backgroundColor: borderColor }}
+                    className="w-6 h-6 border rounded-full"
+                  />
+                </button>
+              </div>
             </div>
 
             {/* Background color */}
@@ -227,7 +375,7 @@ const OptionPanel = () => {
             </div>
 
             {/* Tooltip mode */}
-            <div className="flex flex-col gap-1 mb-6">
+            {/* <div className="flex flex-col gap-1 mb-6">
               <label className="text-sm2 text-text2">툴팁 모드</label>
               <SquareToggleBtnGroup
                 label="툴팁 모드"
@@ -235,12 +383,12 @@ const OptionPanel = () => {
                 selected={tooltipMode}
                 onChange={(mode) => setOptions({ tooltipMode: mode })}
               />
-            </div>
+            </div> */}
             {/* Hover mode */}
             <div className="flex flex-col gap-1 mb-6">
-              <label className="text-sm2 text-text2">호버 모드</label>
+              <label className="text-sm2 text-text2">툴팁 모드</label>
               <SquareToggleBtnGroup
-                label="호버 모드"
+                label="툴팁 모드"
                 options={["index", "nearest"]}
                 selected={hoverMode}
                 onChange={(mode) => setOptions({ hoverMode: mode })}
@@ -267,7 +415,7 @@ const OptionPanel = () => {
               />
             </div>
             {/* Crosshair Color */}
-            <div className="flex flex-col gap-1 mb-6">
+            {/* <div className="flex flex-col gap-1 mb-6">
               <label className="text-sm2 text-text2">포인트 색상</label>
               <div className="flex items-center">
                 <TextInput
@@ -280,14 +428,13 @@ const OptionPanel = () => {
                   onClick={togglePickerVisibility4}
                   className="p-2 rounded-full focus:outline-none"
                 >
-                  {/* 색상 미리보기 박스 */}
                   <div
                     style={{ backgroundColor: tempCrosshairColor }}
                     className="w-6 h-6 border rounded-full"
                   />
                 </button>
               </div>
-            </div>
+            </div> */}
             {/* dot */}
             <div className="flex flex-col gap-1 mb-6">
               <label className="text-sm2 text-text2">포인트 크기</label>
@@ -360,7 +507,7 @@ const OptionPanel = () => {
 
           {isPickerVisible && (
             <div className="absolute z-10">
-              <SketchPicker
+              <HexAlphaColorPicker
                 color={tempLegendColor}
                 onChange={handleLegendColorChange}
               />
@@ -374,7 +521,7 @@ const OptionPanel = () => {
           )}
           {isPickerVisible2 && (
             <div className="absolute z-10">
-              <SketchPicker
+              <HexAlphaColorPicker
                 color={tempTooltipColor}
                 onChange={handleTooltipColorChange}
               />
@@ -388,7 +535,7 @@ const OptionPanel = () => {
           )}
           {isPickerVisible3 && (
             <div className="absolute z-10">
-              <SketchPicker
+              <HexAlphaColorPicker
                 color={tempBackgroundColor}
                 onChange={handleBackgroundColorChange}
               />
@@ -402,13 +549,27 @@ const OptionPanel = () => {
           )}
           {isPickerVisible4 && (
             <div className="absolute z-10">
-              <SketchPicker
+              <HexAlphaColorPicker
                 color={tempCrosshairColor}
                 onChange={handleCrosshairColorChange}
               />
               <button
                 className="mt-2 float-right px-3 py-1 shadow-md bg-white border border-gray-2 rounded text-md1"
                 onClick={confirmCrosshairColorChange}
+              >
+                확인
+              </button>
+            </div>
+          )}
+          {isPickerVisible5 && (
+            <div className="absolute z-10">
+              <HexAlphaColorPicker
+                color={tempBorderColor}
+                onChange={handleBorderColorChange}
+              />
+              <button
+                className="mt-2 float-right px-3 py-1 shadow-md bg-white border border-gray-2 rounded text-md1"
+                onClick={confirmBorderColorChange}
               >
                 확인
               </button>

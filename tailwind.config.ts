@@ -29,6 +29,7 @@ export default {
         text: "#1F1F1F",
         text2: "#4B4B4B",
         text3: "#A0A0A0",
+
         ivory: {
           bg: "#fdfdf4",
           bg_sub: "#fffffa",

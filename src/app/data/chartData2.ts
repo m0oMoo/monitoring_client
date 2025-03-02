@@ -57,3 +57,30 @@ const mockChartData: Partial<Plotly.PlotData>[] = [
     },
   },
 ];
+
+export const CHART_DATA_01 = [
+  { label: "Visitors", data: [500, 600, 700, 800, 900] },
+  { label: "Active Users", data: [650, 350, 250, 700, 850] },
+];
+
+export const CHART_DATA_02 = [
+  { label: "Sales", data: [400, 500, 600, 700, 800] },
+  { label: "Customers", data: [550, 450, 400, 600, 750] },
+]
+export const CHART_DATA_03 = [
+  { label: "Orders", data: [100, 200, 300, 400, 500] },
+  { label: "Revenue", data: [200, 350, 400, 450, 600] },
+]
+export const CHART_DATA_04 = [
+  { label: "Sessions", data: [50, 60, 70, 80, 90] },
+  { label: "New Users", data: [20, 13, 24, 50, 60] },
+  { label: "Old Users", data: [8, 3, 11, 5, 6] },
+]
+export const CHART_DATA_05 = [
+  { label: "Engagement", data: [20, 11, 14, 35, 40] },
+  // { label: "Bounce Rate", data: [10, 15, 20, 25, 30] },
+]
+export const CHART_DATA_06 = [
+  { label: "Visitors", data: [500, 600, 700, 800, 900] },
+  { label: "Active Users", data: [650, 350, 250, 700, 850] },
+]
