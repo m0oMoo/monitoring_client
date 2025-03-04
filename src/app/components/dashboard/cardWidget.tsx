@@ -24,6 +24,9 @@ interface CardWidgetProps {
   subText?: string;
   changePercent?: number;
   backgroundColor: string;
+  textColor?: string;
+  arrowVisible: boolean;
+  className?: string;
 }
 
 const CardWidget = ({
@@ -32,10 +35,15 @@ const CardWidget = ({
   subText,
   changePercent,
   backgroundColor,
+  textColor = "#000",
+  arrowVisible,
+  className,
 }: CardWidgetProps) => {
+  const valueNumber = parseFloat(value);
+
   return (
     <div
-      className={`p-4 rounded-lg shadow-md flex flex-col justify-between w-72 h-32`}
+      className={`${className} p-4 rounded-lg shadow-md flex flex-col justify-between w-72 h-32`}
       style={{ backgroundColor }}
     >
       {/* 제목 */}
@@ -44,11 +52,12 @@ const CardWidget = ({
       {/* 메인 값 */}
       <div className="text-2xl font-bold flex items-center gap-1">
         {value}
-        {changePercent !== undefined &&
-          (changePercent < 0 ? (
-            <ArrowDown size={20} className="text-red-500" />
+        {arrowVisible &&
+          changePercent !== undefined &&
+          (valueNumber < changePercent ? (
+            <ArrowDown size={20} className="text-red-800" />
           ) : (
-            <ArrowUp size={20} className="text-green-500" />
+            <ArrowUp size={20} className="text-green-800" />
           ))}
       </div>
 

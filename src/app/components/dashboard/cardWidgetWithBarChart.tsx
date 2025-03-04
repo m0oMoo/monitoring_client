@@ -27,6 +27,9 @@ interface CardWidgetProps {
   changePercent?: number;
   chartData?: number[];
   backgroundColor: string;
+  textColor?: string;
+  arrowVisible: boolean;
+  className?: string;
 }
 
 const CardWidgetWithBarChart = ({
@@ -36,10 +39,15 @@ const CardWidgetWithBarChart = ({
   changePercent,
   chartData,
   backgroundColor,
+  textColor = "#000",
+  arrowVisible,
+  className,
 }: CardWidgetProps) => {
+  const valueNumber = parseFloat(value);
+
   return (
     <div
-      className={`p-4 rounded-lg shadow-md flex flex-col justify-between`}
+      className={`${className} p-4 rounded-lg shadow-md w-72 flex flex-col justify-between`}
       style={{ backgroundColor }}
     >
       {/* 제목 */}
@@ -48,8 +56,9 @@ const CardWidgetWithBarChart = ({
       {/* 메인 값 */}
       <div className="text-2xl font-bold flex items-center gap-1">
         {value}
-        {changePercent !== undefined &&
-          (changePercent < 0 ? (
+        {arrowVisible &&
+          changePercent !== undefined &&
+          (valueNumber < changePercent ? (
             <ArrowDown size={20} className="text-red-800" />
           ) : (
             <ArrowUp size={20} className="text-green-800" />

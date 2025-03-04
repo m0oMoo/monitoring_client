@@ -26,6 +26,7 @@ interface CardWidgetProps {
   backgroundColor?: string;
   textColor?: string;
   arrowVisible?: boolean;
+  className?: string;
 }
 
 const CardWidgetOnlyNumber = ({
@@ -35,12 +36,13 @@ const CardWidgetOnlyNumber = ({
   backgroundColor = "#fdfaf2",
   textColor = "#1d2e41",
   arrowVisible = false,
+  className,
 }: CardWidgetProps) => {
   const valueNumber = parseFloat(value);
 
   return (
     <div
-      className="p-4 rounded-lg shadow-md flex w-72 h-32 justify-center items-center"
+      className={`${className} p-4 rounded-lg shadow-md flex w-72 h-32 justify-center items-center`}
       style={{ backgroundColor }}
     >
       <div className="flex gap-1 items-center">
