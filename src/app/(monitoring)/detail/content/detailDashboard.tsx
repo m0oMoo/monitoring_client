@@ -30,6 +30,7 @@ const DetailDashboard = () => {
   const [refreshTime, setRefreshTime] = useState<number | "autoType">(10);
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
   const [menuOpenIndex, setMenuOpenIndex] = useState<string | null>(null);
+  const [gridCols, setGridCols] = useState<number>(2);
 
   useEffect(() => {
     const now = new Date();
@@ -47,6 +48,10 @@ const DetailDashboard = () => {
     }
   }, [refreshTime]);
 
+  const handleGridChange = (change: number) => {
+    setGridCols((prev) => Math.max(1, Math.min(4, prev + change)));
+  };
+
   return (
     <div
       className="bg-ivory-bg_sub min-h-[calc(100vh-90px)]"
@@ -55,6 +60,9 @@ const DetailDashboard = () => {
       <AddChartBar
         isEdit={false}
         onCreateClick={() => router.push(`/d?id=${dashboardId}`)}
+        gridCols={gridCols}
+        onGridChange={handleGridChange}
+        gridVisible={true}
       />
       <TimeRangeBar
         from={from}
@@ -66,55 +74,59 @@ const DetailDashboard = () => {
         }
         onRefreshChange={setRefreshTime}
       />
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-2 gap-6 p-4">
-        {chartDataList.length > 0 ? (
-          chartDataList.map((chart, index) =>
-            chart ? (
-              <div key={chart.chartId} className="relative flex justify-center">
-                <div
-                  className="w-full h-[400px] relative"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <div className="absolute top-2 right-0">
-                    <MoreVertical
-                      className="text-text3 cursor-pointer hover:text-text2"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setMenuOpenIndex(
-                          menuOpenIndex === chart.chartId ? null : chart.chartId
-                        );
-                      }}
-                    />
-                    {menuOpenIndex === chart.chartId && (
-                      <TabMenu
-                        index={chart.chartId}
-                        setEditingTabIndex={() =>
-                          router.push(
-                            `/d?id=${dashboardId}&chartId=${chart.chartId}`
-                          )
-                        }
-                        setIsModalOpen={() => {}}
-                        setMenuOpenIndex={setMenuOpenIndex}
-                        handleTabDelete={() =>
-                          removeChart(dashboardId, chart.chartId)
-                        }
-                      />
-                    )}
-                  </div>
 
-                  {/* 차트 위젯 */}
-                  <ChartWidget
-                    type={chart.chartOptions?.chartType}
-                    datasets={chart.datasets || []}
-                    options={chart.chartOptions}
-                  />
+      <div className={`grid grid-cols-${gridCols} gap-6 p-4`}>
+        {chartDataList.length > 0
+          ? chartDataList.map((chart, index) =>
+              chart ? (
+                <div
+                  key={chart.chartId}
+                  className="relative flex justify-center"
+                >
+                  <div
+                    className="w-full h-[400px] relative"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className="absolute top-2 right-0">
+                      <MoreVertical
+                        className="text-text3 cursor-pointer hover:text-text2"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setMenuOpenIndex(
+                            menuOpenIndex === chart.chartId
+                              ? null
+                              : chart.chartId
+                          );
+                        }}
+                      />
+                      {menuOpenIndex === chart.chartId && (
+                        <TabMenu
+                          index={chart.chartId}
+                          setEditingTabIndex={() =>
+                            router.push(
+                              `/d?id=${dashboardId}&chartId=${chart.chartId}`
+                            )
+                          }
+                          setIsModalOpen={() => {}}
+                          setMenuOpenIndex={setMenuOpenIndex}
+                          handleTabDelete={() =>
+                            removeChart(dashboardId, chart.chartId)
+                          }
+                        />
+                      )}
+                    </div>
+
+                    {/* 차트 위젯 */}
+                    <ChartWidget
+                      type={chart.chartOptions?.chartType}
+                      datasets={chart.datasets || []}
+                      options={chart.chartOptions}
+                    />
+                  </div>
                 </div>
-              </div>
-            ) : null
-          )
-        ) : (
-          <p></p>
-        )}
+              ) : null
+            )
+          : null}
       </div>
     </div>
   );
