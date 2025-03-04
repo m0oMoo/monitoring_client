@@ -195,7 +195,7 @@ const DataBinding = () => {
 
             {/* ✅ 쿼리 실행 버튼 */}
             <button
-              className="bg-blue-500 text-white p-2 rounded w-[250px] hover:bg-blue-600"
+              className="bg-navy-btn text-white p-2 rounded w-[250px] hover:bg-navy-btn_hover"
               onClick={handleQueryExecute}
               disabled={!query.trim()}
             >
