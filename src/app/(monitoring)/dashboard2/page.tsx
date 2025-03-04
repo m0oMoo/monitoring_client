@@ -45,8 +45,6 @@ const Dashboard2Page = () => {
   };
 
   const handleTabDelete = (dashboardId: string) => {
-    if (!window.confirm("이 대시보드를 삭제하시겠습니까?")) return;
-
     // ✅ 해당 대시보드의 모든 차트 삭제
     useChartStore.getState().removeDashboard(dashboardId);
 
@@ -92,7 +90,10 @@ const Dashboard2Page = () => {
   }, [alertMessage]);
 
   return (
-    <div className="bg-ivory-bg_sub text-navy-text min-h-screen p-4 pt-[44px]">
+    <div
+      className="bg-ivory-bg_sub text-navy-text min-h-screen p-4 pt-[44px]"
+      onClick={() => setMenuOpenIndex(null)}
+    >
       <header className="flex justify-between items-center my-3">
         <h1 className="text-xl font-bold tracking-wide">
           📊 모니터링 대시보드
