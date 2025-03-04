@@ -1,21 +1,24 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { v4 as uuidv4 } from "uuid";
 import { MoreVertical, Trash2, Edit2 } from "lucide-react";
 import AddTabModal from "@/app/components/modal/addTabModal";
 import { DEFAULT_DASHBOARD_DATA } from "@/app/data/dashboardData";
 import SearchInput from "@/app/components/search/searchInput";
 import Alert from "@/app/components/alert/alert";
 import { useRouter } from "next/navigation";
+import TabMenu from "@/app/components/menu/tabMenu";
+import { useChartStore } from "@/app/store/useChartStore";
 
 const Dashboard2Page = () => {
   const router = useRouter();
   const [tabs, setTabs] = useState<any[]>(DEFAULT_DASHBOARD_DATA);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const [editingTabIndex, setEditingTabIndex] = useState<number | null>(null);
+  const [editingTabIndex, setEditingTabIndex] = useState<string | null>(null);
   const [menuOpenIndex, setMenuOpenIndex] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const [selectedTabIndex, setSelectedTabIndex] = useState<number | null>(1);
+  const [selectedTabIndex, setSelectedTabIndex] = useState<number | null>(null);
   const [alertMessage, setAlertMessage] = useState<string>("");
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -27,29 +30,42 @@ const Dashboard2Page = () => {
   );
 
   const handleTabEdit = (
-    index: number,
+    id: string,
     newName: string,
     newDescription: string
   ) => {
-    const updatedTabs = [...tabs];
-    updatedTabs[index].label = newName;
-    updatedTabs[index].description = newDescription;
+    const updatedTabs = tabs.map((tab) =>
+      tab.id === id
+        ? { ...tab, label: newName, description: newDescription }
+        : tab
+    );
     setTabs(updatedTabs);
     setEditingTabIndex(null);
     setAlertMessage("탭이 수정되었습니다!");
   };
 
-  const handleTabDelete = (index: number) => {
-    const updatedTabs = tabs.filter((_, i) => i !== index);
+  const handleTabDelete = (dashboardId: string) => {
+    if (!window.confirm("이 대시보드를 삭제하시겠습니까?")) return;
+
+    // ✅ 해당 대시보드의 모든 차트 삭제
+    useChartStore.getState().removeDashboard(dashboardId);
+
+    // ✅ 대시보드 목록에서 삭제
+    const updatedTabs = tabs.filter((tab) => tab.id !== dashboardId);
     setTabs(updatedTabs);
-    setAlertMessage("탭이 삭제되었습니다!");
+
+    // ✅ 상태 초기화
+    setMenuOpenIndex(null);
+    setIsModalOpen(false);
+    setSelectedTabIndex(null);
+    setAlertMessage("대시보드가 삭제되었습니다!");
   };
 
   const handleTabAdd = (newTabName: string, newTabDescription: string) => {
     setTabs([
       ...tabs,
       {
-        id: `${tabs.length + 1}`,
+        id: uuidv4(),
         label: newTabName,
         description: newTabDescription,
         content: "",
@@ -123,31 +139,21 @@ const Dashboard2Page = () => {
                   }}
                 />
                 {menuOpenIndex === index && (
-                  <div className="absolute right-0 mt-2 w-40 bg-white shadow-lg rounded-md z-50">
-                    <button
-                      className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setEditingTabIndex(index);
-                        setIsModalOpen(true);
-                        setMenuOpenIndex(null);
-                      }}
-                    >
-                      <Edit2 className="w-4 h-4 mr-2" /> 수정
-                    </button>
-                    <button
-                      className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (window.confirm("이 탭을 삭제하시겠습니까?")) {
-                          handleTabDelete(index);
-                        }
-                        setMenuOpenIndex(null);
-                      }}
-                    >
-                      <Trash2 className="w-4 h-4 mr-2" /> 삭제
-                    </button>
-                  </div>
+                  <TabMenu
+                    index={tab.id}
+                    setEditingTabIndex={() => {
+                      setEditingTabIndex(tab.id);
+                    }}
+                    setIsModalOpen={() => {
+                      setIsModalOpen(true);
+                    }}
+                    setMenuOpenIndex={() => {
+                      setMenuOpenIndex(null);
+                    }}
+                    handleTabDelete={() => {
+                      handleTabDelete(tab.id);
+                    }}
+                  />
                 )}
               </div>
             </div>
@@ -160,10 +166,14 @@ const Dashboard2Page = () => {
         onClose={() => setIsModalOpen(false)}
         onAddTab={handleTabAdd}
         initialTabName={
-          editingTabIndex !== null ? tabs[editingTabIndex].label : ""
+          editingTabIndex !== null
+            ? tabs.find((tab) => tab.id === editingTabIndex)?.label || ""
+            : ""
         }
         initialTabDescription={
-          editingTabIndex !== null ? tabs[editingTabIndex].description : ""
+          editingTabIndex !== null
+            ? tabs.find((tab) => tab.id === editingTabIndex)?.description || ""
+            : ""
         }
         onEditTab={handleTabEdit}
         editingIndex={editingTabIndex}
