@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { v4 as uuidv4 } from "uuid";
 import { Dataset } from "../context/chartOptionContext";
+import { useDashboardStore } from "./useDashboardStore";
 
 interface ChartStore {
   charts: Record<
@@ -43,17 +44,17 @@ interface ChartStore {
     chartId?: string
   ) => void;
   removeChart: (dashboardId: string, chartId: string) => void;
+  removeDashboard: (dashboardId: string) => void; // ✅ 대시보드 삭제 추가
 }
 
 export const useChartStore = create<ChartStore>((set) => ({
   charts: {},
+
   setChartData: (dashboardId, chartOptions, datasets, chartId) => {
     set((state) => {
-      // ✅ dashboardId가 존재하지 않으면 빈 배열 할당하여 오류 방지
       const existingCharts = state.charts[dashboardId] || [];
 
       if (chartId) {
-        // ✅ 기존 차트 업데이트 (datasets 포함)
         const updatedCharts = existingCharts.map((chart) =>
           chart.chartId === chartId
             ? { ...chart, chartOptions, datasets }
@@ -61,12 +62,13 @@ export const useChartStore = create<ChartStore>((set) => ({
         );
         return { charts: { ...state.charts, [dashboardId]: updatedCharts } };
       } else {
-        // ✅ 새로운 차트 추가 (datasets 포함)
-        const newChart = {
-          chartId: uuidv4(),
-          chartOptions,
-          datasets,
-        };
+        const newChartId = uuidv4();
+        const newChart = { chartId: newChartId, chartOptions, datasets };
+
+        useDashboardStore
+          .getState()
+          .addChartToDashboard(dashboardId, newChartId);
+
         return {
           charts: {
             ...state.charts,
@@ -76,14 +78,32 @@ export const useChartStore = create<ChartStore>((set) => ({
       }
     });
   },
+
   removeChart: (dashboardId, chartId) => {
-    set((state) => ({
-      charts: {
-        ...state.charts,
-        [dashboardId]: (state.charts[dashboardId] || []).filter(
-          (chart) => chart.chartId !== chartId
-        ),
-      },
-    }));
+    set((state) => {
+      const updatedCharts = (state.charts[dashboardId] || []).filter(
+        (chart) => chart.chartId !== chartId
+      );
+
+      useDashboardStore
+        .getState()
+        .removeChartFromDashboard(dashboardId, chartId);
+
+      return {
+        charts: {
+          ...state.charts,
+          [dashboardId]: updatedCharts,
+        },
+      };
+    });
+  },
+
+  removeDashboard: (dashboardId) => {
+    set((state) => {
+      const updatedCharts = { ...state.charts };
+      delete updatedCharts[dashboardId]; // ✅ 해당 대시보드의 모든 차트 삭제
+      useDashboardStore.getState().removeDashboard(dashboardId); // ✅ 대시보드 매핑 삭제
+      return { charts: updatedCharts };
+    });
   },
 }));
