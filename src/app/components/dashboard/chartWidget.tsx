@@ -37,27 +37,25 @@ const ChartWidget = ({ type, datasets, options }: ChartWidgetProps) => {
 
   const chartData = isPieOrDoughnut
     ? {
-        labels: datasets.map((dataset) => dataset.label), // ✅ labels 변환
+        labels: datasets.map((dataset) => dataset.label), 
         datasets: [
           {
-            data: datasets.map((dataset) =>
+            data: datasets.map((dataset, index) =>
               dataset.data.reduce((a, b) => a + b, 0)
             ), // ✅ 모든 데이터 합산하여 변환
-            backgroundColor: options?.backgroundColors || [
-              "#ff6384",
-              "#36a2eb",
-              "#ffcd56",
-              "#4bc0c0",
-              "#9966ff",
-            ],
-            borderColor: options?.borderColors || [
-              "#ff6384",
-              "#36a2eb",
-              "#ffcd56",
-              "#4bc0c0",
-              "#9966ff",
-            ],
-            borderWidth: 1,
+            backgroundColor: datasets.map((dataset, index) =>
+              options?.isSingleColorMode
+                ? options?.backgroundColor
+                : options?.backgroundColors?.[
+                    index % options?.backgroundColors?.length
+                  ]
+            ),
+            borderColor: datasets.map((dataset, index) =>
+              options?.isSingleColorMode
+                ? options?.borderColor
+                : options?.borderColors?.[index % options?.borderColors?.length]
+            ),
+            borderWidth: options?.crosshairWidth ?? 1,
           },
         ],
       }
@@ -103,6 +101,15 @@ const ChartWidget = ({ type, datasets, options }: ChartWidgetProps) => {
         labels: { color: options?.legendColor ?? "#000" },
       },
       tooltip: { backgroundColor: options?.tooltipBgColor ?? "#4B4B4B" },
+      zoom: {
+        pan: { enabled: options?.enableZoom, mode: options?.zoomMode },
+        zoom: {
+          wheel: { enabled: options?.enableZoom },
+          pinch: { enabled: options?.enableZoom },
+          mode: options?.zoomMode,
+          speed: options?.zoomSensitivity,
+        },
+      },
     },
     scales: !isPieOrDoughnut
       ? {
