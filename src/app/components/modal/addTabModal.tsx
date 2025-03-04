@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { MoreVertical, Trash2, Edit2 } from "lucide-react";
 
 interface AddTabModalProps {
   isOpen: boolean;
@@ -9,8 +8,8 @@ interface AddTabModalProps {
   onAddTab: (tabName: string, tabDescription: string) => void;
   initialTabName: string;
   initialTabDescription: string;
-  onEditTab: (index: number, newName: string, newDescription: string) => void;
-  editingIndex: number | null;
+  onEditTab: (id: string, newName: string, newDescription: string) => void;
+  editingIndex: string | null;
 }
 
 const AddTabModal = ({
