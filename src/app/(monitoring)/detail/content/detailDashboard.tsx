@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useChartStore } from "@/app/store/useChartStore";
+import { useDashboardStore } from "@/app/store/useDashboardStore";
 import { useRouter, useSearchParams } from "next/navigation";
 import AddChartBar from "@/app/components/bar/addChartBar";
 import TimeRangeBar from "@/app/components/bar/timeRangeBar";
@@ -12,8 +13,18 @@ const DetailDashboard = () => {
   const id = useSearchParams();
   const dashboardId = id.get("id") || "1";
 
-  const { charts, setChartData, removeChart } = useChartStore();
-  const chartDataList = charts[dashboardId] ?? [];
+  const { charts, removeChart } = useChartStore();
+  const { dashboardChartMap } = useDashboardStore();
+
+  // ✅ 대시보드별 차트 ID 목록 가져오기
+  const chartIds = dashboardChartMap[dashboardId] || [];
+
+  // ✅ 대시보드별 차트 데이터 가져오기
+  const chartDataList = chartIds
+    .map((chartId) =>
+      charts[dashboardId]?.find((chart) => chart.chartId === chartId)
+    )
+    .filter(Boolean);
 
   const [from, setFrom] = useState<string | null>(null);
   const [to, setTo] = useState<string | null>(null);
@@ -73,13 +84,13 @@ const DetailDashboard = () => {
       {/* == ChartSection == */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-2 gap-6 p-4">
         {chartDataList.length > 0 ? (
-          chartDataList.map((chart) => {
-            return (
+          chartDataList.map((chart) =>
+            chart ? ( // 🔹 undefined 방지
               <div key={chart.chartId} className="flex justify-center">
                 <div className="w-full h-[400px]">
                   <ChartWidget
-                    type={chart.chartOptions.chartType}
-                    datasets={chart.datasets}
+                    type={chart.chartOptions?.chartType}
+                    datasets={chart.datasets || []}
                     options={chart.chartOptions}
                   />
                   <div className="flex justify-between mt-2">
@@ -98,10 +109,10 @@ const DetailDashboard = () => {
                   </div>
                 </div>
               </div>
-            );
-          })
+            ) : null
+          )
         ) : (
-          <p>No charts available</p>
+          <p></p>
         )}
       </div>
     </div>
