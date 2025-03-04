@@ -34,7 +34,7 @@ const TabMenu: React.FC<TabMenuProps> = ({
         className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
         onClick={(e) => {
           e.stopPropagation();
-          if (window.confirm("이 탭을 삭제하시겠습니까?")) {
+          if (window.confirm("대시보드를 삭제하시겠습니까?")) {
             handleTabDelete(index);
           }
           setMenuOpenIndex(null);
