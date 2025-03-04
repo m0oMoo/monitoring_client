@@ -7,10 +7,14 @@ import { Chart } from "chart.js/auto";
 import zoomPlugin from "chartjs-plugin-zoom";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useChartStore } from "@/app/store/useChartStore";
+import { useSelectedSection } from "@/app/context/selectedSectionContext";
+import CommonWidget from "@/app/components/dashboard/commonWidget";
+import { useWidgetOptions } from "@/app/context/widgetOptionContext";
 
 Chart.register(zoomPlugin);
 
 const ChartSection = () => {
+  const { selectedSection, setSelectedSection } = useSelectedSection();
   const {
     datasets,
     chartType,
@@ -39,6 +43,24 @@ const ChartSection = () => {
     setDatasets,
   } = useChartOptions();
 
+  const {
+    widgetType,
+    setWidgetType,
+    label,
+    value,
+    maxValue,
+    subText,
+    changePercent,
+    chartData,
+    widgetBackgroundColor,
+    textColor,
+    colors,
+    thresholds,
+    unit,
+    arrowVisible,
+    setWidgetOptions,
+  } = useWidgetOptions();
+
   const router = useRouter();
   const id = useSearchParams();
   const dashboardId = id.get("id") || "1";
@@ -58,12 +80,10 @@ const ChartSection = () => {
     if (existingChart) {
       if (existingChart.chartOptions) {
         setOptions(existingChart.chartOptions);
-        console.log("✅ 기존 차트 옵션 설정 완료!", existingChart.chartOptions);
       }
 
       if (existingChart.datasets) {
         setDatasets(existingChart.datasets);
-        console.log("✅ 기존 datasets 불러오기 완료!", existingChart.datasets);
       }
     }
   }, [existingChart]);
@@ -131,7 +151,7 @@ const ChartSection = () => {
   };
 
   return (
-    <div className="overflow-auto mr-[300px]">
+    <div className="mr-[300px]">
       {/* Time Range & Refresh Control */}
       <AddChartBar isEdit={true} onCreateClick={handleCreateClick} />
       <TimeRangeBar
@@ -144,17 +164,37 @@ const ChartSection = () => {
       />
 
       <div className="px-4">
-        {/* ✅ Chart Widget */}
-        <div className="border rounded-lg bg-white p-6 shadow-md h-[400px] flex flex-col">
-          <h2 className="text-lg font-semibold mb-2">{titleText}</h2>
-          <div className="flex-1">
-            <ChartWidget
-              type={chartType}
-              options={newChartOptions}
-              datasets={datasets}
+        {selectedSection === "chartOption" ? (
+          <div className="border rounded-lg bg-white p-6 shadow-md h-[400px] flex flex-col">
+            <h2 className="text-lg font-semibold mb-2">{titleText}</h2>
+            <div className="flex-1">
+              <ChartWidget
+                type={chartType}
+                options={newChartOptions}
+                datasets={datasets}
+              />
+            </div>
+          </div>
+        ) : (
+          <div className="flex justify-center items-center">
+            <CommonWidget
+              widgetType={widgetType}
+              value={value}
+              label={label}
+              maxValue={maxValue}
+              thresholds={thresholds}
+              colors={colors}
+              subText={subText}
+              changePercent={changePercent}
+              chartData={chartData}
+              backgroundColor={widgetBackgroundColor}
+              textColor={textColor}
+              unit={unit}
+              arrowVisible={arrowVisible}
+              className="scale-[2] origin-center mt-32"
             />
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

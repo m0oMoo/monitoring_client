@@ -157,19 +157,18 @@ const OptionPanel = () => {
   };
 
   return (
-    <div className="bg-ivory-bg_sub border-l border-0.5 no-scrollbar border-navy-border pt-[44px] pl-6 w-[300px] h-[100vh] overflow-y-auto">
+    <div className="bg-ivory-bg_sub border-l border-0.5 no-scrollbar border-navy-border py-8 pl-6 w-[300px] h-[100vh] overflow-y-auto">
       {isClient && (
         <div className="w-full flex flex-col pb-24">
-          <h2 className="text-lg font-semibold mb-4">Option</h2>
+          <h2 className="text-lg font-semibold mb-4">Chart Option</h2>
 
           {/* Left options panel */}
-          <div className="w-1/3">
+          <div className="">
             {/* Chart type */}
             <div className="flex flex-col gap-1 mb-1.5">
               <label className="text-sm2 text-text2">차트 유형</label>
               <ChartTypeSelector
                 chartType={chartType}
-                // setChartType={setChartType}
                 setChartType={(type) => setOptions({ chartType: type })}
               />
             </div>
