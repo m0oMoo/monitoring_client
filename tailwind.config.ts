@@ -108,6 +108,9 @@ export default {
         xxl: "21px",
         xxxl: "24px",
         // 제목
+        title_3xl: ["52px", { fontWeight: 600, lineHeight: "32px" }],
+        title_2xl: ["46px", { fontWeight: 600, lineHeight: "32px" }],
+        title_xl: ["30px", { fontWeight: 600, lineHeight: "32px" }],
         title_lg: ["24px", { fontWeight: 600, lineHeight: "32px" }],
         title_md: ["21px", { fontWeight: 600, lineHeight: "28px" }],
         title_sm: ["18px", { fontWeight: 600, lineHeight: "27px" }],
