@@ -6,9 +6,10 @@ export const MOCK_DATA: { [key: string]: { [key: string]: number[] } } = {
   },
   orders: {
     order_id: [101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 99, 88, 100],
-    price: [1200, 800, 600, 300, 100, 500, 450, 750, 900, 650, 600, 300, 100],
-    quantity: [1, 2, 5, 3, 4, 6, 2, 3, 4, 5, 0, 7, 2, 1],
-    discount: [10, 15, 5, 20, 25, 10, 30, 5, 15, 8, 10, 3, 8, 9],
+    price: [120, 80, 60, 30, 10, 50, 45, 75, 90, 65, 60, 30, 10],
+    quantity: [10, 20, 50, 30, 40, 60, 20, 30, 40, 50, 10, 70, 20, 0],
+    discount: [10, 15, 50, 20, 25, 10, 30, 50, 15, 80, 10, 30, 80, 90],
+    account: [100, 150, 50, 20, 25, 100, 300, 50, 15, 80, 100, 30, 80, 90],
   },
   products: {
     product_id: [
@@ -20,7 +21,10 @@ export const MOCK_DATA: { [key: string]: { [key: string]: number[] } } = {
     ],
   },
   sales: {
-    month: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 5, 4],
+    month: [
+      1900, 2020, 3020, 4030, 5100, 6030, 7010, 8000, 9000, 10000, 1100, 1200,
+      5000, 4000,
+    ],
     revenue: [
       5000, 6000, 7000, 8000, 7500, 8500, 9000, 9500, 7200, 8800, 7000, 8000,
       3500, 7000,
@@ -57,7 +61,7 @@ export const MOCK_DATA: { [key: string]: { [key: string]: number[] } } = {
 // ✅ 테이블 컬럼 매핑 (사용자가 선택할 수 있는 숫자 데이터만 포함)
 export const COLUMNS: { [key: string]: string[] } = {
   users: ["id", "age", "login_count"],
-  orders: ["order_id", "price", "quantity", "discount"],
+  orders: ["order_id", "price", "quantity", "discount", "account"],
   products: ["product_id", "stock", "rating"],
   sales: ["month", "revenue", "profit", "units_sold"],
   traffic: ["day", "visitors", "page_views", "bounce_rate"],
