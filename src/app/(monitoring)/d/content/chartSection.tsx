@@ -45,6 +45,7 @@ const ChartSection = () => {
 
   const {
     widgetType,
+    widgetData,
     setWidgetType,
     label,
     value,
@@ -151,7 +152,7 @@ const ChartSection = () => {
   };
 
   return (
-    <div className="mr-[300px]">
+    <div className="mr-[300px] overflow-hidden">
       {/* Time Range & Refresh Control */}
       <AddChartBar isEdit={true} onCreateClick={handleCreateClick} />
       <TimeRangeBar
@@ -163,7 +164,7 @@ const ChartSection = () => {
         onRefreshChange={handleRefreshChange}
       />
 
-      <div className="px-4">
+      <div className="px-4 min-h-[500px]">
         {selectedSection === "chartOption" ? (
           <div className="border rounded-lg bg-white p-6 shadow-md h-[400px] flex flex-col">
             <h2 className="text-lg font-semibold mb-2">{titleText}</h2>
