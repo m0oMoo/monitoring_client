@@ -7,7 +7,6 @@ type WidgetType = "stat" | "card" | "cardWithChart" | "numberOnly";
 interface WidgetOptions {
   widgetType: WidgetType;
   label: string;
-  value: string;
   maxValue: number;
   thresholds: number[];
   colors: string[];
@@ -36,7 +35,6 @@ export const WidgetOptionsProvider = ({
   const [widgetOptions, setWidgetOptionsState] = useState<WidgetOptions>({
     widgetType: "stat",
     label: "",
-    value: "",
     maxValue: 100,
     thresholds: [50, 75],
     colors: ["#4CAF50", "#f5f251", "#fc5353"],
