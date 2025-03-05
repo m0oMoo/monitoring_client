@@ -4,6 +4,7 @@ import TextInput from "@/app/components/input/textInput";
 import ToggleSwitch from "@/app/components/button/toggle/toggleSwitch";
 import { HexAlphaColorPicker } from "react-colorful";
 import { useWidgetOptions } from "@/app/context/widgetOptionContext";
+import NumberInput from "@/app/components/input/numberInput";
 
 const WidgetOption = () => {
   const [isClient, setIsClient] = useState<boolean>(false);
@@ -86,15 +87,15 @@ const WidgetOption = () => {
             {widgetType === "stat" && (
               <>
                 <div className="flex flex-col gap-1 mb-6">
-                  <label className="text-sm2 text-text2">값</label>
+                  <label className="text-sm2 text-text2">타이틀</label>
                   <TextInput
-                    value={value}
-                    onChange={(e) => setWidgetOptions({ value: e })}
+                    value={label}
+                    onChange={(e) => setWidgetOptions({ label: e })}
                   />
                 </div>
                 <div className="flex flex-col gap-1 mb-6">
                   <label className="text-sm2 text-text2">최대값</label>
-                  <TextInput
+                  <NumberInput
                     value={maxValue.toString()}
                     onChange={(e) => setWidgetOptions({ maxValue: Number(e) })}
                   />
@@ -112,17 +113,19 @@ const WidgetOption = () => {
                   />
                 </div>
                 <div className="flex flex-col gap-1 mb-6">
-                  <label className="text-sm2 text-text2">값</label>
-                  <TextInput
-                    value={value}
-                    onChange={(e) => setWidgetOptions({ value: e })}
-                  />
-                </div>
-                <div className="flex flex-col gap-1 mb-6">
                   <label className="text-sm2 text-text2">설명</label>
                   <TextInput
                     value={subText}
                     onChange={(e) => setWidgetOptions({ subText: e })}
+                  />
+                </div>
+                <div className="flex flex-col gap-1 mb-6">
+                  <label className="text-sm2 text-text2">변화율 표시</label>
+                  <ToggleSwitch
+                    checked={arrowVisible}
+                    onChange={(checked) =>
+                      setWidgetOptions({ arrowVisible: checked })
+                    }
                   />
                 </div>
                 <div className="flex flex-col gap-1 mb-6">
@@ -132,15 +135,7 @@ const WidgetOption = () => {
                     onChange={(e) =>
                       setWidgetOptions({ changePercent: Number(e) })
                     }
-                  />
-                </div>
-                <div className="flex flex-col gap-1 mb-6">
-                  <label className="text-sm2 text-text2">표시</label>
-                  <ToggleSwitch
-                    checked={arrowVisible}
-                    onChange={(checked) =>
-                      setWidgetOptions({ arrowVisible: checked })
-                    }
+                    disabled={!arrowVisible}
                   />
                 </div>
               </>
@@ -163,88 +158,100 @@ const WidgetOption = () => {
             {widgetType === "numberOnly" && (
               <>
                 <div className="flex flex-col gap-1 mb-6">
-                  <label className="text-sm2 text-text2">타이틀</label>
-                  <TextInput
-                    value={label}
-                    onChange={(e) => setWidgetOptions({ label: e })}
-                  />
-                </div>
-                <div className="flex flex-col gap-1 mb-6">
-                  <label className="text-sm2 text-text2">값</label>
-                  <TextInput
-                    value={value}
-                    onChange={(e) => setWidgetOptions({ value: e })}
-                  />
-                </div>
-                <div className="flex flex-col gap-1 mb-6">
                   <label className="text-sm2 text-text2">단위</label>
                   <TextInput
                     value={unit}
                     onChange={(e) => setWidgetOptions({ unit: e })}
                   />
                 </div>
+                <div className="flex flex-col gap-1 mb-6">
+                  <label className="text-sm2 text-text2">변화율 표시</label>
+                  <ToggleSwitch
+                    checked={arrowVisible}
+                    onChange={(checked) =>
+                      setWidgetOptions({ arrowVisible: checked })
+                    }
+                  />
+                </div>
+                <div className="flex flex-col gap-1 mb-6">
+                  <label className="text-sm2 text-text2">변화율 (%)</label>
+                  <TextInput
+                    value={changePercent?.toString() ?? ""}
+                    onChange={(e) =>
+                      setWidgetOptions({ changePercent: Number(e) })
+                    }
+                    disabled={!arrowVisible}
+                  />
+                </div>
               </>
             )}
+            {widgetType !== "stat" && (
+              <>
+                {/* 배경색 선택 */}
+                <div className="flex flex-col gap-1 mb-6">
+                  <label className="text-sm2 text-text2">배경색</label>
+                  <div className="flex items-center">
+                    <TextInput
+                      value={widgetBackgroundColor}
+                      onChange={(value) =>
+                        setWidgetOptions({ widgetBackgroundColor: value })
+                      }
+                      placeholder="색상 코드 입력"
+                      className="w-[200px]"
+                    />
+                    <button
+                      onClick={togglePickerVisibility}
+                      className="p-2 rounded-full focus:outline-none"
+                    >
+                      <div
+                        style={{ backgroundColor: widgetBackgroundColor }}
+                        className="w-6 h-6 border rounded-full"
+                      />
+                    </button>
+                  </div>
+                  {isBgPickerVisible && (
+                    <HexAlphaColorPicker
+                      color={widgetBackgroundColor}
+                      onChange={(color) =>
+                        setWidgetOptions({ widgetBackgroundColor: color })
+                      }
+                    />
+                  )}
+                </div>
 
-            {/* 배경색 선택 */}
-            <div className="flex flex-col gap-1 mb-6">
-              <label className="text-sm2 text-text2">배경색</label>
-              <div className="flex items-center">
-                <TextInput
-                  value={widgetBackgroundColor}
-                  onChange={(value) =>
-                    setWidgetOptions({ widgetBackgroundColor: value })
-                  }
-                  placeholder="색상 코드 입력"
-                  className="w-[200px]"
-                />
-                <button
-                  onClick={togglePickerVisibility}
-                  className="p-2 rounded-full focus:outline-none"
-                >
-                  <div
-                    style={{ backgroundColor: widgetBackgroundColor }}
-                    className="w-6 h-6 border rounded-full"
-                  />
-                </button>
-              </div>
-              {isBgPickerVisible && (
-                <HexAlphaColorPicker
-                  color={widgetBackgroundColor}
-                  onChange={(color) =>
-                    setWidgetOptions({ widgetBackgroundColor: color })
-                  }
-                />
-              )}
-            </div>
-
-            {/* 텍스트 색상 선택 */}
-            <div className="flex flex-col gap-1 mb-6">
-              <label className="text-sm2 text-text2">텍스트 색상</label>
-              <div className="flex items-center">
-                <TextInput
-                  value={textColor}
-                  onChange={(value) => setWidgetOptions({ textColor: value })}
-                  placeholder="색상 코드 입력"
-                  className="w-[200px]"
-                />
-                <button
-                  onClick={togglePickerVisibility2}
-                  className="p-2 rounded-full focus:outline-none"
-                >
-                  <div
-                    style={{ backgroundColor: textColor }}
-                    className="w-6 h-6 border rounded-full"
-                  />
-                </button>
-              </div>
-              {isTextColorPickerVisible && (
-                <HexAlphaColorPicker
-                  color={textColor}
-                  onChange={(color) => setWidgetOptions({ textColor: color })}
-                />
-              )}
-            </div>
+                {/* 텍스트 색상 선택 */}
+                <div className="flex flex-col gap-1 mb-6">
+                  <label className="text-sm2 text-text2">텍스트 색상</label>
+                  <div className="flex items-center">
+                    <TextInput
+                      value={textColor}
+                      onChange={(value) =>
+                        setWidgetOptions({ textColor: value })
+                      }
+                      placeholder="색상 코드 입력"
+                      className="w-[200px]"
+                    />
+                    <button
+                      onClick={togglePickerVisibility2}
+                      className="p-2 rounded-full focus:outline-none"
+                    >
+                      <div
+                        style={{ backgroundColor: textColor }}
+                        className="w-6 h-6 border rounded-full"
+                      />
+                    </button>
+                  </div>
+                  {isTextColorPickerVisible && (
+                    <HexAlphaColorPicker
+                      color={textColor}
+                      onChange={(color) =>
+                        setWidgetOptions({ textColor: color })
+                      }
+                    />
+                  )}
+                </div>
+              </>
+            )}
           </div>
           {isPickerVisible && (
             <div className="absolute z-10">
