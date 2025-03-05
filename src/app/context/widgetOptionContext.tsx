@@ -18,8 +18,10 @@ interface WidgetOptions {
   textColor: string;
   unit: string;
   arrowVisible: boolean;
+  widgetData: { label: string; data: any } | null;
   setWidgetOptions: (options: Partial<WidgetOptions>) => void;
   setWidgetType: (type: WidgetType) => void;
+  setWidgetData: (data: { label: string; data: any } | null) => void;
 }
 
 const WidgetOptionsContext = createContext<WidgetOptions | undefined>(
@@ -45,8 +47,10 @@ export const WidgetOptionsProvider = ({
     textColor: "#fff",
     unit: "",
     arrowVisible: false,
+    widgetData: null, // ✅ 위젯 데이터 초기값 null
     setWidgetOptions: () => {},
     setWidgetType: () => {},
+    setWidgetData: () => {},
   });
 
   const setWidgetOptions = (newOptions: Partial<WidgetOptions>) => {
@@ -57,9 +61,18 @@ export const WidgetOptionsProvider = ({
     setWidgetOptionsState((prev) => ({ ...prev, widgetType: type }));
   };
 
+  const setWidgetData = (data: { label: string; data: any } | null) => {
+    setWidgetOptionsState((prev) => ({ ...prev, widgetData: data }));
+  };
+
   return (
     <WidgetOptionsContext.Provider
-      value={{ ...widgetOptions, setWidgetOptions, setWidgetType }}
+      value={{
+        ...widgetOptions,
+        setWidgetOptions,
+        setWidgetType,
+        setWidgetData,
+      }}
     >
       {children}
     </WidgetOptionsContext.Provider>
