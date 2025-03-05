@@ -29,7 +29,6 @@ export default {
         text: "#1F1F1F",
         text2: "#4B4B4B",
         text3: "#A0A0A0",
-
         ivory: {
           bg: "#fdfdf4",
           bg_sub: "#fffffa",
@@ -66,6 +65,8 @@ export default {
           1: "#E0E0E0",
           0: "#F5F5F5",
         },
+        black_07: "rgba(0, 0, 0, 0.07)",
+
         transparent: {
           gray: "rgba(128, 128, 128, 0.2)",
           green: "rgba(134, 207, 94, 0.2)",
