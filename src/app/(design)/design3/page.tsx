@@ -111,7 +111,7 @@ const DesignPage: React.FC = () => {
         preventCollision={false}
         resizeHandles={["se", "e", "w", "n", "s", "sw", "nw", "ne"]}
       >
-        {charts.map((chart) => (
+        {/* {charts.map((chart) => (
           <div
             key={chart.id}
             className="bg-transparent p-4 flex items-center justify-center drag-handle"
@@ -135,7 +135,7 @@ const DesignPage: React.FC = () => {
               }}
             />
           </div>
-        ))}
+        ))} */}
       </ReactGridLayout>
     </div>
   );
