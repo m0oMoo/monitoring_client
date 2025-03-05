@@ -51,6 +51,7 @@ const StatWidget = ({
   const options = {
     responsive: true,
     maintainAspectRatio: false,
+    devicePixelRatio: 4,
     cutout: "80%",
     plugins: {
       legend: { display: false },
