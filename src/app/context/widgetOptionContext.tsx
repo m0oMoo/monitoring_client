@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, ReactNode } from "react";
 
-type WidgetType = "stat" | "card" | "cardWithChart" | "numberOnly";
+export type WidgetType = "stat" | "card" | "cardWithChart" | "numberOnly";
 
 interface WidgetOptions {
   widgetType: WidgetType;
