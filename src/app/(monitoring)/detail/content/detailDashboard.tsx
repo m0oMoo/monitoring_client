@@ -7,8 +7,10 @@ import { useRouter, useSearchParams } from "next/navigation";
 import AddChartBar from "@/app/components/bar/addChartBar";
 import TimeRangeBar from "@/app/components/bar/timeRangeBar";
 import ChartWidget from "@/app/components/dashboard/chartWidget";
+import CommonWidget from "@/app/components/dashboard/commonWidget"; // ✅ 위젯 컴포넌트 추가
 import TabMenu from "@/app/components/menu/tabMenu";
 import { MoreVertical } from "lucide-react";
+import { useWidgetStore } from "@/app/store/useWidgetStore";
 
 const DetailDashboard = () => {
   const router = useRouter();
@@ -16,14 +18,27 @@ const DetailDashboard = () => {
   const dashboardId = id.get("id") || "1";
 
   const { charts, removeChart } = useChartStore();
+  const { widgets, removeWidget } = useWidgetStore(); // ✅ 위젯 가져오기
   const { dashboardChartMap } = useDashboardStore();
 
   const chartIds = dashboardChartMap[dashboardId] || [];
+
+  // ✅ 차트 목록 가져오기
   const chartDataList = chartIds
     .map((chartId) =>
       charts[dashboardId]?.find((chart) => chart.chartId === chartId)
     )
     .filter(Boolean);
+
+  // ✅ 위젯 목록 가져오기
+  const widgetDataList = chartIds
+    .map((widgetId) =>
+      widgets[dashboardId]?.find((widget) => widget.widgetId === widgetId)
+    )
+    .filter(Boolean);
+
+  // ✅ 차트와 위젯을 합쳐서 하나의 리스트로 관리
+  const combinedDataList = [...chartDataList, ...widgetDataList];
 
   const [from, setFrom] = useState<string | null>(null);
   const [to, setTo] = useState<string | null>(null);
@@ -83,11 +98,11 @@ const DetailDashboard = () => {
                   ${gridCols === 4 ? "grid-cols-4" : ""} 
                   gap-6 p-4`}
       >
-        {chartDataList.length > 0
-          ? chartDataList.map((chart, index) =>
-              chart ? (
+        {combinedDataList.length > 0
+          ? combinedDataList.map((item, index) =>
+              item ? (
                 <div
-                  key={chart.chartId}
+                  key={"chartId" in item ? item.chartId : item.widgetId} // ✅ 안전한 키 사용
                   className="relative flex justify-center"
                 >
                   <div
@@ -100,35 +115,62 @@ const DetailDashboard = () => {
                         onClick={(e) => {
                           e.stopPropagation();
                           setMenuOpenIndex(
-                            menuOpenIndex === chart.chartId
+                            menuOpenIndex ===
+                              ("chartId" in item ? item.chartId : item.widgetId)
                               ? null
-                              : chart.chartId
+                              : "chartId" in item
+                              ? item.chartId
+                              : item.widgetId
                           );
                         }}
                       />
-                      {menuOpenIndex === chart.chartId && (
+                      {menuOpenIndex ===
+                        ("chartId" in item ? item.chartId : item.widgetId) && (
                         <TabMenu
-                          index={chart.chartId}
+                          index={
+                            "chartId" in item ? item.chartId : item.widgetId
+                          }
                           setEditingTabIndex={() =>
                             router.push(
-                              `/d?id=${dashboardId}&chartId=${chart.chartId}`
+                              `/d?id=${dashboardId}&chartId=${
+                                "chartId" in item ? item.chartId : item.widgetId
+                              }`
                             )
                           }
                           setIsModalOpen={() => {}}
                           setMenuOpenIndex={setMenuOpenIndex}
                           handleTabDelete={() =>
-                            removeChart(dashboardId, chart.chartId)
+                            "chartId" in item
+                              ? removeChart(dashboardId, item.chartId)
+                              : removeWidget(dashboardId, item.widgetId)
                           }
                         />
                       )}
                     </div>
 
-                    {/* 차트 위젯 */}
-                    <ChartWidget
-                      type={chart.chartOptions?.chartType}
-                      datasets={chart.datasets || []}
-                      options={chart.chartOptions}
-                    />
+                    {/* ✅ 차트와 위젯을 구분하여 렌더링 */}
+                    {"chartOptions" in item ? (
+                      <ChartWidget
+                        type={item.chartOptions.chartType}
+                        datasets={item.datasets || []}
+                        options={item.chartOptions}
+                      />
+                    ) : (
+                      <CommonWidget
+                        widgetType={item.widgetType}
+                        widgetData={item.widgetData}
+                        label={item.label}
+                        maxValue={item.maxValue}
+                        thresholds={item.thresholds}
+                        colors={item.colors}
+                        subText={item.subText}
+                        changePercent={item.changePercent}
+                        backgroundColor={item.widgetBackgroundColor}
+                        textColor={item.textColor}
+                        unit={item.unit}
+                        arrowVisible={item.arrowVisible}
+                      />
+                    )}
                   </div>
                 </div>
               ) : null
