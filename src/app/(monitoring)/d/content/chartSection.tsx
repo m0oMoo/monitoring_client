@@ -10,11 +10,12 @@ import { useChartStore } from "@/app/store/useChartStore";
 import { useSelectedSection } from "@/app/context/selectedSectionContext";
 import CommonWidget from "@/app/components/dashboard/commonWidget";
 import { useWidgetOptions } from "@/app/context/widgetOptionContext";
+import { useWidgetStore } from "@/app/store/useWidgetStore";
 
 Chart.register(zoomPlugin);
 
 const ChartSection = () => {
-  const { selectedSection, setSelectedSection } = useSelectedSection();
+  const { selectedSection } = useSelectedSection();
   const {
     datasets,
     chartType,
@@ -46,12 +47,10 @@ const ChartSection = () => {
   const {
     widgetType,
     widgetData,
-    setWidgetType,
     label,
     maxValue,
     subText,
     changePercent,
-    chartData,
     widgetBackgroundColor,
     textColor,
     colors,
@@ -67,6 +66,8 @@ const ChartSection = () => {
   const chartId = id.get("chartId") || undefined;
 
   const { charts, setChartData } = useChartStore();
+  const { widgets, setWidgetData } = useWidgetStore();
+
   const existingChart = chartId
     ? charts[dashboardId]?.find((chart) => chart.chartId === chartId)
     : null;
@@ -105,16 +106,19 @@ const ChartSection = () => {
     setTo(now.toISOString().slice(0, 16));
     setLastUpdated(now.toLocaleTimeString());
   }, []);
+  const existingWidget = chartId
+    ? widgets[dashboardId]?.find((widget) => widget.widgetId === chartId)
+    : null;
 
   useEffect(() => {
-    if (refreshTime !== "autoType") {
-      const interval = setInterval(() => {
-        setLastUpdated(new Date().toLocaleTimeString());
-      }, refreshTime * 1000);
-
-      return () => clearInterval(interval);
+    if (existingChart) {
+      setOptions(existingChart.chartOptions);
+      setDatasets(existingChart.datasets);
+    } else if (existingWidget) {
+      // ✅ 위젯 데이터도 Context에 반영
+      setWidgetOptions(existingWidget);
     }
-  }, [refreshTime]);
+  }, [existingChart, existingWidget]);
 
   const newChartOptions = {
     chartType,
@@ -141,18 +145,32 @@ const ChartSection = () => {
     tension,
   };
 
-  // ✅ 차트 데이터 저장 또는 업데이트 (datasets 추가)
+  const newWidgetOptions = {
+    widgetType,
+    widgetData,
+    label,
+    maxValue,
+    subText,
+    changePercent,
+    widgetBackgroundColor,
+    textColor,
+    colors,
+    thresholds,
+    unit,
+    arrowVisible,
+  };
+
   const handleCreateClick = () => {
-    setChartData(dashboardId, newChartOptions, datasets, chartId);
-
-    setOptions(newChartOptions);
-
+    if (selectedSection === "chartOption") {
+      setChartData(dashboardId, newChartOptions, datasets, chartId);
+    } else if (selectedSection === "widgetOption") {
+      setWidgetData(dashboardId, newWidgetOptions, chartId);
+    }
     router.push(`/detail?id=${dashboardId}`);
   };
 
   return (
     <div className="mr-[300px] overflow-hidden">
-      {/* Time Range & Refresh Control */}
       <AddChartBar isEdit={true} onCreateClick={handleCreateClick} />
       <TimeRangeBar
         from={from}
