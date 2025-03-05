@@ -85,6 +85,7 @@ const CardWidgetWithBarChart = ({
             options={{
               responsive: true,
               maintainAspectRatio: false,
+              devicePixelRatio: 4,
               plugins: {
                 legend: { display: false },
                 tooltip: { enabled: false },
