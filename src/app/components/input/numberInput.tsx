@@ -5,6 +5,7 @@ interface NumberInputProps {
   onChange: (value: string) => void;
   placeholder?: string;
   className?: string;
+  disabled?: boolean;
 }
 
 const NumberInput: React.FC<NumberInputProps> = ({
@@ -12,6 +13,7 @@ const NumberInput: React.FC<NumberInputProps> = ({
   onChange,
   placeholder = "",
   className = "",
+  disabled = false,
 }) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const inputValue = e.target.value;
@@ -28,8 +30,14 @@ const NumberInput: React.FC<NumberInputProps> = ({
       onChange={handleChange}
       placeholder={placeholder}
       className={`border py-1.5 px-2 text-md1 rounded-md active:border-focus
-      placeholder:text-dark-text_secondary border-border
-      focus:outline-none focus:border-focus bg-white ${className}`}
+      placeholder:text-dark-text_secondary 
+      ${
+        disabled
+          ? "text-gray-500 bg-black_07 border-gray-2"
+          : "focus:outline-none focus:border-focus bg-white border-border"
+      }
+       ${className}`}
+      disabled={disabled}
     />
   );
 };
