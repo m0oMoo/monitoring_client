@@ -6,7 +6,7 @@ ChartJS.register(ArcElement, Tooltip, Legend, Title);
 interface StatWidgetProps {
   label: string;
   value: number;
-  maxValue?: number; // ✅ 최대값을 동적으로 설정
+  maxValue?: number;
   defaultColor?: string;
   thresholds?: number[];
   colors?: string[];
@@ -16,7 +16,7 @@ interface StatWidgetProps {
 const StatWidget = ({
   label,
   value,
-  maxValue = 100, // ✅ 기본 100, 변경 가능
+  maxValue = 100,
   defaultColor = "#4CAF50",
   thresholds = [50, 75],
   colors = ["#4CAF50", "#f5f251", "#fc5353"],
@@ -40,7 +40,8 @@ const StatWidget = ({
   const data = {
     datasets: [
       {
-        data: [percentage, 100 - percentage], // ✅ maxValue 기준으로 퍼센트 변환
+        // ✅ maxValue 기준으로 퍼센트 변환
+        data: [percentage, 100 - percentage],
         backgroundColor: [activeColor, "#E0E0E0"],
         borderWidth: 0,
       },
@@ -56,7 +57,7 @@ const StatWidget = ({
       tooltip: { enabled: false },
       title: {
         display: true,
-        text: label,
+        // text: label,
         color: "#1F1F1F",
         font: {
           size: 16,
@@ -70,9 +71,15 @@ const StatWidget = ({
   return (
     <div
       className={`${className} relative flex flex-col items-center justify-center
-    border-navy-border pb-3 w-72 h-48 rounded-md shadow-lg bg-white`}
+      border-navy-border pb-3 w-72 h-48 rounded-md shadow-lg bg-white`}
     >
+      {/* ✅ 라벨을 차트 위에 배치 */}
+      <div className="absolute top-2 text-lg font-bold text-text">{label}</div>
+
+      {/* 도넛 차트 */}
       <Doughnut data={data} options={options} />
+
+      {/* ✅ 차트 중앙에 값 배치 */}
       <div className="absolute text-3xl font-bold text-text mt-8">{value}</div>
     </div>
   );
