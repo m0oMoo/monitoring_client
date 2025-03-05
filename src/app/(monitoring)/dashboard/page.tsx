@@ -108,8 +108,8 @@ const Dashboard = () => {
         initialTabDescription={
           editingTabIndex !== null ? tabs[editingTabIndex].description : ""
         }
-        onEditTab={handleTabEdit}
-        editingIndex={editingTabIndex}
+        onEditTab={() => {}}
+        editingIndex={null}
       />
     </div>
   );
