@@ -16,7 +16,6 @@ const WidgetOption = () => {
     widgetType,
     setWidgetType,
     label,
-    value,
     maxValue,
     subText,
     changePercent,
