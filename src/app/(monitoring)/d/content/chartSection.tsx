@@ -48,7 +48,6 @@ const ChartSection = () => {
     widgetData,
     setWidgetType,
     label,
-    value,
     maxValue,
     subText,
     changePercent,
@@ -180,19 +179,18 @@ const ChartSection = () => {
           <div className="flex justify-center items-center">
             <CommonWidget
               widgetType={widgetType}
-              value={value}
+              widgetData={widgetData}
               label={label}
               maxValue={maxValue}
               thresholds={thresholds}
               colors={colors}
               subText={subText}
               changePercent={changePercent}
-              chartData={chartData}
               backgroundColor={widgetBackgroundColor}
               textColor={textColor}
               unit={unit}
               arrowVisible={arrowVisible}
-              className="scale-[2] origin-center mt-32"
+              className="scale-[2] origin-center mt-32 will-change-transform"
             />
           </div>
         )}
