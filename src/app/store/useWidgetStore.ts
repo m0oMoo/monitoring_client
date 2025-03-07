@@ -1,89 +1,103 @@
 import { create } from "zustand";
 import { v4 as uuidv4 } from "uuid";
-import { WidgetType } from "@/app/context/widgetOptionContext";
 import { useDashboardStore } from "./useDashboardStore";
+import { WidgetOptions } from "../types/options";
 
-interface WidgetData {
-  label: string;
-  data: any;
-}
-
-interface WidgetOptions {
+interface Widget {
   widgetId: string;
-  widgetType: WidgetType;
-  widgetData: WidgetData | null;
-  label: string;
-  maxValue: number;
-  subText: string;
-  changePercent: number;
-  widgetBackgroundColor: string;
-  textColor: string;
-  colors: string[];
-  thresholds: number[];
-  unit: string;
-  arrowVisible: boolean;
+  widgetOptions: WidgetOptions;
 }
 
 interface WidgetStore {
-  widgets: Record<string, WidgetOptions[]>;
-  setWidgetData: (
+  widgets: Record<string, Widget[]>; // 대시보드 ID → 위젯 배열
+  addWidget: (
     dashboardId: string,
-    widgetOptions: Omit<WidgetOptions, "widgetId">,
-    widgetId?: string
+    widgetOptions: Omit<WidgetOptions, "widgetId">
+  ) => void;
+  updateWidget: (
+    dashboardId: string,
+    widgetId: string,
+    widgetOptions: WidgetOptions
   ) => void;
   removeWidget: (dashboardId: string, widgetId: string) => void;
+  cloneWidget: (dashboardId: string, widgetId: string) => void;
 }
 
-export const useWidgetStore = create<WidgetStore>((set) => ({
+export const useWidgetStore = create<WidgetStore>((set, get) => ({
   widgets: {},
 
-  setWidgetData: (dashboardId, widgetOptions, widgetId) => {
-    set((state) => {
-      const existingWidgets = state.widgets[dashboardId] || [];
+  // ✅ 위젯 추가
+  addWidget: (dashboardId, widgetOptions) => {
+    const newWidgetId = uuidv4();
+    const newWidget: Widget = {
+      widgetId: newWidgetId,
+      widgetOptions: { ...widgetOptions, widgetId: newWidgetId }, // widgetId 포함
+    };
 
-      if (widgetId) {
-        // ✅ 기존 위젯 업데이트
-        const updatedWidgets = existingWidgets.map((widget) =>
-          widget.widgetId === widgetId
-            ? { ...widget, ...widgetOptions }
-            : widget
-        );
-        return { widgets: { ...state.widgets, [dashboardId]: updatedWidgets } };
-      } else {
-        // ✅ 새로운 위젯 추가
-        const newWidgetId = uuidv4();
-        const newWidget = { widgetId: newWidgetId, ...widgetOptions };
+    set((state) => ({
+      widgets: {
+        ...state.widgets,
+        [dashboardId]: [...(state.widgets[dashboardId] || []), newWidget],
+      },
+    }));
 
-        useDashboardStore
-          .getState()
-          .addChartToDashboard(dashboardId, newWidgetId);
-
-        return {
-          widgets: {
-            ...state.widgets,
-            [dashboardId]: [...existingWidgets, newWidget],
-          },
-        };
-      }
-    });
+    useDashboardStore
+      .getState()
+      .dashboardChartMap[dashboardId]?.push(newWidgetId);
   },
 
-  removeWidget: (dashboardId, widgetId) => {
-    set((state) => {
-      const updatedWidgets = (state.widgets[dashboardId] || []).filter(
-        (widget) => widget.widgetId !== widgetId
-      );
+  // ✅ 위젯 수정
+  updateWidget: (dashboardId, widgetId, widgetOptions) => {
+    set((state) => ({
+      widgets: {
+        ...state.widgets,
+        [dashboardId]: state.widgets[dashboardId]?.map((widget) =>
+          widget.widgetId === widgetId ? { ...widget, widgetOptions } : widget
+        ),
+      },
+    }));
+  },
 
+  // ✅ 위젯 삭제
+  removeWidget: (dashboardId, widgetId) => {
+    set((state) => ({
+      widgets: {
+        ...state.widgets,
+        [dashboardId]: state.widgets[dashboardId]?.filter(
+          (widget) => widget.widgetId !== widgetId
+        ),
+      },
+    }));
+
+    useDashboardStore.getState().dashboardChartMap[dashboardId] =
       useDashboardStore
         .getState()
-        .removeChartFromDashboard(dashboardId, widgetId);
+        .dashboardChartMap[dashboardId]?.filter((id) => id !== widgetId);
+  },
 
-      return {
-        widgets: {
-          ...state.widgets,
-          [dashboardId]: updatedWidgets,
-        },
-      };
-    });
+  // ✅ 위젯 복제
+  cloneWidget: (dashboardId, widgetId) => {
+    const state = get();
+    const originalWidget = state.widgets[dashboardId]?.find(
+      (w) => w.widgetId === widgetId
+    );
+    if (!originalWidget) return;
+
+    const newWidgetId = uuidv4();
+    const clonedWidget: Widget = {
+      widgetId: newWidgetId,
+      widgetOptions: { ...originalWidget.widgetOptions, widgetId: newWidgetId }, // widgetId 포함
+    };
+
+    set((state) => ({
+      widgets: {
+        ...state.widgets,
+        [dashboardId]: [...state.widgets[dashboardId], clonedWidget],
+      },
+    }));
+
+    useDashboardStore
+      .getState()
+      .dashboardChartMap[dashboardId]?.push(newWidgetId);
   },
 }));
