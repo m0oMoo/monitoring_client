@@ -8,11 +8,29 @@ import AddChartBar from "@/app/components/bar/addChartBar";
 import TimeRangeBar from "@/app/components/bar/timeRangeBar";
 import ChartWidget from "@/app/components/dashboard/chartWidget";
 import CommonWidget from "@/app/components/dashboard/commonWidget";
-import CustomTable from "@/app/components/table/customTable"; // 🔹 테이블 추가
+import CustomTable from "@/app/components/table/customTable";
 import TabMenu from "@/app/components/menu/tabMenu";
 import { MoreVertical } from "lucide-react";
 import { useWidgetStore } from "@/app/store/useWidgetStore";
 import { Dataset } from "@/app/context/chartOptionContext";
+import {
+  WidgetOptions,
+  ChartOptions,
+  DisplayMode,
+  ChartType,
+  WidgetType,
+} from "@/app/types/options";
+
+interface Chart {
+  chartId: string;
+  chartOptions: ChartOptions;
+  datasets: Dataset[];
+}
+
+interface Widget {
+  widgetId: string;
+  widgetOptions: WidgetOptions;
+}
 
 const DetailDashboard = () => {
   const router = useRouter();
@@ -25,19 +43,17 @@ const DetailDashboard = () => {
 
   const chartIds = dashboardChartMap[dashboardId] || [];
 
-  const chartDataList = chartIds
+  const chartDataList: Chart[] = chartIds
     .map((chartId) =>
-      charts[dashboardId]?.find((chart) => chart.chartId === chartId)
+      charts[dashboardId]?.find((chart) => chart?.chartId === chartId)
     )
-    .filter(Boolean);
+    .filter((chart): chart is Chart => !!chart);
 
-  const widgetDataList = chartIds
+  const widgetDataList: Widget[] = chartIds
     .map((widgetId) =>
-      widgets[dashboardId]?.find((widget) => widget.widgetId === widgetId)
+      widgets[dashboardId]?.find((widget) => widget?.widgetId === widgetId)
     )
-    .filter(Boolean);
-
-  const combinedDataList = [...chartDataList, ...widgetDataList];
+    .filter((widget): widget is Widget => !!widget);
 
   const [from, setFrom] = useState<string | null>(null);
   const [to, setTo] = useState<string | null>(null);
@@ -70,14 +86,11 @@ const DetailDashboard = () => {
   const convertToTableData = (datasets: Dataset[]) => {
     if (!datasets || datasets.length === 0) return { headers: [], rows: [] };
 
-    // 🔹 데이터셋의 라벨을 컬럼명으로 사용
     const headers = ["항목", ...datasets.map((dataset) => dataset.label)];
-
-    // 🔹 각 데이터 포인트를 행으로 변환
     const rows = datasets[0].data.map((_, index) => ({
       name: `Point ${index + 1}`,
       ...datasets.reduce((acc, dataset) => {
-        acc[dataset.label] = dataset.data[index]; // label을 key로 사용
+        acc[dataset.label] = dataset.data[index];
         return acc;
       }, {} as Record<string, any>),
     }));
@@ -108,119 +121,88 @@ const DetailDashboard = () => {
         onRefreshChange={setRefreshTime}
       />
 
-      <div
-        className={`grid 
-                  ${gridCols === 1 ? "grid-cols-1" : ""} 
-                  ${gridCols === 2 ? "grid-cols-2" : ""} 
-                  ${gridCols === 3 ? "grid-cols-3" : ""} 
-                  ${gridCols === 4 ? "grid-cols-4" : ""} 
-                  gap-6 p-4`}
-      >
-        {combinedDataList.length > 0
-          ? combinedDataList.map((item, index) =>
-              item ? (
-                <div
-                  key={"chartId" in item ? item.chartId : item.widgetId}
-                  className="relative flex justify-center"
-                >
-                  <div
-                    className={`relative flex flex-col items-center ${
-                      "chartOptions" in item
-                        ? item.chartOptions.displayMode === "chart"
-                          ? "h-[450px]"
-                          : "h-[450px]"
-                        : "h-[230px] max-w-[350px]"
-                    } w-full`}
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    {/* 🔹 탭 메뉴 위치 조정 */}
-                    <div className="absolute top-2 right-2 z-10">
-                      <MoreVertical
-                        className="text-text3 cursor-pointer hover:text-text2"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setMenuOpenIndex(
-                            menuOpenIndex ===
-                              ("chartId" in item ? item.chartId : item.widgetId)
-                              ? null
-                              : "chartId" in item
-                              ? item.chartId
-                              : item.widgetId
-                          );
-                        }}
-                      />
-                      {menuOpenIndex ===
-                        ("chartId" in item ? item.chartId : item.widgetId) && (
-                        <TabMenu
-                          index={
-                            "chartId" in item ? item.chartId : item.widgetId
-                          }
-                          setEditingTabIndex={() =>
-                            router.push(
-                              `/d?id=${dashboardId}&chartId=${
-                                "chartId" in item ? item.chartId : item.widgetId
-                              }`
-                            )
-                          }
-                          setIsModalOpen={() => {}}
-                          setMenuOpenIndex={setMenuOpenIndex}
-                          handleTabDelete={() =>
-                            "chartId" in item
-                              ? removeChart(dashboardId, item.chartId)
-                              : removeWidget(dashboardId, item.widgetId)
-                          }
-                          handleTabClone={() => {}}
-                        />
-                      )}
-                    </div>
+      {/* 🔹 위젯만 상단에 가로 정렬 */}
+      {widgetDataList.length > 0 && (
+        <div className="flex gap-4 px-4 mb-6 overflow-x-auto">
+          {widgetDataList.map((widget) => (
+            <div
+              key={widget.widgetId}
+              className="relative flex-shrink-0 h-[210px]"
+            >
+              <CommonWidget
+                widgetType={widget.widgetOptions.widgetType as WidgetType}
+                widgetData={widget.widgetOptions.widgetData}
+                label={widget.widgetOptions.label}
+                maxValue={widget.widgetOptions.maxValue}
+                thresholds={widget.widgetOptions.thresholds}
+                colors={widget.widgetOptions.colors}
+                subText={widget.widgetOptions.subText}
+                changePercent={widget.widgetOptions.changePercent}
+                backgroundColor={widget.widgetOptions.widgetBackgroundColor}
+                textColor={widget.widgetOptions.textColor}
+                unit={widget.widgetOptions.unit}
+                arrowVisible={widget.widgetOptions.arrowVisible}
+              />
+            </div>
+          ))}
+        </div>
+      )}
 
-                    {/* 🔹 displayMode에 따라 차트 또는 테이블 렌더링 */}
-                    {"chartOptions" in item ? (
-                      item.chartOptions.displayMode === "chart" ? (
-                        <ChartWidget
-                          type={item.chartOptions.chartType}
-                          datasets={item.datasets || []}
-                          options={item.chartOptions}
-                        />
-                      ) : (
-                        <CustomTable
-                          columns={[
-                            { key: "name", label: "ID" },
-                            ...item.datasets.map((dataset) => ({
-                              key: dataset.label,
-                              label: dataset.label,
-                            })),
-                          ]}
-                          data={convertToTableData(item.datasets).rows}
-                          title={item.chartOptions.titleText}
-                        />
+      {/* 🔹 차트 & 테이블을 그리드로 배치 */}
+      <div className={`grid grid-cols-${gridCols} gap-6 p-4`}>
+        {chartDataList.map((chart) => (
+          <div key={chart.chartId} className="relative flex justify-center">
+            <div className="relative flex flex-col items-center h-[450px] w-full">
+              <div className="absolute top-2 right-2 z-10">
+                <MoreVertical
+                  className="text-text3 cursor-pointer hover:text-text2"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setMenuOpenIndex(
+                      menuOpenIndex === chart.chartId ? null : chart.chartId
+                    );
+                  }}
+                />
+                {menuOpenIndex === chart.chartId && (
+                  <TabMenu
+                    index={chart.chartId}
+                    setEditingTabIndex={() =>
+                      router.push(
+                        `/d?id=${dashboardId}&chartId=${chart.chartId}`
                       )
-                    ) : "widgetOptions" in item ? (
-                      <div className="w-full flex justify-center">
-                        <CommonWidget
-                          widgetType={item.widgetOptions.widgetType}
-                          widgetData={item.widgetOptions.widgetData}
-                          label={item.widgetOptions.label}
-                          maxValue={item.widgetOptions.maxValue}
-                          thresholds={item.widgetOptions.thresholds}
-                          colors={item.widgetOptions.colors}
-                          subText={item.widgetOptions.subText}
-                          changePercent={item.widgetOptions.changePercent}
-                          backgroundColor={
-                            item.widgetOptions.widgetBackgroundColor
-                          }
-                          textColor={item.widgetOptions.textColor}
-                          unit={item.widgetOptions.unit}
-                          arrowVisible={item.widgetOptions.arrowVisible}
-                          className="scale-[1] max-w-[300px]"
-                        />
-                      </div>
-                    ) : null}
-                  </div>
-                </div>
-              ) : null
-            )
-          : null}
+                    }
+                    setIsModalOpen={() => {}}
+                    setMenuOpenIndex={setMenuOpenIndex}
+                    handleTabDelete={() =>
+                      removeChart(dashboardId, chart.chartId)
+                    }
+                    handleTabClone={() => {}}
+                  />
+                )}
+              </div>
+
+              {chart.chartOptions.displayMode === "chart" ? (
+                <ChartWidget
+                  type={chart.chartOptions.chartType as ChartType}
+                  datasets={chart.datasets || []}
+                  options={chart.chartOptions}
+                />
+              ) : (
+                <CustomTable
+                  columns={[
+                    { key: "name", label: "ID" },
+                    ...chart.datasets.map((d) => ({
+                      key: d.label,
+                      label: d.label,
+                    })),
+                  ]}
+                  data={convertToTableData(chart.datasets).rows}
+                  title={chart.chartOptions.titleText}
+                />
+              )}
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );
