@@ -4,6 +4,8 @@ import TimeRangeBar from "@/app/components/bar/timeRangeBar";
 import AddChartBar from "@/app/components/bar/addChartBar";
 import { useChartOptions } from "@/app/context/chartOptionContext";
 import { Chart } from "chart.js/auto";
+import { v4 as uuidv4 } from "uuid";
+
 import zoomPlugin from "chartjs-plugin-zoom";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useChartStore } from "@/app/store/useChartStore";
@@ -11,6 +13,7 @@ import { useSelectedSection } from "@/app/context/selectedSectionContext";
 import CommonWidget from "@/app/components/dashboard/commonWidget";
 import { useWidgetOptions } from "@/app/context/widgetOptionContext";
 import { useWidgetStore } from "@/app/store/useWidgetStore";
+import { ChartOptions, WidgetOptions } from "@/app/types/options";
 
 Chart.register(zoomPlugin);
 
@@ -40,6 +43,8 @@ const ChartSection = () => {
     enableZoom,
     radius,
     tension,
+    tooltipMode,
+    crosshairOpacity,
     setOptions,
     setDatasets,
   } = useChartOptions();
@@ -65,8 +70,8 @@ const ChartSection = () => {
   const dashboardId = id.get("id") || "1";
   const chartId = id.get("chartId") || undefined;
 
-  const { charts, setChartData } = useChartStore();
-  const { widgets, setWidgetData } = useWidgetStore();
+  const { charts, addChart, updateChart } = useChartStore();
+  const { widgets, addWidget, updateWidget } = useWidgetStore();
 
   const existingChart = chartId
     ? charts[dashboardId]?.find((chart) => chart.chartId === chartId)
@@ -77,6 +82,7 @@ const ChartSection = () => {
   const [to, setTo] = useState<string | null>(null);
   const [refreshTime, setRefreshTime] = useState<number | "autoType">(10);
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
+
   useEffect(() => {
     if (existingChart) {
       if (existingChart.chartOptions) {
@@ -89,13 +95,11 @@ const ChartSection = () => {
     }
   }, [existingChart]);
 
-  // 🔹 날짜 변경 핸들러
   const handleTimeChange = (type: "from" | "to", value: string) => {
     if (type === "from") setFrom(value);
     if (type === "to") setTo(value);
   };
 
-  // 🔹 새로고침 시간 변경 핸들러
   const handleRefreshChange = (value: number | "autoType") => {
     setRefreshTime(value);
   };
@@ -106,6 +110,7 @@ const ChartSection = () => {
     setTo(now.toISOString().slice(0, 16));
     setLastUpdated(now.toLocaleTimeString());
   }, []);
+
   const existingWidget = chartId
     ? widgets[dashboardId]?.find((widget) => widget.widgetId === chartId)
     : null;
@@ -115,12 +120,11 @@ const ChartSection = () => {
       setOptions(existingChart.chartOptions);
       setDatasets(existingChart.datasets);
     } else if (existingWidget) {
-      // ✅ 위젯 데이터도 Context에 반영
-      setWidgetOptions(existingWidget);
+      setWidgetOptions(existingWidget.widgetOptions);
     }
   }, [existingChart, existingWidget]);
 
-  const newChartOptions = {
+  const newChartOptions: ChartOptions = {
     chartType,
     titleText,
     showLegend,
@@ -143,9 +147,12 @@ const ChartSection = () => {
     enableZoom,
     radius,
     tension,
+    tooltipMode,
+    crosshairOpacity,
   };
 
-  const newWidgetOptions = {
+  const newWidgetOptions: WidgetOptions = {
+    widgetId: chartId || uuidv4(),
     widgetType,
     widgetData,
     label,
@@ -160,12 +167,22 @@ const ChartSection = () => {
     arrowVisible,
   };
 
+  // ✅ 수정된 핸들러: 차트 또는 위젯 생성 / 업데이트
   const handleCreateClick = () => {
     if (selectedSection === "chartOption") {
-      setChartData(dashboardId, newChartOptions, datasets, chartId);
+      if (chartId) {
+        updateChart(dashboardId, chartId, newChartOptions, datasets);
+      } else {
+        addChart(dashboardId, newChartOptions, datasets);
+      }
     } else if (selectedSection === "widgetOption") {
-      setWidgetData(dashboardId, newWidgetOptions, chartId);
+      if (chartId) {
+        updateWidget(dashboardId, chartId, newWidgetOptions);
+      } else {
+        addWidget(dashboardId, newWidgetOptions);
+      }
     }
+
     router.push(`/detail?id=${dashboardId}`);
   };
 
@@ -182,18 +199,7 @@ const ChartSection = () => {
       />
 
       <div className="px-4 min-h-[500px]">
-        {selectedSection === "chartOption" ? (
-          <div className="border rounded-lg bg-white p-6 shadow-md h-[400px] flex flex-col">
-            <h2 className="text-lg font-semibold mb-2">{titleText}</h2>
-            <div className="flex-1">
-              <ChartWidget
-                type={chartType}
-                options={newChartOptions}
-                datasets={datasets}
-              />
-            </div>
-          </div>
-        ) : (
+        {selectedSection === "widgetOption" ? (
           <div className="flex justify-center items-center">
             <CommonWidget
               widgetType={widgetType}
@@ -210,6 +216,17 @@ const ChartSection = () => {
               arrowVisible={arrowVisible}
               className="scale-[2] origin-center mt-32 will-change-transform"
             />
+          </div>
+        ) : (
+          <div className="border rounded-lg bg-white p-6 shadow-md h-[400px] flex flex-col">
+            <h2 className="text-lg font-semibold mb-2">{titleText}</h2>
+            <div className="flex-1">
+              <ChartWidget
+                type={chartType}
+                options={newChartOptions}
+                datasets={datasets}
+              />
+            </div>
           </div>
         )}
       </div>
