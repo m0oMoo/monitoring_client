@@ -34,6 +34,8 @@ const OptionPanel = () => {
     radius,
     tension,
     setOptions,
+    displayMode,
+    toggleDisplayMode,
   } = useChartOptions();
 
   const [isClient, setIsClient] = useState<boolean>(false);
@@ -161,7 +163,16 @@ const OptionPanel = () => {
       {isClient && (
         <div className="w-full flex flex-col pb-24">
           <h2 className="text-lg font-semibold mb-4">Chart Option</h2>
-
+          {/* Display Mode */}
+          <div className="flex flex-col gap-1 mb-6">
+            <label className="text-sm2 text-text2">Row</label>
+            <SquareToggleBtnGroup
+              label="Display Mode"
+              options={["table", "chart"]}
+              selected={displayMode}
+              onChange={() => toggleDisplayMode()}
+            />
+          </div>
           {/* Left options panel */}
           <div className="">
             {/* Chart type */}
@@ -175,7 +186,7 @@ const OptionPanel = () => {
 
             {/* Chart title */}
             <div className="flex flex-col gap-1 mb-6">
-              <label className="text-sm2 text-text2">차트 제목</label>
+              <label className="text-sm2 text-text2">제목</label>
               <TextInput
                 value={titleText}
                 // onChange={(value) => setTitleText(value)}
