@@ -7,7 +7,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import AddChartBar from "@/app/components/bar/addChartBar";
 import TimeRangeBar from "@/app/components/bar/timeRangeBar";
 import ChartWidget from "@/app/components/dashboard/chartWidget";
-import CommonWidget from "@/app/components/dashboard/commonWidget"; // ✅ 위젯 컴포넌트 추가
+import CommonWidget from "@/app/components/dashboard/commonWidget";
 import TabMenu from "@/app/components/menu/tabMenu";
 import { MoreVertical } from "lucide-react";
 import { useWidgetStore } from "@/app/store/useWidgetStore";
@@ -18,7 +18,7 @@ const DetailDashboard = () => {
   const dashboardId = id.get("id") || "1";
 
   const { charts, removeChart } = useChartStore();
-  const { widgets, removeWidget } = useWidgetStore(); // ✅ 위젯 가져오기
+  const { widgets, removeWidget } = useWidgetStore();
   const { dashboardChartMap } = useDashboardStore();
 
   const chartIds = dashboardChartMap[dashboardId] || [];
@@ -102,7 +102,7 @@ const DetailDashboard = () => {
           ? combinedDataList.map((item, index) =>
               item ? (
                 <div
-                  key={"chartId" in item ? item.chartId : item.widgetId} // ✅ 안전한 키 사용
+                  key={"chartId" in item ? item.chartId : item.widgetId}
                   className="relative flex justify-center"
                 >
                   <div
@@ -144,6 +144,7 @@ const DetailDashboard = () => {
                               ? removeChart(dashboardId, item.chartId)
                               : removeWidget(dashboardId, item.widgetId)
                           }
+                          handleTabClone={() => {}}
                         />
                       )}
                     </div>
@@ -155,22 +156,24 @@ const DetailDashboard = () => {
                         datasets={item.datasets || []}
                         options={item.chartOptions}
                       />
-                    ) : (
+                    ) : "widgetOptions" in item ? (
                       <CommonWidget
-                        widgetType={item.widgetType}
-                        widgetData={item.widgetData}
-                        label={item.label}
-                        maxValue={item.maxValue}
-                        thresholds={item.thresholds}
-                        colors={item.colors}
-                        subText={item.subText}
-                        changePercent={item.changePercent}
-                        backgroundColor={item.widgetBackgroundColor}
-                        textColor={item.textColor}
-                        unit={item.unit}
-                        arrowVisible={item.arrowVisible}
+                        widgetType={item.widgetOptions.widgetType}
+                        widgetData={item.widgetOptions.widgetData}
+                        label={item.widgetOptions.label}
+                        maxValue={item.widgetOptions.maxValue}
+                        thresholds={item.widgetOptions.thresholds}
+                        colors={item.widgetOptions.colors}
+                        subText={item.widgetOptions.subText}
+                        changePercent={item.widgetOptions.changePercent}
+                        backgroundColor={
+                          item.widgetOptions.widgetBackgroundColor
+                        }
+                        textColor={item.widgetOptions.textColor}
+                        unit={item.widgetOptions.unit}
+                        arrowVisible={item.widgetOptions.arrowVisible}
                       />
-                    )}
+                    ) : null}
                   </div>
                 </div>
               ) : null
