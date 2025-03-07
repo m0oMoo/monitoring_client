@@ -8,9 +8,11 @@ import AddChartBar from "@/app/components/bar/addChartBar";
 import TimeRangeBar from "@/app/components/bar/timeRangeBar";
 import ChartWidget from "@/app/components/dashboard/chartWidget";
 import CommonWidget from "@/app/components/dashboard/commonWidget";
+import CustomTable from "@/app/components/table/customTable"; // 🔹 테이블 추가
 import TabMenu from "@/app/components/menu/tabMenu";
 import { MoreVertical } from "lucide-react";
 import { useWidgetStore } from "@/app/store/useWidgetStore";
+import { Dataset } from "@/app/context/chartOptionContext";
 
 const DetailDashboard = () => {
   const router = useRouter();
@@ -23,21 +25,18 @@ const DetailDashboard = () => {
 
   const chartIds = dashboardChartMap[dashboardId] || [];
 
-  // ✅ 차트 목록 가져오기
   const chartDataList = chartIds
     .map((chartId) =>
       charts[dashboardId]?.find((chart) => chart.chartId === chartId)
     )
     .filter(Boolean);
 
-  // ✅ 위젯 목록 가져오기
   const widgetDataList = chartIds
     .map((widgetId) =>
       widgets[dashboardId]?.find((widget) => widget.widgetId === widgetId)
     )
     .filter(Boolean);
 
-  // ✅ 차트와 위젯을 합쳐서 하나의 리스트로 관리
   const combinedDataList = [...chartDataList, ...widgetDataList];
 
   const [from, setFrom] = useState<string | null>(null);
@@ -65,6 +64,25 @@ const DetailDashboard = () => {
 
   const handleGridChange = (change: number) => {
     setGridCols((prev) => Math.max(1, Math.min(4, prev + change)));
+  };
+
+  // 🔹 차트 데이터를 테이블 형식으로 변환하는 함수
+  const convertToTableData = (datasets: Dataset[]) => {
+    if (!datasets || datasets.length === 0) return { headers: [], rows: [] };
+
+    // 🔹 데이터셋의 라벨을 컬럼명으로 사용
+    const headers = ["항목", ...datasets.map((dataset) => dataset.label)];
+
+    // 🔹 각 데이터 포인트를 행으로 변환
+    const rows = datasets[0].data.map((_, index) => ({
+      name: `Point ${index + 1}`,
+      ...datasets.reduce((acc, dataset) => {
+        acc[dataset.label] = dataset.data[index]; // label을 key로 사용
+        return acc;
+      }, {} as Record<string, any>),
+    }));
+
+    return { headers, rows };
   };
 
   return (
@@ -106,7 +124,7 @@ const DetailDashboard = () => {
                   className="relative flex justify-center"
                 >
                   <div
-                    className="w-full h-[400px] relative"
+                    className="w-full h-[450px] relative"
                     onClick={(e) => e.stopPropagation()}
                   >
                     <div className="absolute top-2 right-0">
@@ -149,13 +167,27 @@ const DetailDashboard = () => {
                       )}
                     </div>
 
-                    {/* ✅ 차트와 위젯을 구분하여 렌더링 */}
+                    {/* 🔹 displayMode에 따라 차트 또는 테이블 렌더링 */}
                     {"chartOptions" in item ? (
-                      <ChartWidget
-                        type={item.chartOptions.chartType}
-                        datasets={item.datasets || []}
-                        options={item.chartOptions}
-                      />
+                      item.chartOptions.displayMode === "chart" ? (
+                        <ChartWidget
+                          type={item.chartOptions.chartType}
+                          datasets={item.datasets || []}
+                          options={item.chartOptions}
+                        />
+                      ) : (
+                        <CustomTable
+                          columns={[
+                            { key: "name", label: "ID" },
+                            ...item.datasets.map((dataset) => ({
+                              key: dataset.label,
+                              label: dataset.label,
+                            })),
+                          ]}
+                          data={convertToTableData(item.datasets).rows}
+                          title={item.chartOptions.titleText}
+                        />
+                      )
                     ) : "widgetOptions" in item ? (
                       <CommonWidget
                         widgetType={item.widgetOptions.widgetType}
