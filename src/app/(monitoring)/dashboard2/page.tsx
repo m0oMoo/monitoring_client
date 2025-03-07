@@ -9,6 +9,8 @@ import Alert from "@/app/components/alert/alert";
 import { useRouter } from "next/navigation";
 import TabMenu from "@/app/components/menu/tabMenu";
 import { useDashboardStore } from "@/app/store/useDashboardStore";
+import { useChartStore } from "@/app/store/useChartStore";
+import { useWidgetStore } from "@/app/store/useWidgetStore";
 
 const Dashboard2Page = () => {
   const router = useRouter();
@@ -19,7 +21,8 @@ const Dashboard2Page = () => {
     dashboardChartMap,
     addChartToDashboard,
   } = useDashboardStore();
-
+  const { charts, addChart } = useChartStore();
+  const { widgets, cloneWidget } = useWidgetStore();
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [editingTabIndex, setEditingTabIndex] = useState<string | null>(null);
   const [menuOpenIndex, setMenuOpenIndex] = useState<number | null>(null);
@@ -83,11 +86,46 @@ const Dashboard2Page = () => {
 
     addDashboard({ id: newDashboardId, label: newLabel, description });
 
-    // 기존 대시보드의 차트를 새로운 대시보드에 추가
+    // ✅ 기존 차트 복제
     const chartsToClone = dashboardChartMap[dashboardId] || [];
+    const newChartIds: string[] = [];
+
     chartsToClone.forEach((chartId) => {
-      addChartToDashboard(newDashboardId, chartId);
+      const existingChart = Object.values(charts)
+        .flat()
+        .find((chart) => chart.chartId === chartId);
+
+      if (existingChart) {
+        const newChartId = uuidv4();
+        const clonedChartOptions = { ...existingChart.chartOptions };
+        const clonedDatasets = existingChart.datasets.map((dataset) => ({
+          ...dataset,
+        }));
+
+        addChart(newDashboardId, clonedChartOptions, clonedDatasets);
+        addChartToDashboard(newDashboardId, newChartId);
+        newChartIds.push(newChartId);
+      }
     });
+
+    // ✅ 기존 대시보드의 위젯 복제
+    const widgetsToClone = widgets[dashboardId] || [];
+    const newWidgetIds: string[] = [];
+
+    widgetsToClone.forEach((widget) => {
+      const newWidgetId = uuidv4();
+      const clonedWidgetOptions = {
+        ...widget.widgetOptions,
+        widgetId: newWidgetId,
+      };
+
+      useWidgetStore.getState().addWidget(newDashboardId, clonedWidgetOptions);
+      newWidgetIds.push(newWidgetId);
+    });
+
+    console.log("📌 새로운 대시보드 ID:", newDashboardId);
+    console.log("📌 복제된 차트 ID 리스트:", newChartIds);
+    console.log("📌 복제된 위젯 ID 리스트:", newWidgetIds);
 
     setAlertMessage("대시보드가 복제되었습니다!");
   };
