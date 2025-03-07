@@ -76,28 +76,40 @@ export const useWidgetStore = create<WidgetStore>((set, get) => ({
   },
 
   // ✅ 위젯 복제
-  cloneWidget: (dashboardId, widgetId) => {
-    const state = get();
-    const originalWidget = state.widgets[dashboardId]?.find(
-      (w) => w.widgetId === widgetId
-    );
-    if (!originalWidget) return;
+  cloneWidget: (newDashboardId, widgetId) => {
+    const newWidgetId = uuidv4(); // ✅ set() 밖에서 선언하여 사용 가능하도록 변경
 
-    const newWidgetId = uuidv4();
-    const clonedWidget: Widget = {
-      widgetId: newWidgetId,
-      widgetOptions: { ...originalWidget.widgetOptions, widgetId: newWidgetId }, // widgetId 포함
-    };
+    set((state) => {
+      // 기존 위젯 찾기
+      const originalWidget = Object.values(state.widgets)
+        .flat()
+        .find((w) => w.widgetId === widgetId);
 
-    set((state) => ({
-      widgets: {
-        ...state.widgets,
-        [dashboardId]: [...state.widgets[dashboardId], clonedWidget],
-      },
-    }));
+      if (!originalWidget) return state;
 
+      // 새로운 위젯 데이터 복제
+      const clonedWidget: Widget = {
+        widgetId: newWidgetId, // ✅ 새로 생성한 ID 사용
+        widgetOptions: {
+          ...originalWidget.widgetOptions,
+          widgetId: newWidgetId, // ✅ 새로운 ID 적용
+        },
+      };
+
+      return {
+        widgets: {
+          ...state.widgets,
+          [newDashboardId]: [
+            ...(state.widgets[newDashboardId] || []),
+            clonedWidget,
+          ], // ✅ 새로운 대시보드 ID로 복제
+        },
+      };
+    });
+
+    // ✅ 복제된 대시보드의 dashboardChartMap 업데이트
     useDashboardStore
       .getState()
-      .dashboardChartMap[dashboardId]?.push(newWidgetId);
+      .dashboardChartMap[newDashboardId]?.push(newWidgetId);
   },
 }));
