@@ -124,10 +124,17 @@ const DetailDashboard = () => {
                   className="relative flex justify-center"
                 >
                   <div
-                    className="w-full h-[450px] relative"
+                    className={`relative flex flex-col items-center ${
+                      "chartOptions" in item
+                        ? item.chartOptions.displayMode === "chart"
+                          ? "h-[450px]"
+                          : "h-[450px]"
+                        : "h-[230px] max-w-[350px]"
+                    } w-full`}
                     onClick={(e) => e.stopPropagation()}
                   >
-                    <div className="absolute top-2 right-0">
+                    {/* 🔹 탭 메뉴 위치 조정 */}
+                    <div className="absolute top-2 right-2 z-10">
                       <MoreVertical
                         className="text-text3 cursor-pointer hover:text-text2"
                         onClick={(e) => {
@@ -189,22 +196,25 @@ const DetailDashboard = () => {
                         />
                       )
                     ) : "widgetOptions" in item ? (
-                      <CommonWidget
-                        widgetType={item.widgetOptions.widgetType}
-                        widgetData={item.widgetOptions.widgetData}
-                        label={item.widgetOptions.label}
-                        maxValue={item.widgetOptions.maxValue}
-                        thresholds={item.widgetOptions.thresholds}
-                        colors={item.widgetOptions.colors}
-                        subText={item.widgetOptions.subText}
-                        changePercent={item.widgetOptions.changePercent}
-                        backgroundColor={
-                          item.widgetOptions.widgetBackgroundColor
-                        }
-                        textColor={item.widgetOptions.textColor}
-                        unit={item.widgetOptions.unit}
-                        arrowVisible={item.widgetOptions.arrowVisible}
-                      />
+                      <div className="w-full flex justify-center">
+                        <CommonWidget
+                          widgetType={item.widgetOptions.widgetType}
+                          widgetData={item.widgetOptions.widgetData}
+                          label={item.widgetOptions.label}
+                          maxValue={item.widgetOptions.maxValue}
+                          thresholds={item.widgetOptions.thresholds}
+                          colors={item.widgetOptions.colors}
+                          subText={item.widgetOptions.subText}
+                          changePercent={item.widgetOptions.changePercent}
+                          backgroundColor={
+                            item.widgetOptions.widgetBackgroundColor
+                          }
+                          textColor={item.widgetOptions.textColor}
+                          unit={item.widgetOptions.unit}
+                          arrowVisible={item.widgetOptions.arrowVisible}
+                          className="scale-[1] max-w-[300px]"
+                        />
+                      </div>
                     ) : null}
                   </div>
                 </div>
