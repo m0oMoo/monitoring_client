@@ -1,6 +1,8 @@
-import React from "react";
-import { Edit2, Trash2 } from "lucide-react";
+import React, { useState } from "react";
+import { Edit2, File, Trash2 } from "lucide-react";
 import { v4 as uuidv4 } from "uuid";
+import { usePathname } from "next/navigation";
+import { useDashboardStore } from "@/app/store/useDashboardStore";
 
 interface TabMenuProps {
   index: string;
@@ -8,6 +10,7 @@ interface TabMenuProps {
   setIsModalOpen: (open: boolean) => void;
   setMenuOpenIndex: (index: string | null) => void;
   handleTabDelete: (index: string) => void;
+  handleTabClone: (dashboardId: string) => void;
 }
 
 const TabMenu: React.FC<TabMenuProps> = ({
@@ -16,7 +19,12 @@ const TabMenu: React.FC<TabMenuProps> = ({
   setIsModalOpen,
   setMenuOpenIndex,
   handleTabDelete,
+  handleTabClone,
 }) => {
+  const pathname = usePathname();
+  const menuText = pathname.includes("/dashboard") ? "대시보드를" : "패널을";
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
   return (
     <div className="absolute right-0 mt-2 w-40 bg-white shadow-lg rounded-md z-50">
       <button
@@ -41,6 +49,16 @@ const TabMenu: React.FC<TabMenuProps> = ({
         }}
       >
         <Trash2 className="w-4 h-4 mr-2" /> 삭제
+      </button>
+      <button
+        className="flex items-center w-full px-4 py-2 text-sm text-navy-btn hover:bg-gray-100"
+        onClick={(e) => {
+          e.stopPropagation();
+          handleTabClone(index);
+          setMenuOpenIndex(null);
+        }}
+      >
+        <File className="w-4 h-4 mr-2" /> 복제
       </button>
     </div>
   );
