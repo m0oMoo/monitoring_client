@@ -13,7 +13,7 @@ const CustomTable: React.FC<TableProps> = ({ columns, data, title }) => {
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    setIsClient(true); // 클라이언트 사이드에서만 실행되도록 설정
+    setIsClient(true);
   }, []);
 
   const formattedColumns: ColumnDefinition[] = columns.map((col) => ({
@@ -22,7 +22,7 @@ const CustomTable: React.FC<TableProps> = ({ columns, data, title }) => {
   }));
 
   return (
-    <div className="p-4 border border-gray-300 rounded-lg shadow-md bg-white">
+    <div className="p-4 border border-gray-300 rounded-lg shadow-md bg-white w-full">
       {title && <h2 className="text-lg font-semibold mb-2">{title}</h2>}
 
       {isClient ? (
