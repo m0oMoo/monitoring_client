@@ -8,7 +8,7 @@ import AddChartBar from "@/app/components/bar/addChartBar";
 import TimeRangeBar from "@/app/components/bar/timeRangeBar";
 import ChartWidget from "@/app/components/dashboard/chartWidget";
 import CommonWidget from "@/app/components/dashboard/commonWidget";
-import CustomTable from "@/app/components/table/customTable"; // 🔹 테이블 추가
+import CustomTable from "@/app/components/table/customTable";
 import TabMenu from "@/app/components/menu/tabMenu";
 import { MoreVertical } from "lucide-react";
 import { useWidgetStore } from "@/app/store/useWidgetStore";
@@ -24,20 +24,24 @@ const DetailDashboard = () => {
   const { dashboardChartMap } = useDashboardStore();
 
   const chartIds = dashboardChartMap[dashboardId] || [];
+  console.log("📌 현재 대시보드의 차트 ID 리스트:", chartIds);
 
   const chartDataList = chartIds
     .map((chartId) =>
       charts[dashboardId]?.find((chart) => chart.chartId === chartId)
     )
     .filter(Boolean);
+  console.log("📌 차트 데이터 리스트:", chartDataList);
 
   const widgetDataList = chartIds
     .map((widgetId) =>
       widgets[dashboardId]?.find((widget) => widget.widgetId === widgetId)
     )
     .filter(Boolean);
+  console.log("📌 위젯 데이터 리스트:", widgetDataList);
 
   const combinedDataList = [...chartDataList, ...widgetDataList];
+  console.log("📌 최종 렌더링할 데이터 리스트:", combinedDataList);
 
   const [from, setFrom] = useState<string | null>(null);
   const [to, setTo] = useState<string | null>(null);
