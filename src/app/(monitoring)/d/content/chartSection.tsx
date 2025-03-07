@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import ChartWidget from "@/app/components/dashboard/chartWidget";
+import CustomTable from "@/app/components/table/customTable";
 import TimeRangeBar from "@/app/components/bar/timeRangeBar";
 import AddChartBar from "@/app/components/bar/addChartBar";
 import { useChartOptions } from "@/app/context/chartOptionContext";
@@ -45,6 +46,8 @@ const ChartSection = () => {
     tension,
     tooltipMode,
     crosshairOpacity,
+    displayMode,
+    toggleDisplayMode,
     setOptions,
     setDatasets,
   } = useChartOptions();
@@ -85,13 +88,8 @@ const ChartSection = () => {
 
   useEffect(() => {
     if (existingChart) {
-      if (existingChart.chartOptions) {
-        setOptions(existingChart.chartOptions);
-      }
-
-      if (existingChart.datasets) {
-        setDatasets(existingChart.datasets);
-      }
+      setOptions(existingChart.chartOptions);
+      setDatasets(existingChart.datasets);
     }
   }, [existingChart]);
 
@@ -149,6 +147,7 @@ const ChartSection = () => {
     tension,
     tooltipMode,
     crosshairOpacity,
+    displayMode,
   };
 
   const newWidgetOptions: WidgetOptions = {
@@ -167,7 +166,6 @@ const ChartSection = () => {
     arrowVisible,
   };
 
-  // ✅ 수정된 핸들러: 차트 또는 위젯 생성 / 업데이트
   const handleCreateClick = () => {
     if (selectedSection === "chartOption") {
       if (chartId) {
@@ -185,6 +183,24 @@ const ChartSection = () => {
 
     router.push(`/detail?id=${dashboardId}`);
   };
+
+  // 🔹 `datasets` 데이터를 `CustomTable` 형식으로 변환
+  const convertToTableData = () => {
+    if (datasets.length === 0) return { headers: [], rows: [] };
+
+    const headers = [
+      "항목",
+      ...datasets[0].data.map((_, index) => `X${index + 1}`),
+    ];
+    const rows = datasets.map((dataset) => ({
+      label: dataset.label,
+      values: dataset.data,
+    }));
+
+    return { headers, rows };
+  };
+
+  const tableData = convertToTableData();
 
   return (
     <div className="mr-[300px] overflow-hidden">
@@ -218,16 +234,38 @@ const ChartSection = () => {
             />
           </div>
         ) : (
-          <div className="border rounded-lg bg-white p-6 shadow-md h-[400px] flex flex-col">
-            <h2 className="text-lg font-semibold mb-2">{titleText}</h2>
-            <div className="flex-1">
-              <ChartWidget
-                type={chartType}
-                options={newChartOptions}
-                datasets={datasets}
+          <>
+            {displayMode === "chart" ? (
+              <div className="border rounded-lg bg-white p-6 shadow-md h-[450px] flex flex-col">
+                <h2 className="text-lg font-semibold mb-2">{titleText}</h2>
+                <div className="flex-1">
+                  <ChartWidget
+                    type={chartType}
+                    options={newChartOptions}
+                    datasets={datasets}
+                  />
+                </div>
+              </div>
+            ) : (
+              <CustomTable
+                columns={[
+                  { key: "name", label: "ID" },
+                  ...datasets.map((dataset) => ({
+                    key: dataset.label,
+                    label: dataset.label,
+                  })), // 데이터셋의 label을 컬럼명으로 사용
+                ]}
+                data={datasets[0]?.data.map((_, index) => ({
+                  name: `${index + 1}`, // 각 데이터의 인덱스
+                  ...datasets.reduce((acc, dataset) => {
+                    acc[dataset.label] = dataset.data[index]; // dataset의 label을 key로 사용하여 값 저장
+                    return acc;
+                  }, {} as Record<string, any>),
+                }))}
+                title={titleText}
               />
-            </div>
-          </div>
+            )}
+          </>
         )}
       </div>
     </div>
