@@ -140,7 +140,7 @@ const WidgetOption = () => {
               </>
             )}
 
-            {widgetType === "cardWithChart" && (
+            {/* {widgetType === "cardWithChart" && (
               <div className="flex flex-col gap-1 mb-6">
                 <label className="text-sm2 text-text2">
                   차트 데이터 (쉼표로 구분)
@@ -152,7 +152,7 @@ const WidgetOption = () => {
                   }
                 />
               </div>
-            )}
+            )} */}
 
             {widgetType === "numberOnly" && (
               <>
