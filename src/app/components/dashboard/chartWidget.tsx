@@ -37,7 +37,7 @@ const ChartWidget = ({ type, datasets, options }: ChartWidgetProps) => {
 
   const chartData = isPieOrDoughnut
     ? {
-        labels: datasets.map((dataset) => dataset.label), 
+        labels: datasets.map((dataset) => dataset.label),
         datasets: [
           {
             data: datasets.map((dataset, index) =>
@@ -86,7 +86,7 @@ const ChartWidget = ({ type, datasets, options }: ChartWidgetProps) => {
                 index % options?.backgroundColors?.length
               ],
           borderWidth: options?.crosshairWidth ?? 1,
-          fill: true,
+          fill: options.fill,
         })),
       };
 
