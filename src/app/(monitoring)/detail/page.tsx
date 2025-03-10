@@ -1,9 +1,11 @@
-import { Suspense } from "react";
+"use client";
+
+import React, { Suspense } from "react";
 import DetailDashboard from "./content/detailDashboard";
 
 const DashboardDetailPage = () => {
   return (
-    <Suspense>
+    <Suspense fallback={<p>Loading...</p>}>
       <DetailDashboard />
     </Suspense>
   );
