@@ -31,6 +31,7 @@ export interface WidgetData {
 export interface ChartOptions {
   chartType: ChartType;
   showLegend: boolean;
+  fill: boolean;
   legendPosition: "top" | "bottom" | "left" | "right";
   legendColor: string;
   isSingleColorMode: boolean;
