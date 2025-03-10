@@ -178,166 +178,162 @@ const DetailDashboard = () => {
         onRefreshChange={setRefreshTime}
       />
 
-      <div
-        className={`grid 
-                  ${gridCols === 1 ? "grid-cols-1" : ""} 
-                  ${gridCols === 2 ? "grid-cols-2" : ""} 
-                  ${gridCols === 3 ? "grid-cols-3" : ""} 
-                  ${gridCols === 4 ? "grid-cols-4" : ""} 
-                  gap-6 p-4`}
-      >
-        {combinedDataList.length > 0
-          ? combinedDataList.map((item, index) =>
-              item ? (
+      {widgetDataList.length > 0 && (
+        <div className="flex flex-row flex-wrap gap-6 p-4">
+          {widgetDataList.map(
+            (widget) =>
+              widget && (
                 <div
-                  key={"chartId" in item ? item.chartId : item.widgetId}
+                  key={widget.widgetId}
                   className="relative flex justify-center"
                 >
                   <div
-                    className={`relative flex flex-col items-center ${
-                      "chartOptions" in item
-                        ? item.chartOptions.displayMode === "chart"
-                          ? "h-[450px]"
-                          : "h-[450px]"
-                        : "h-[230px] max-w-[350px]"
-                    } w-full`}
+                    className="relative flex flex-col items-center h-[200px] max-w-[350px] w-full"
                     onClick={(e) => e.stopPropagation()}
                   >
-                    {/* 탭 메뉴 위치 조정 */}
                     <div className="absolute top-2 right-2 z-10">
                       <MoreVertical
                         className="text-text3 cursor-pointer hover:text-text2"
                         onClick={(e) => {
                           e.stopPropagation();
                           setMenuOpenIndex(
-                            menuOpenIndex ===
-                              ("chartId" in item ? item.chartId : item.widgetId)
+                            menuOpenIndex === widget.widgetId
                               ? null
-                              : "chartId" in item
-                              ? item.chartId
-                              : item.widgetId
+                              : widget.widgetId
                           );
                         }}
                       />
-                      {menuOpenIndex ===
-                        ("chartId" in item ? item.chartId : item.widgetId) && (
+                      {menuOpenIndex === widget.widgetId && (
                         <TabMenu
-                          index={
-                            "chartId" in item ? item.chartId : item.widgetId
-                          }
+                          index={widget.widgetId}
                           setEditingTabIndex={() =>
                             router.push(
-                              `/d?id=${dashboardId}&chartId=${
-                                "chartId" in item ? item.chartId : item.widgetId
-                              }`
+                              `/d?id=${dashboardId}&chartId=${widget.widgetId}`
                             )
                           }
                           setIsModalOpen={() => {}}
                           setMenuOpenIndex={setMenuOpenIndex}
                           handleTabDelete={() =>
-                            "chartId" in item
-                              ? removeChart(dashboardId, item.chartId)
-                              : removeWidget(dashboardId, item.widgetId)
+                            removeWidget(dashboardId, widget.widgetId)
                           }
                           handleTabClone={handleTabClone}
                         />
                       )}
                     </div>
 
-                    {/* displayMode에 따라 차트 또는 테이블 렌더링 */}
-                    {"chartOptions" in item ? (
-                      item.chartOptions.displayMode === "chart" ? (
-                        <div className="border w-full rounded-lg bg-white p-6 shadow-md h-[450px] flex flex-col">
-                          <h2 className="text-lg font-semibold mb-2">
-                            {item.chartOptions.titleText}
-                          </h2>
-                          <div className="flex-1">
-                            <ChartWidget
-                              type={item.chartOptions.chartType}
-                              datasets={item.datasets || []}
-                              options={item.chartOptions}
-                            />
-                          </div>
-                        </div>
-                      ) : (
-                        <CustomTable
-                          columns={[
-                            { key: "name", label: "ID" },
-                            ...item.datasets.map((dataset) => ({
-                              key: dataset.label,
-                              label: dataset.label,
-                            })),
-                          ]}
-                          data={convertToTableData(item.datasets).rows}
-                          title={item.chartOptions.titleText}
-                        />
-                      )
-                    ) : "widgetOptions" in item ? (
-                      <div className="w-full flex justify-center">
-                        <CommonWidget
-                          widgetType={item.widgetOptions.widgetType}
-                          widgetData={item.widgetOptions.widgetData}
-                          label={item.widgetOptions.label}
-                          maxValue={item.widgetOptions.maxValue}
-                          thresholds={item.widgetOptions.thresholds}
-                          colors={item.widgetOptions.colors}
-                          subText={item.widgetOptions.subText}
-                          changePercent={item.widgetOptions.changePercent}
-                          backgroundColor={
-                            item.widgetOptions.widgetBackgroundColor
-                          }
-                          textColor={item.widgetOptions.textColor}
-                          unit={item.widgetOptions.unit}
-                          arrowVisible={item.widgetOptions.arrowVisible}
-                          className="scale-[1] max-w-[300px]"
-                        />
-                      </div>
-                    ) : null}
+                    <div className="w-full flex justify-center">
+                      <CommonWidget
+                        widgetType={widget.widgetOptions.widgetType}
+                        widgetData={widget.widgetOptions.widgetData}
+                        label={widget.widgetOptions.label}
+                        maxValue={widget.widgetOptions.maxValue}
+                        thresholds={widget.widgetOptions.thresholds}
+                        colors={widget.widgetOptions.colors}
+                        subText={widget.widgetOptions.subText}
+                        changePercent={widget.widgetOptions.changePercent}
+                        backgroundColor={
+                          widget.widgetOptions.widgetBackgroundColor
+                        }
+                        textColor={widget.widgetOptions.textColor}
+                        unit={widget.widgetOptions.unit}
+                        arrowVisible={widget.widgetOptions.arrowVisible}
+                        className="scale-[1] max-w-[300px]"
+                      />
+                    </div>
                   </div>
                 </div>
-              ) : null
-            )
-          : null}
-      </div>
-      {isCloneModalOpen && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-96">
-            <h2 className="text-lg font-bold mb-4">대시보드 선택</h2>
-            <ul>
-              {dashboardList.map((dashboard) => (
-                <li
-                  key={dashboard.id}
-                  onClick={() => setSelectedDashboard(dashboard.id)}
-                  className={`cursor-pointer p-2 rounded ${
-                    selectedDashboard === dashboard.id
-                      ? "bg-navy-btn text-white"
-                      : "hover:bg-gray-100"
-                  }`}
-                >
-                  {dashboard.label}
-                </li>
-              ))}
-            </ul>
-            <div className="flex justify-end mt-4">
-              <button
-                onClick={closeCloneModal}
-                className="mr-2 px-4 py-2 bg-gray-200 rounded text-md2"
-              >
-                취소
-              </button>
-              <button
-                onClick={confirmClone}
-                disabled={!selectedDashboard}
-                className={`px-4 py-2 rounded text-md2 text-white ${
-                  selectedDashboard ? "bg-navy-btn" : "bg-navy-btn opacity-80"
-                }`}
-              >
-                확인
-              </button>
-            </div>
-          </div>
+              )
+          )}
         </div>
       )}
+
+      {/* 차트는 기존 grid 스타일 유지 */}
+      {chartDataList.length > 0 && (
+        <div
+          className={`grid 
+                    ${gridCols === 1 ? "grid-cols-1" : ""} 
+                    ${gridCols === 2 ? "grid-cols-2" : ""} 
+                    ${gridCols === 3 ? "grid-cols-3" : ""} 
+                    ${gridCols === 4 ? "grid-cols-4" : ""} 
+                    gap-6 p-4`}
+        >
+          {chartDataList.map(
+            (chart) =>
+              chart && (
+                <div
+                  key={chart.chartId}
+                  className="relative flex justify-center"
+                >
+                  <div
+                    className="relative flex flex-col items-center h-[450px] w-full"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {/* 차트에도 TabMenu 유지 */}
+                    <div className="absolute top-2 right-2 z-10">
+                      <MoreVertical
+                        className="text-text3 cursor-pointer hover:text-text2"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setMenuOpenIndex(
+                            menuOpenIndex === chart.chartId
+                              ? null
+                              : chart.chartId
+                          );
+                        }}
+                      />
+                      {menuOpenIndex === chart.chartId && (
+                        <TabMenu
+                          index={chart.chartId}
+                          setEditingTabIndex={() =>
+                            router.push(
+                              `/d?id=${dashboardId}&chartId=${chart.chartId}`
+                            )
+                          }
+                          setIsModalOpen={() => {}}
+                          setMenuOpenIndex={setMenuOpenIndex}
+                          handleTabDelete={() =>
+                            removeChart(dashboardId, chart.chartId)
+                          }
+                          handleTabClone={handleTabClone}
+                        />
+                      )}
+                    </div>
+
+                    {/* 차트 또는 테이블 렌더링 */}
+                    {chart.chartOptions.displayMode === "chart" ? (
+                      <div className="border w-full rounded-lg bg-white p-6 shadow-md h-[450px] flex flex-col">
+                        <h2 className="text-lg font-semibold mb-2">
+                          {chart.chartOptions.titleText}
+                        </h2>
+                        <div className="flex-1">
+                          <ChartWidget
+                            type={chart.chartOptions.chartType}
+                            datasets={chart.datasets || []}
+                            options={chart.chartOptions}
+                          />
+                        </div>
+                      </div>
+                    ) : (
+                      <CustomTable
+                        columns={[
+                          { key: "name", label: "ID" },
+                          ...chart.datasets.map((dataset) => ({
+                            key: dataset.label,
+                            label: dataset.label,
+                          })),
+                        ]}
+                        data={convertToTableData(chart.datasets).rows}
+                        title={chart.chartOptions.titleText}
+                      />
+                    )}
+                  </div>
+                </div>
+              )
+          )}
+        </div>
+      )}
+
+      {/* 알림 메시지 */}
       {alertMessage && <Alert message={alertMessage} />}
     </div>
   );
