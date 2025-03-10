@@ -19,7 +19,7 @@ interface CommonWidgetProps {
   className?: string;
 }
 
-// ✅ 위젯 타입에 맞게 데이터를 변환하는 함수
+// 위젯 타입에 맞게 데이터를 변환하는 함수
 const parseWidgetData = (
   widgetType: CommonWidgetProps["widgetType"],
   widgetData: { label: string; data: any } | null
@@ -28,15 +28,15 @@ const parseWidgetData = (
     return { value: "0", chartData: [] };
   }
 
-  // ✅ data가 배열이면 마지막 요소를 가져옴
+  // data가 배열이면 마지막 요소를 가져옴
   let lastValue = Array.isArray(widgetData.data)
-    ? widgetData.data[widgetData.data.length - 1] // 🔹 가장 최신 데이터
+    ? widgetData.data[widgetData.data.length - 1] // 가장 최신 데이터
     : widgetData.data;
 
   const numericValue = isNaN(Number(lastValue)) ? 0 : Number(lastValue);
 
   if (widgetType === "cardWithChart") {
-    // ✅ `cardWithChart`는 전체 배열 데이터를 `chartData`로 사용
+    // `cardWithChart`는 전체 배열 데이터를 `chartData`로 사용
     const chartData =
       Array.isArray(widgetData.data) && widgetData.data.every((d) => !isNaN(d))
         ? widgetData.data
@@ -57,7 +57,7 @@ const CommonWidget = ({
   colors = ["#4CAF50", "#f5f251", "#fc5353"],
   subText = "",
   changePercent = 0,
-  backgroundColor = "#26415a",
+  backgroundColor = "#69ab65e6",
   textColor = "#fff",
   unit = "",
   arrowVisible = false,
@@ -98,7 +98,7 @@ const CommonWidget = ({
           value={value}
           subText={subText}
           changePercent={changePercent}
-          chartData={chartData} // ✅ 차트 데이터 전달
+          chartData={chartData} // 차트 데이터 전달
           backgroundColor={backgroundColor}
           textColor={textColor}
           arrowVisible={arrowVisible}
