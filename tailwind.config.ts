@@ -29,7 +29,6 @@ export default {
         text: "#1F1F1F",
         text2: "#4B4B4B",
         text3: "#A0A0A0",
-
         ivory: {
           bg: "#fdfdf4",
           bg_sub: "#fffffa",
@@ -66,6 +65,8 @@ export default {
           1: "#E0E0E0",
           0: "#F5F5F5",
         },
+        black_07: "rgba(0, 0, 0, 0.07)",
+
         transparent: {
           gray: "rgba(128, 128, 128, 0.2)",
           green: "rgba(134, 207, 94, 0.2)",
@@ -108,6 +109,9 @@ export default {
         xxl: "21px",
         xxxl: "24px",
         // 제목
+        title_3xl: ["52px", { fontWeight: 600, lineHeight: "32px" }],
+        title_2xl: ["46px", { fontWeight: 600, lineHeight: "32px" }],
+        title_xl: ["30px", { fontWeight: 600, lineHeight: "32px" }],
         title_lg: ["24px", { fontWeight: 600, lineHeight: "32px" }],
         title_md: ["21px", { fontWeight: 600, lineHeight: "28px" }],
         title_sm: ["18px", { fontWeight: 600, lineHeight: "27px" }],

@@ -1,5 +1,7 @@
-import ChartSection from "./chartSection";
-import RightSection from "./rightSection";
+import dynamic from "next/dynamic";
+
+const ChartSection = dynamic(() => import("./chartSection"), { ssr: false });
+const RightSection = dynamic(() => import("./rightSection"), { ssr: false });
 
 const View = () => {
   return (

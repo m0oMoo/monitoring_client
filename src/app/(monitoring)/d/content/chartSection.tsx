@@ -1,19 +1,29 @@
 import React, { useState, useEffect, useRef } from "react";
 import ChartWidget from "@/app/components/dashboard/chartWidget";
+import CustomTable from "@/app/components/table/customTable";
 import TimeRangeBar from "@/app/components/bar/timeRangeBar";
 import AddChartBar from "@/app/components/bar/addChartBar";
 import { useChartOptions } from "@/app/context/chartOptionContext";
 import { Chart } from "chart.js/auto";
+import { v4 as uuidv4 } from "uuid";
+
 import zoomPlugin from "chartjs-plugin-zoom";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useChartStore } from "@/app/store/useChartStore";
+import { useSelectedSection } from "@/app/context/selectedSectionContext";
+import CommonWidget from "@/app/components/dashboard/commonWidget";
+import { useWidgetOptions } from "@/app/context/widgetOptionContext";
+import { useWidgetStore } from "@/app/store/useWidgetStore";
+import { ChartOptions, WidgetOptions } from "@/app/types/options";
 
 Chart.register(zoomPlugin);
 
 const ChartSection = () => {
+  const { selectedSection } = useSelectedSection();
   const {
     datasets,
     chartType,
+    fill,
     titleText,
     showLegend,
     legendPosition,
@@ -35,16 +45,38 @@ const ChartSection = () => {
     enableZoom,
     radius,
     tension,
+    tooltipMode,
+    crosshairOpacity,
+    displayMode,
+    toggleDisplayMode,
     setOptions,
     setDatasets,
   } = useChartOptions();
+
+  const {
+    widgetType,
+    widgetData,
+    label,
+    maxValue,
+    subText,
+    changePercent,
+    widgetBackgroundColor,
+    textColor,
+    colors,
+    thresholds,
+    unit,
+    arrowVisible,
+    setWidgetOptions,
+  } = useWidgetOptions();
 
   const router = useRouter();
   const id = useSearchParams();
   const dashboardId = id.get("id") || "1";
   const chartId = id.get("chartId") || undefined;
 
-  const { charts, setChartData } = useChartStore();
+  const { charts, addChart, updateChart, removeChart } = useChartStore();
+  const { widgets, addWidget, updateWidget, removeWidget } = useWidgetStore();
+
   const existingChart = chartId
     ? charts[dashboardId]?.find((chart) => chart.chartId === chartId)
     : null;
@@ -54,27 +86,19 @@ const ChartSection = () => {
   const [to, setTo] = useState<string | null>(null);
   const [refreshTime, setRefreshTime] = useState<number | "autoType">(10);
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
+
   useEffect(() => {
     if (existingChart) {
-      if (existingChart.chartOptions) {
-        setOptions(existingChart.chartOptions);
-        console.log("✅ 기존 차트 옵션 설정 완료!", existingChart.chartOptions);
-      }
-
-      if (existingChart.datasets) {
-        setDatasets(existingChart.datasets);
-        console.log("✅ 기존 datasets 불러오기 완료!", existingChart.datasets);
-      }
+      setOptions(existingChart.chartOptions);
+      setDatasets(existingChart.datasets);
     }
   }, [existingChart]);
 
-  // 🔹 날짜 변경 핸들러
   const handleTimeChange = (type: "from" | "to", value: string) => {
     if (type === "from") setFrom(value);
     if (type === "to") setTo(value);
   };
 
-  // 🔹 새로고침 시간 변경 핸들러
   const handleRefreshChange = (value: number | "autoType") => {
     setRefreshTime(value);
   };
@@ -86,20 +110,24 @@ const ChartSection = () => {
     setLastUpdated(now.toLocaleTimeString());
   }, []);
 
+  const existingWidget = chartId
+    ? widgets[dashboardId]?.find((widget) => widget.widgetId === chartId)
+    : null;
+
   useEffect(() => {
-    if (refreshTime !== "autoType") {
-      const interval = setInterval(() => {
-        setLastUpdated(new Date().toLocaleTimeString());
-      }, refreshTime * 1000);
-
-      return () => clearInterval(interval);
+    if (existingChart) {
+      setOptions(existingChart.chartOptions);
+      setDatasets(existingChart.datasets);
+    } else if (existingWidget) {
+      setWidgetOptions(existingWidget.widgetOptions);
     }
-  }, [refreshTime]);
+  }, [existingChart, existingWidget]);
 
-  const newChartOptions = {
+  const newChartOptions: ChartOptions = {
     chartType,
     titleText,
     showLegend,
+    fill,
     legendPosition,
     legendColor,
     tooltipBgColor,
@@ -119,20 +147,95 @@ const ChartSection = () => {
     enableZoom,
     radius,
     tension,
+    tooltipMode,
+    crosshairOpacity,
+    displayMode,
   };
 
-  // ✅ 차트 데이터 저장 또는 업데이트 (datasets 추가)
+  const newWidgetOptions: WidgetOptions = {
+    widgetId: chartId || uuidv4(),
+    widgetType,
+    widgetData,
+    label,
+    maxValue,
+    subText,
+    changePercent,
+    widgetBackgroundColor,
+    textColor,
+    colors,
+    thresholds,
+    unit,
+    arrowVisible,
+  };
+
   const handleCreateClick = () => {
-    setChartData(dashboardId, newChartOptions, datasets, chartId);
+    if (chartId) {
+      // 기존 차트가 있는 경우
+      if (existingChart) {
+        // 선택된 섹션이 "chartOption"이면 업데이트
+        if (selectedSection === "chartOption") {
+          updateChart(dashboardId, chartId, newChartOptions, datasets);
+        }
+        // 선택된 섹션이 "widgetOption"이면 변환 (차트 → 위젯)
+        else {
+          removeChart(dashboardId, chartId);
+          addWidget(dashboardId, newWidgetOptions);
+        }
+      }
+      // 기존 위젯이 있는 경우
+      else if (existingWidget) {
+        // 선택된 섹션이 "widgetOption"이면 업데이트
+        if (selectedSection === "widgetOption") {
+          updateWidget(dashboardId, chartId, newWidgetOptions);
+        }
+        // 선택된 섹션이 "chartOption"이면 변환 (위젯 → 차트)
+        else {
+          removeWidget(dashboardId, chartId);
+          addChart(dashboardId, newChartOptions, datasets);
+        }
+      }
+      // 기존 차트/위젯이 없으면 새로 추가
+      else {
+        if (selectedSection === "chartOption") {
+          addChart(dashboardId, newChartOptions, datasets);
+        } else if (selectedSection === "widgetOption") {
+          addWidget(dashboardId, newWidgetOptions);
+        }
+      }
+    }
+    //  차트 ID가 없으면 새로운 차트/위젯 추가
+    else {
+      if (selectedSection === "chartOption") {
+        addChart(dashboardId, newChartOptions, datasets);
+      } else if (selectedSection === "widgetOption") {
+        addWidget(dashboardId, newWidgetOptions);
+      }
+    }
 
-    setOptions(newChartOptions);
-
+    // 저장 후 대시보드 상세 페이지로 이동
     router.push(`/detail?id=${dashboardId}`);
   };
 
+  // 🔹 `datasets` 데이터를 `CustomTable` 형식으로 변환
+  const convertToTableData = () => {
+    if (datasets.length === 0) return { headers: [], rows: [] };
+
+    const headers = [
+      "항목",
+      ...datasets[0].data.map((_, index) => `X${index + 1}`),
+    ];
+    const rows = datasets.map((dataset) => ({
+      label: dataset.label,
+      values: dataset.data,
+    }));
+
+    return { headers, rows };
+  };
+
+  const tableData = convertToTableData();
+
   return (
-    <div className="overflow-auto mr-[300px]">
-      {/* Time Range & Refresh Control */}
+    <div className="mr-[300px] overflow-hidden">
       <AddChartBar isEdit={true} onCreateClick={handleCreateClick} />
       <TimeRangeBar
         from={from}
@@ -143,18 +246,59 @@ const ChartSection = () => {
         onRefreshChange={handleRefreshChange}
       />
 
-      <div className="px-4">
-        {/* ✅ Chart Widget */}
-        <div className="border rounded-lg bg-white p-6 shadow-md h-[400px] flex flex-col">
-          <h2 className="text-lg font-semibold mb-2">{titleText}</h2>
-          <div className="flex-1">
-            <ChartWidget
-              type={chartType}
-              options={newChartOptions}
-              datasets={datasets}
+      <div className="px-4 min-h-[500px]">
+        {selectedSection === "widgetOption" ? (
+          <div className="flex justify-center items-center">
+            <CommonWidget
+              widgetType={widgetType}
+              widgetData={widgetData}
+              label={label}
+              maxValue={maxValue}
+              thresholds={thresholds}
+              colors={colors}
+              subText={subText}
+              changePercent={changePercent}
+              backgroundColor={widgetBackgroundColor}
+              textColor={textColor}
+              unit={unit}
+              arrowVisible={arrowVisible}
+              className="scale-[2] origin-center mt-32 will-change-transform"
             />
           </div>
-        </div>
+        ) : (
+          <>
+            {displayMode === "chart" ? (
+              <div className="border rounded-lg bg-white p-6 shadow-md h-[450px] flex flex-col">
+                <h2 className="text-lg font-semibold mb-2">{titleText}</h2>
+                <div className="flex-1">
+                  <ChartWidget
+                    type={chartType}
+                    options={newChartOptions}
+                    datasets={datasets}
+                  />
+                </div>
+              </div>
+            ) : (
+              <CustomTable
+                columns={[
+                  { key: "name", label: "ID" },
+                  ...datasets.map((dataset) => ({
+                    key: dataset.label,
+                    label: dataset.label,
+                  })), // 데이터셋의 label을 컬럼명으로 사용
+                ]}
+                data={datasets[0]?.data.map((_, index) => ({
+                  name: `${index + 1}`, // 각 데이터의 인덱스
+                  ...datasets.reduce((acc, dataset) => {
+                    acc[dataset.label] = dataset.data[index]; // dataset의 label을 key로 사용하여 값 저장
+                    return acc;
+                  }, {} as Record<string, any>),
+                }))}
+                title={titleText}
+              />
+            )}
+          </>
+        )}
       </div>
     </div>
   );

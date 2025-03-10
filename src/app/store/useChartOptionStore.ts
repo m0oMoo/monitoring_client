@@ -3,6 +3,7 @@ import { create } from "zustand";
 interface ChartOptions {
   chartType: "bar" | "line" | "pie" | "doughnut";
   showLegend: boolean;
+  fill: boolean;
   legendPosition: "top" | "bottom" | "left" | "right";
   legendColor: string;
   isSingleColorMode: boolean;
@@ -35,6 +36,7 @@ interface ChartOptionStore {
 export const useChartOptionStore = create<ChartOptionStore>((set) => ({
   chartOptions: {
     chartType: "line",
+    fill: true,
     showLegend: true,
     legendPosition: "top",
     legendColor: "#000000",

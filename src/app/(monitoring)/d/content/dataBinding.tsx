@@ -4,51 +4,83 @@ import TextArea from "@/app/components/textarea/textarea";
 import Dropdown from "@/app/components/dropdown/dropdown";
 import RoundToggleBtnGroup from "@/app/components/button/toggle/roundToggleBtnGroup";
 import { useChartOptions } from "@/app/context/chartOptionContext";
+import { useWidgetOptions } from "@/app/context/widgetOptionContext";
+import { useSelectedSection } from "@/app/context/selectedSectionContext";
 import { COLUMNS, MOCK_DATA } from "@/app/data/dataBinding";
 import MultiSelectDropdown from "@/app/components/dropdown/multiSelectDropdown";
 
 const DataBinding = () => {
   const { datasets, setDatasets } = useChartOptions();
+  const { widgetData, setWidgetData } = useWidgetOptions();
+  const { selectedSection } = useSelectedSection();
+
   const [isApiBinding, setIsApiBinding] = useState("API");
   const [selectedTable, setSelectedTable] = useState<string | null>(null);
   const [selectedColumns, setSelectedColumns] = useState<string[]>([]);
+  const [selectedColumn, setSelectedColumn] = useState<string | null>(null);
   const [query, setQuery] = useState<string>("");
   const [apiUrl, setApiUrl] = useState<string>("");
   const [queryParams, setQueryParams] = useState<string>("");
 
-  // ✅ 테이블 선택 핸들러 (테이블 변경 시 컬럼 초기화)
+  // 테이블 선택 핸들러 (테이블 변경 시 컬럼 초기화)
   const handleTableChange = (value: string) => {
     setSelectedTable(value);
     setSelectedColumns([]);
+    setSelectedColumn(null);
     setQuery("");
   };
 
   useEffect(() => {
-    if (selectedColumns.length === 0) {
+    if (selectedColumns.length === 0 && selectedTable) {
       setDatasets([]);
     }
-  }, [selectedColumns]);
-
-  const updatedDatasets = useMemo(() => {
-    if (!selectedTable || selectedColumns.length === 0) return [];
-
-    return selectedColumns.map((column) => ({
-      label: column,
-      data: MOCK_DATA[selectedTable]?.[column] || [],
-    }));
   }, [selectedColumns, selectedTable]);
 
-  // ✅ `selectedColumns`이 변경될 때 `setDatasets` 업데이트
-  useEffect(() => {
-    if (
-      updatedDatasets.length > 0 &&
-      JSON.stringify(updatedDatasets) !== JSON.stringify(datasets)
-    ) {
-      setDatasets(updatedDatasets);
-    }
-  }, [updatedDatasets, datasets, setDatasets]);
+  const updatedDatasets = useMemo(() => {
+    if (!selectedTable) return [];
 
-  // ✅ 쿼리 실행 핸들러 (SQL WHERE 조건 지원)
+    if (selectedSection === "chartOption") {
+      if (selectedColumns.length === 0) return [];
+      return selectedColumns.map((column) => ({
+        label: column ?? "Unknown",
+        data: MOCK_DATA[selectedTable]?.[column] || [],
+      }));
+    } else {
+      if (!selectedColumn) return [];
+      return [
+        {
+          label: selectedColumn ?? "Unknown",
+          data: MOCK_DATA[selectedTable]?.[selectedColumn] || [],
+        },
+      ];
+    }
+  }, [selectedColumns, selectedColumn, selectedTable, selectedSection]);
+
+  // 선택한 데이터 저장 (차트용 or 위젯용)
+  useEffect(() => {
+    if (selectedSection === "chartOption") {
+      if (
+        JSON.stringify(datasets) !== JSON.stringify(updatedDatasets) &&
+        updatedDatasets.length > 0
+      ) {
+        setDatasets(updatedDatasets);
+      }
+    } else {
+      if (
+        updatedDatasets.length > 0 &&
+        JSON.stringify(widgetData) !== JSON.stringify(updatedDatasets[0])
+      ) {
+        setWidgetData(updatedDatasets[0]);
+      }
+    }
+  }, [
+    JSON.stringify(updatedDatasets),
+    selectedSection,
+    setDatasets,
+    setWidgetData,
+  ]);
+
+  // 쿼리 실행 핸들러 (SQL WHERE 조건 지원)
   const handleQueryExecute = () => {
     if (!selectedTable || !query.trim()) return;
 
@@ -91,7 +123,7 @@ const DataBinding = () => {
       }
     }
 
-    // ✅ 필터링된 데이터 차트에 반영
+    // 필터링된 데이터 차트에 반영
     setDatasets(
       Object.keys(filteredData).map((key) => ({
         label: key,
@@ -105,7 +137,7 @@ const DataBinding = () => {
       <div className="w-full flex flex-col pt-10 pb-10">
         <h2 className="text-lg font-semibold mb-4">Data Binding</h2>
 
-        {/* ✅ API vs Query 선택 토글 */}
+        {/* API vs Query 선택 토글 */}
         <div className="flex flex-col mb-6">
           <label className="text-sm2 text-text2 mb-2">
             Select Binding Method
@@ -119,7 +151,7 @@ const DataBinding = () => {
           />
         </div>
 
-        {/* ✅ API Binding 옵션 */}
+        {/* API Binding 옵션 */}
         {isApiBinding === "API" ? (
           <>
             {/* API URL 입력 */}
@@ -148,7 +180,7 @@ const DataBinding = () => {
           </>
         ) : (
           <>
-            {/* ✅ 테이블 선택 */}
+            {/* 테이블 선택 */}
             <div className="flex flex-col mb-6">
               <label className="text-sm2 text-text2 mb-2">Select Table</label>
               <Dropdown
@@ -163,26 +195,41 @@ const DataBinding = () => {
               />
             </div>
 
-            {/* ✅ 컬럼 선택 (여러 개 가능) */}
+            {/* 컬럼 선택 */}
             {selectedTable && (
               <div className="flex flex-col mb-6">
                 <label className="text-sm2 text-text2 mb-2">
-                  Select Columns
+                  {selectedSection === "chartOption"
+                    ? "Select Columns"
+                    : "Select Column"}
                 </label>
-                <MultiSelectDropdown
-                  value={selectedColumns}
-                  onChange={setSelectedColumns}
-                  options={COLUMNS[selectedTable].map((column) => ({
-                    label: column,
-                    value: column,
-                  }))}
-                  placeholder="Select one or more columns"
-                  className="w-[250px]"
-                />
+
+                {selectedSection === "chartOption" ? (
+                  <MultiSelectDropdown
+                    value={selectedColumns}
+                    onChange={setSelectedColumns}
+                    options={COLUMNS[selectedTable].map((column) => ({
+                      label: column,
+                      value: column,
+                    }))}
+                    placeholder="Select one or more columns"
+                    className="w-[250px]"
+                  />
+                ) : (
+                  <Dropdown
+                    value={selectedColumn || ""}
+                    onChange={setSelectedColumn}
+                    options={COLUMNS[selectedTable].map((column) => ({
+                      label: column,
+                      value: column,
+                    }))}
+                    placeholder="Select a column"
+                    className="w-[250px]"
+                  />
+                )}
               </div>
             )}
-
-            {/* ✅ SQL 쿼리 입력 */}
+            {/* SQL 쿼리 입력 */}
             <div className="flex flex-col mb-6">
               <label className="text-sm2 text-text2 mb-2">Write Query</label>
               <TextArea
@@ -193,9 +240,9 @@ const DataBinding = () => {
               />
             </div>
 
-            {/* ✅ 쿼리 실행 버튼 */}
+            {/* 쿼리 실행 버튼 */}
             <button
-              className="bg-blue-500 text-white p-2 rounded w-[250px] hover:bg-blue-600"
+              className="bg-navy-btn text-white p-2 rounded w-[250px] hover:bg-navy-btn_hover"
               onClick={handleQueryExecute}
               disabled={!query.trim()}
             >

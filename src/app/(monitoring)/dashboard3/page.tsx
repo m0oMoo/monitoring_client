@@ -5,7 +5,6 @@ import { File, Download } from "lucide-react";
 import ChartWidget from "@/app/components/dashboard/chartWidget";
 import ReactGridLayout from "react-grid-layout";
 import DataBindingPanel from "@/app/components/drawer/dataBindingPanel";
-import { fetchDashboardData } from "@/app/api/api";
 import TabsGroup from "@/app/(design)/design6/components/tabs/tabsGroup";
 import { Tabs } from "@/app/(design)/design6/components/tabs/tabs";
 
@@ -13,16 +12,6 @@ const Dashboard3Page: React.FC = () => {
   const [dashboard, setDashboard] = useState<any>(null); // 📌 대시보드 데이터 상태
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const loadDashboard = async () => {
-      const data = await fetchDashboardData(); // 📌 동적 데이터 불러오기
-      setDashboard(data);
-      setIsLoading(false);
-    };
-
-    loadDashboard();
-  }, []);
 
   if (isLoading)
     return <div className="text-white text-center">Loading Dashboard...</div>;
@@ -89,7 +78,7 @@ const Dashboard3Page: React.FC = () => {
               key={chart.chartId}
               className="border border-gray-700 rounded-lg"
             >
-              <ChartWidget type={chart.type} data={chart.data} />
+              {/* <ChartWidget type={chart.type} data={chart.data} /> */}
             </div>
           ))}
         </ReactGridLayout>

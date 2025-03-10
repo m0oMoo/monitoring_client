@@ -6,13 +6,14 @@ import SquareToggleBtnGroup from "@/app/components/button/toggle/squareBtnGroup"
 import ToggleSwitch from "@/app/components/button/toggle/toggleSwitch";
 import { useChartOptions } from "@/app/context/chartOptionContext";
 import SliderToggle from "@/app/components/slider/sliderToggle";
-import ColorPaletteSelector from "@/app/components/selector/colorPaletteSelector";
 import { COLOR_PALETTES } from "@/app/data/color/colorPalettes";
+import { Check } from "lucide-react";
 
 const OptionPanel = () => {
   const {
     chartType,
     showLegend,
+    fill,
     legendPosition,
     legendColor,
     isSingleColorMode,
@@ -34,6 +35,8 @@ const OptionPanel = () => {
     radius,
     tension,
     setOptions,
+    displayMode,
+    toggleDisplayMode,
   } = useChartOptions();
 
   const [isClient, setIsClient] = useState<boolean>(false);
@@ -157,26 +160,43 @@ const OptionPanel = () => {
   };
 
   return (
-    <div className="bg-ivory-bg_sub border-l border-0.5 no-scrollbar border-navy-border pt-[44px] pl-6 w-[300px] h-[100vh] overflow-y-auto">
+    <div className="bg-ivory-bg_sub border-l border-0.5 no-scrollbar border-navy-border py-8 pl-6 w-[300px] h-[100vh] overflow-y-auto">
       {isClient && (
         <div className="w-full flex flex-col pb-24">
-          <h2 className="text-lg font-semibold mb-4">Option</h2>
-
+          <h2 className="text-lg font-semibold mb-4">Chart Option</h2>
+          {/* Display Mode */}
+          <div className="flex flex-col gap-1 mb-6">
+            <label className="text-sm2 text-text2">Row</label>
+            <SquareToggleBtnGroup
+              label="Display Mode"
+              options={["table", "chart"]}
+              selected={displayMode}
+              onChange={() => toggleDisplayMode()}
+            />
+          </div>
           {/* Left options panel */}
-          <div className="w-1/3">
+          <div className="">
             {/* Chart type */}
             <div className="flex flex-col gap-1 mb-1.5">
               <label className="text-sm2 text-text2">차트 유형</label>
               <ChartTypeSelector
                 chartType={chartType}
-                // setChartType={setChartType}
                 setChartType={(type) => setOptions({ chartType: type })}
               />
             </div>
+            {chartType === "line" && (
+              <div className="flex flex-col gap-1 mb-6">
+                <label className="text-sm2 text-text2">채우기</label>
+                <ToggleSwitch
+                  checked={fill}
+                  onChange={(checked) => setOptions({ fill: checked })}
+                />
+              </div>
+            )}
 
             {/* Chart title */}
             <div className="flex flex-col gap-1 mb-6">
-              <label className="text-sm2 text-text2">차트 제목</label>
+              <label className="text-sm2 text-text2">제목</label>
               <TextInput
                 value={titleText}
                 // onChange={(value) => setTitleText(value)}
@@ -219,11 +239,12 @@ const OptionPanel = () => {
                 }
               />
             </div>
-            <div className="flex flex-col gap-1 mb-6">
-              <label className="text-sm2 text-text2">색상 팔레트 선택</label>
+            {!isSingleColorMode && (
+              <div className="flex flex-col gap-1 mb-6">
+                <label className="text-sm2 text-text2">색상 팔레트 선택</label>
 
-              {/* 드롭다운 */}
-              {/* <select
+                {/* 드롭다운 */}
+                {/* <select
                 className="w-full p-2 border rounded-md bg-white"
                 onChange={(e) => {
                   const selected = COLOR_PALETTES.find(
@@ -240,93 +261,81 @@ const OptionPanel = () => {
                 ))}
               </select> */}
 
-              {/* 팔레트 미리보기 */}
-              <div className="flex flex-wrap gap-2 mt-2">
-                {COLOR_PALETTES.map((palette, index) => (
-                  <button
-                    key={index}
-                    className="w-10 h-6 rounded border"
-                    style={{
-                      backgroundImage: `linear-gradient(to bottom, ${
-                        palette.borderColors?.join(", ") || "#000000"
-                      })`,
-                    }}
-                    onClick={() => handlePaletteChange(palette)}
-                  />
-                ))}
-              </div>
-            </div>
-
-            {/* Background color */}
-            {isSingleColorMode && (
-              <div className="flex flex-col gap-1 mb-6">
-                <label className="text-sm2 text-text2">차트 색상</label>
-                <div className="flex items-center">
-                  <TextInput
-                    value={backgroundColor}
-                    onChange={handleBackgroundColorChange}
-                    placeholder="색상 코드 입력"
-                    className="w-[200px]"
-                  />
-                  <button
-                    onClick={togglePickerVisibility3}
-                    className="p-2 rounded-full focus:outline-none"
-                  >
-                    <div
-                      style={{ backgroundColor: tempBackgroundColor }}
-                      className="w-6 h-6 border rounded-full"
-                    />
-                  </button>
+                {/* 팔레트 미리보기 */}
+                <div className="flex flex-wrap gap-2 mt-2 w-[250px]">
+                  {COLOR_PALETTES.map((palette, index) => (
+                    <button
+                      key={index}
+                      className={`relative w-10 h-6 rounded border ${
+                        selectedPalette === palette
+                          ? "border-2 border-navy-selected_bg"
+                          : "border-gray-300"
+                      }`}
+                      style={{
+                        backgroundImage: `linear-gradient(to bottom, ${
+                          palette.borderColors?.join(", ") || "#000000"
+                        })`,
+                      }}
+                      onClick={() => handlePaletteChange(palette)}
+                    >
+                      {selectedPalette === palette && (
+                        <Check className="absolute top-[15%] right-1/3 w-4 h-4 text-white bg-transparent-gray rounded-full" />
+                      )}
+                    </button>
+                  ))}
                 </div>
-                {/* <ColorPaletteSelector /> */}
               </div>
             )}
 
-            {/* Border color */}
-            <div className="flex flex-col gap-1 mb-6">
-              <label className="text-sm2 text-text2">테두리 색상</label>
-              <div className="flex items-center">
-                <TextInput
-                  value={borderColor}
-                  onChange={handleBorderColorChange}
-                  placeholder="색상 코드 입력"
-                  className="w-[200px]"
-                />
-                <button
-                  onClick={togglePickerVisibility5}
-                  className="p-2 rounded-full focus:outline-none"
-                >
-                  {/* 색상 미리보기 박스 */}
-                  <div
-                    style={{ backgroundColor: borderColor }}
-                    className="w-6 h-6 border rounded-full"
-                  />
-                </button>
-              </div>
-            </div>
-
             {/* Background color */}
-            <div className="flex flex-col gap-1 mb-6">
-              <label className="text-sm2 text-text2">차트 색상</label>
-              <div className="flex items-center">
-                <TextInput
-                  value={backgroundColor}
-                  onChange={handleBackgroundColorChange}
-                  placeholder="색상 코드 입력"
-                  className="w-[200px]"
-                />
-                <button
-                  onClick={togglePickerVisibility3}
-                  className="p-2 rounded-full focus:outline-none"
-                >
-                  {/* 색상 미리보기 박스 */}
-                  <div
-                    style={{ backgroundColor: tempBackgroundColor }}
-                    className="w-6 h-6 border rounded-full"
-                  />
-                </button>
-              </div>
-            </div>
+            {isSingleColorMode && (
+              <>
+                <div className="flex flex-col gap-1 mb-6">
+                  <label className="text-sm2 text-text2">차트 색상</label>
+                  <div className="flex items-center">
+                    <TextInput
+                      value={backgroundColor}
+                      onChange={handleBackgroundColorChange}
+                      placeholder="색상 코드 입력"
+                      className="w-[200px]"
+                    />
+                    <button
+                      onClick={togglePickerVisibility3}
+                      className="p-2 rounded-full focus:outline-none"
+                    >
+                      <div
+                        style={{ backgroundColor: backgroundColor }}
+                        className="w-6 h-6 border rounded-full"
+                      />
+                    </button>
+                  </div>
+                  {/* <ColorPaletteSelector /> */}
+                </div>
+
+                {/* Border color */}
+                <div className="flex flex-col gap-1 mb-6">
+                  <label className="text-sm2 text-text2">테두리 색상</label>
+                  <div className="flex items-center">
+                    <TextInput
+                      value={borderColor}
+                      onChange={handleBorderColorChange}
+                      placeholder="색상 코드 입력"
+                      className="w-[200px]"
+                    />
+                    <button
+                      onClick={togglePickerVisibility5}
+                      className="p-2 rounded-full focus:outline-none"
+                    >
+                      {/* 색상 미리보기 박스 */}
+                      <div
+                        style={{ backgroundColor: borderColor }}
+                        className="w-6 h-6 border rounded-full"
+                      />
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
 
             {/* Legend color */}
             <div className="flex flex-col gap-1 mb-6">
