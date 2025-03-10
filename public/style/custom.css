@@ -24,3 +24,8 @@
   right: 0;
   cursor: se-resize; /* 모서리 드래그 커서 */
 }
+
+.will-change-transform {
+  @apply transform; /* 기본 변환 활성화 */
+  will-change: transform;
+}

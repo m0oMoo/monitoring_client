@@ -160,7 +160,7 @@ const DesignPage: React.FC = () => {
           preventCollision={false}
           resizeHandles={["se", "e", "w", "n", "s", "sw", "nw", "ne"]}
         >
-          {charts.map((chart) => (
+          {/* {charts.map((chart) => (
             <div
               key={chart.id}
               className="relative bg-transparent p-4 flex items-center justify-center drag-handle border border-gray-700 rounded-lg h-full"
@@ -184,7 +184,7 @@ const DesignPage: React.FC = () => {
                 }}
               />
             </div>
-          ))}
+          ))} */}
         </ReactGridLayout>
       </div>
       <DataBindingModal

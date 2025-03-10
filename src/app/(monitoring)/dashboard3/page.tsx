@@ -89,7 +89,7 @@ const Dashboard3Page: React.FC = () => {
               key={chart.chartId}
               className="border border-gray-700 rounded-lg"
             >
-              <ChartWidget type={chart.type} data={chart.data} />
+              {/* <ChartWidget type={chart.type} data={chart.data} /> */}
             </div>
           ))}
         </ReactGridLayout>

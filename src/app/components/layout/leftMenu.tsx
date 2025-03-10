@@ -12,12 +12,12 @@ const MENU = [
     icon: Database,
     link: "/connection/dataSource",
   },
-  {
-    id: 4,
-    title: "Create Dashboard",
-    icon: LayoutGrid,
-    link: "/d",
-  },
+  // {
+  //   id: 4,
+  //   title: "Create Dashboard",
+  //   icon: LayoutGrid,
+  //   link: "/d",
+  // },
 ];
 
 const LeftMenu = () => {

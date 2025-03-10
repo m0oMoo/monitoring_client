@@ -3,6 +3,13 @@
 import React, { ReactNode, useState } from "react";
 import Header from "./header";
 import LeftMenu from "./leftMenu";
+import "react-tabulator/lib/styles.css";
+
+// import "react-tabulator/lib/css/tabulator_materialize.min.css";
+// import "react-tabulator/lib/css/tabulator.min.css";
+import "react-tabulator/lib/css/tabulator_simple.min.css";
+// import "react-tabulator/lib/css/tabulator_midnight.min.css";
+// import "react-tabulator/lib/css/tabulator_modern.min.css";
 
 const Layout = ({ children }: { children: ReactNode }) => {
   const [menuOpen, setMenuOpen] = useState<boolean>(true);

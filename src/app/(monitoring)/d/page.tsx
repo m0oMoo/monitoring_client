@@ -3,13 +3,19 @@
 import React, { Suspense } from "react";
 import { ChartOptionsProvider } from "@/app/context/chartOptionContext";
 import View from "./content/veiw";
+import { SelectedSectionProvider } from "@/app/context/selectedSectionContext";
+import { WidgetOptionsProvider } from "@/app/context/widgetOptionContext";
 
 const DashboardDetailPage = () => {
   return (
     <ChartOptionsProvider>
-      <Suspense>
-        <View />
-      </Suspense>
+      <SelectedSectionProvider>
+        <WidgetOptionsProvider>
+          <Suspense>
+            <View />
+          </Suspense>
+        </WidgetOptionsProvider>
+      </SelectedSectionProvider>
     </ChartOptionsProvider>
   );
 };
