@@ -41,11 +41,11 @@ export const WidgetOptionsProvider = ({
     subText: "",
     changePercent: 0,
     chartData: [],
-    widgetBackgroundColor: "#26415a",
+    widgetBackgroundColor: "#69ab65e6",
     textColor: "#fff",
     unit: "",
     arrowVisible: false,
-    widgetData: null, // ✅ 위젯 데이터 초기값 null
+    widgetData: null, // 위젯 데이터 초기값 null
     setWidgetOptions: () => {},
     setWidgetType: () => {},
     setWidgetData: () => {},
