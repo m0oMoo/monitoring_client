@@ -23,6 +23,7 @@ const ChartSection = () => {
   const {
     datasets,
     chartType,
+    fill,
     titleText,
     showLegend,
     legendPosition,
@@ -126,6 +127,7 @@ const ChartSection = () => {
     chartType,
     titleText,
     showLegend,
+    fill,
     legendPosition,
     legendColor,
     tooltipBgColor,
