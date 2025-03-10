@@ -27,24 +27,20 @@ const DetailDashboard = () => {
     useDashboardStore();
 
   const chartIds = dashboardChartMap[dashboardId] || [];
-  console.log("📌 현재 대시보드의 차트 ID 리스트:", chartIds);
 
   const chartDataList = chartIds
     .map((chartId) =>
       charts[dashboardId]?.find((chart) => chart.chartId === chartId)
     )
     .filter(Boolean);
-  console.log("📌 차트 데이터 리스트:", chartDataList);
 
   const widgetDataList = chartIds
     .map((widgetId) =>
       widgets[dashboardId]?.find((widget) => widget.widgetId === widgetId)
     )
     .filter(Boolean);
-  console.log("📌 위젯 데이터 리스트:", widgetDataList);
 
   const combinedDataList = [...chartDataList, ...widgetDataList];
-  console.log("📌 최종 렌더링할 데이터 리스트:", combinedDataList);
 
   const [from, setFrom] = useState<string | null>(null);
   const [to, setTo] = useState<string | null>(null);
@@ -79,7 +75,7 @@ const DetailDashboard = () => {
     const targetDashboardId = selectedDashboard;
     let newItemId: string | null = null;
 
-    // ✅ 차트 복제
+    // 차트 복제
     const existingChart = Object.values(charts)
       .flat()
       .find((chart) => chart.chartId === selectedItem);
@@ -96,7 +92,7 @@ const DetailDashboard = () => {
       newItemId = newChartId;
     }
 
-    // ✅ 위젯 복제
+    // 위젯 복제
     const existingWidget = Object.values(widgets)
       .flat()
       .find((widget) => widget.widgetId === selectedItem);
@@ -143,14 +139,11 @@ const DetailDashboard = () => {
     setGridCols((prev) => Math.max(1, Math.min(4, prev + change)));
   };
 
-  // 🔹 차트 데이터를 테이블 형식으로 변환하는 함수
   const convertToTableData = (datasets: Dataset[]) => {
     if (!datasets || datasets.length === 0) return { headers: [], rows: [] };
 
-    // 🔹 데이터셋의 라벨을 컬럼명으로 사용
     const headers = ["항목", ...datasets.map((dataset) => dataset.label)];
 
-    // 🔹 각 데이터 포인트를 행으로 변환
     const rows = datasets[0].data.map((_, index) => ({
       name: `Point ${index + 1}`,
       ...datasets.reduce((acc, dataset) => {
@@ -210,7 +203,7 @@ const DetailDashboard = () => {
                     } w-full`}
                     onClick={(e) => e.stopPropagation()}
                   >
-                    {/* 🔹 탭 메뉴 위치 조정 */}
+                    {/* 탭 메뉴 위치 조정 */}
                     <div className="absolute top-2 right-2 z-10">
                       <MoreVertical
                         className="text-text3 cursor-pointer hover:text-text2"
@@ -251,14 +244,21 @@ const DetailDashboard = () => {
                       )}
                     </div>
 
-                    {/* 🔹 displayMode에 따라 차트 또는 테이블 렌더링 */}
+                    {/* displayMode에 따라 차트 또는 테이블 렌더링 */}
                     {"chartOptions" in item ? (
                       item.chartOptions.displayMode === "chart" ? (
-                        <ChartWidget
-                          type={item.chartOptions.chartType}
-                          datasets={item.datasets || []}
-                          options={item.chartOptions}
-                        />
+                        <div className="border w-full rounded-lg bg-white p-6 shadow-md h-[450px] flex flex-col">
+                          <h2 className="text-lg font-semibold mb-2">
+                            {item.chartOptions.titleText}
+                          </h2>
+                          <div className="flex-1">
+                            <ChartWidget
+                              type={item.chartOptions.chartType}
+                              datasets={item.datasets || []}
+                              options={item.chartOptions}
+                            />
+                          </div>
+                        </div>
                       ) : (
                         <CustomTable
                           columns={[
