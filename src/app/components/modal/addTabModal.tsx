@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useDashboardStore } from "@/app/store/useDashboardStore"; // 🔹 대시보드 스토어 추가
+import { useDashboardStore } from "@/app/store/useDashboardStore"; // navy-btn대시보드 스토어 추가
 
 interface AddTabModalProps {
   isOpen: boolean;
@@ -22,14 +22,14 @@ const AddTabModal = ({
   onEditTab,
   editingIndex,
 }: AddTabModalProps) => {
-  const { dashboardList } = useDashboardStore(); // 🔹 대시보드 목록 가져오기
+  const { dashboardList } = useDashboardStore(); // navy-btn대시보드 목록 가져오기
   const [newTabName, setNewTabName] = useState<string>("");
   const [newTabDescription, setNewTabDescription] = useState<string>("");
 
   useEffect(() => {
     if (isOpen) {
       if (editingIndex !== null) {
-        // 🔹 editingIndex가 존재하면 해당 대시보드의 데이터를 찾아서 설정
+        // navy-btneditingIndex가 존재하면 해당 대시보드의 데이터를 찾아서 설정
         const existingDashboard = dashboardList.find(
           (tab) => tab.id === editingIndex
         );
@@ -38,12 +38,12 @@ const AddTabModal = ({
           setNewTabDescription(existingDashboard.description);
         }
       } else {
-        // 🔹 새 탭 추가 시 초기값 설정
+        // navy-btn새 탭 추가 시 초기값 설정
         setNewTabName(initialTabName);
         setNewTabDescription(initialTabDescription);
       }
     }
-  }, [isOpen, editingIndex, dashboardList]); // 🔹 editingIndex와 dashboardList 변경 시 업데이트
+  }, [isOpen, editingIndex, dashboardList]); // navy-btneditingIndex와 dashboardList 변경 시 업데이트
 
   const handleClose = () => {
     setNewTabName("");
@@ -67,7 +67,7 @@ const AddTabModal = ({
       <div className="fixed inset-0 bg-black bg-opacity-20 backdrop-blur-sm flex justify-center items-center z-50">
         <div className="bg-ivory-bg_sub p-6 rounded-lg shadow-lg w-96 border border-navy-border">
           <h2 className="text-lg text-navy-border mb-4">
-            {editingIndex !== null ? "탭 수정" : "새 탭 추가"}
+            {editingIndex !== null ? "대시보드 수정" : "새 대시보드 추가"}
           </h2>
           <input
             type="text"
