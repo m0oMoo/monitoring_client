@@ -73,8 +73,8 @@ const ChartSection = () => {
   const dashboardId = id.get("id") || "1";
   const chartId = id.get("chartId") || undefined;
 
-  const { charts, addChart, updateChart } = useChartStore();
-  const { widgets, addWidget, updateWidget } = useWidgetStore();
+  const { charts, addChart, updateChart, removeChart } = useChartStore();
+  const { widgets, addWidget, updateWidget, removeWidget } = useWidgetStore();
 
   const existingChart = chartId
     ? charts[dashboardId]?.find((chart) => chart.chartId === chartId)
@@ -167,20 +167,50 @@ const ChartSection = () => {
   };
 
   const handleCreateClick = () => {
-    if (selectedSection === "chartOption") {
-      if (chartId) {
-        updateChart(dashboardId, chartId, newChartOptions, datasets);
-      } else {
-        addChart(dashboardId, newChartOptions, datasets);
+    if (chartId) {
+      // 기존 차트가 있는 경우
+      if (existingChart) {
+        // 선택된 섹션이 "chartOption"이면 업데이트
+        if (selectedSection === "chartOption") {
+          updateChart(dashboardId, chartId, newChartOptions, datasets);
+        }
+        // 선택된 섹션이 "widgetOption"이면 변환 (차트 → 위젯)
+        else {
+          removeChart(dashboardId, chartId);
+          addWidget(dashboardId, newWidgetOptions);
+        }
       }
-    } else if (selectedSection === "widgetOption") {
-      if (chartId) {
-        updateWidget(dashboardId, chartId, newWidgetOptions);
-      } else {
+      // 기존 위젯이 있는 경우
+      else if (existingWidget) {
+        // 선택된 섹션이 "widgetOption"이면 업데이트
+        if (selectedSection === "widgetOption") {
+          updateWidget(dashboardId, chartId, newWidgetOptions);
+        }
+        // 선택된 섹션이 "chartOption"이면 변환 (위젯 → 차트)
+        else {
+          removeWidget(dashboardId, chartId);
+          addChart(dashboardId, newChartOptions, datasets);
+        }
+      }
+      // 기존 차트/위젯이 없으면 새로 추가
+      else {
+        if (selectedSection === "chartOption") {
+          addChart(dashboardId, newChartOptions, datasets);
+        } else if (selectedSection === "widgetOption") {
+          addWidget(dashboardId, newWidgetOptions);
+        }
+      }
+    }
+    //  차트 ID가 없으면 새로운 차트/위젯 추가
+    else {
+      if (selectedSection === "chartOption") {
+        addChart(dashboardId, newChartOptions, datasets);
+      } else if (selectedSection === "widgetOption") {
         addWidget(dashboardId, newWidgetOptions);
       }
     }
 
+    // 저장 후 대시보드 상세 페이지로 이동
     router.push(`/detail?id=${dashboardId}`);
   };
 
