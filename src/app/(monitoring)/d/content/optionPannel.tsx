@@ -13,6 +13,7 @@ const OptionPanel = () => {
   const {
     chartType,
     showLegend,
+    fill,
     legendPosition,
     legendColor,
     isSingleColorMode,
@@ -183,6 +184,15 @@ const OptionPanel = () => {
                 setChartType={(type) => setOptions({ chartType: type })}
               />
             </div>
+            {chartType === "line" && (
+              <div className="flex flex-col gap-1 mb-6">
+                <label className="text-sm2 text-text2">채우기</label>
+                <ToggleSwitch
+                  checked={fill}
+                  onChange={(checked) => setOptions({ fill: checked })}
+                />
+              </div>
+            )}
 
             {/* Chart title */}
             <div className="flex flex-col gap-1 mb-6">
