@@ -20,6 +20,7 @@ const Dashboard2Page = () => {
     removeDashboard,
     dashboardChartMap,
     addChartToDashboard,
+    updateDashboard,
   } = useDashboardStore();
   const { charts, addChart } = useChartStore();
   const { widgets, cloneWidget } = useWidgetStore();
@@ -56,13 +57,7 @@ const Dashboard2Page = () => {
     newName: string,
     newDescription: string
   ) => {
-    removeDashboard(id);
-    addDashboard({
-      id,
-      label: newName,
-      description: newDescription,
-    });
-
+    updateDashboard(id, newName, newDescription);
     setEditingTabIndex(null);
     setAlertMessage("탭이 수정되었습니다!");
   };
