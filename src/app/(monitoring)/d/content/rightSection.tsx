@@ -1,5 +1,3 @@
-"use client";
-
 import { useState, useEffect, useRef } from "react";
 import DataBinding from "./dataBinding";
 import OptionPanel from "./optionPannel";

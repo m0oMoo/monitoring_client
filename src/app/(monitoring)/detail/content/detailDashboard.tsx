@@ -40,8 +40,6 @@ const DetailDashboard = () => {
     )
     .filter(Boolean);
 
-  const combinedDataList = [...chartDataList, ...widgetDataList];
-
   const [from, setFrom] = useState<string | null>(null);
   const [to, setTo] = useState<string | null>(null);
   const [refreshTime, setRefreshTime] = useState<number | "autoType">(10);
