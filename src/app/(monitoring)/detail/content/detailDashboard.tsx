@@ -310,7 +310,7 @@ const DetailDashboard = () => {
                   onClick={() => setSelectedDashboard(dashboard.id)}
                   className={`cursor-pointer p-2 rounded ${
                     selectedDashboard === dashboard.id
-                      ? "bg-blue-500 text-white"
+                      ? "bg-navy-btn text-white"
                       : "hover:bg-gray-100"
                   }`}
                 >
@@ -321,17 +321,15 @@ const DetailDashboard = () => {
             <div className="flex justify-end mt-4">
               <button
                 onClick={closeCloneModal}
-                className="mr-2 px-4 py-2 bg-gray-200 rounded"
+                className="mr-2 px-4 py-2 bg-gray-200 rounded text-md2"
               >
                 취소
               </button>
               <button
                 onClick={confirmClone}
                 disabled={!selectedDashboard}
-                className={`px-4 py-2 rounded ${
-                  selectedDashboard
-                    ? "bg-blue-500 text-white"
-                    : "bg-gray-300 cursor-not-allowed"
+                className={`px-4 py-2 rounded text-md2 text-white ${
+                  selectedDashboard ? "bg-navy-btn" : "bg-navy-btn opacity-80"
                 }`}
               >
                 확인
