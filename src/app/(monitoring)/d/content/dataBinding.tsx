@@ -4,15 +4,15 @@ import TextArea from "@/app/components/textarea/textarea";
 import Dropdown from "@/app/components/dropdown/dropdown";
 import RoundToggleBtnGroup from "@/app/components/button/toggle/roundToggleBtnGroup";
 import { useChartOptions } from "@/app/context/chartOptionContext";
-import { useWidgetOptions } from "@/app/context/widgetOptionContext"; // ✅ 위젯 데이터 관리 추가
-import { useSelectedSection } from "@/app/context/selectedSectionContext"; // ✅ 선택된 섹션 확인
+import { useWidgetOptions } from "@/app/context/widgetOptionContext";
+import { useSelectedSection } from "@/app/context/selectedSectionContext";
 import { COLUMNS, MOCK_DATA } from "@/app/data/dataBinding";
 import MultiSelectDropdown from "@/app/components/dropdown/multiSelectDropdown";
 
 const DataBinding = () => {
   const { datasets, setDatasets } = useChartOptions();
-  const { widgetData, setWidgetData } = useWidgetOptions(); // ✅ 위젯 데이터 관리 추가
-  const { selectedSection } = useSelectedSection(); // ✅ 현재 선택된 섹션 가져오기
+  const { widgetData, setWidgetData } = useWidgetOptions();
+  const { selectedSection } = useSelectedSection();
 
   const [isApiBinding, setIsApiBinding] = useState("API");
   const [selectedTable, setSelectedTable] = useState<string | null>(null);
@@ -22,7 +22,7 @@ const DataBinding = () => {
   const [apiUrl, setApiUrl] = useState<string>("");
   const [queryParams, setQueryParams] = useState<string>("");
 
-  // ✅ 테이블 선택 핸들러 (테이블 변경 시 컬럼 초기화)
+  // 테이블 선택 핸들러 (테이블 변경 시 컬럼 초기화)
   const handleTableChange = (value: string) => {
     setSelectedTable(value);
     setSelectedColumns([]);
@@ -31,10 +31,10 @@ const DataBinding = () => {
   };
 
   useEffect(() => {
-    if (selectedColumns.length === 0) {
+    if (selectedColumns.length === 0 && selectedTable) {
       setDatasets([]);
     }
-  }, [selectedColumns]);
+  }, [selectedColumns, selectedTable]);
 
   const updatedDatasets = useMemo(() => {
     if (!selectedTable) return [];
@@ -56,10 +56,13 @@ const DataBinding = () => {
     }
   }, [selectedColumns, selectedColumn, selectedTable, selectedSection]);
 
-  // ✅ 선택한 데이터 저장 (차트용 or 위젯용)
+  // 선택한 데이터 저장 (차트용 or 위젯용)
   useEffect(() => {
     if (selectedSection === "chartOption") {
-      if (JSON.stringify(datasets) !== JSON.stringify(updatedDatasets)) {
+      if (
+        JSON.stringify(datasets) !== JSON.stringify(updatedDatasets) &&
+        updatedDatasets.length > 0
+      ) {
         setDatasets(updatedDatasets);
       }
     } else {
@@ -71,13 +74,13 @@ const DataBinding = () => {
       }
     }
   }, [
-    JSON.stringify(updatedDatasets), // ⚡️ `updatedDatasets`이 바뀔 때만 실행
+    JSON.stringify(updatedDatasets),
     selectedSection,
     setDatasets,
     setWidgetData,
   ]);
 
-  // ✅ 쿼리 실행 핸들러 (SQL WHERE 조건 지원)
+  // 쿼리 실행 핸들러 (SQL WHERE 조건 지원)
   const handleQueryExecute = () => {
     if (!selectedTable || !query.trim()) return;
 
@@ -120,7 +123,7 @@ const DataBinding = () => {
       }
     }
 
-    // ✅ 필터링된 데이터 차트에 반영
+    // 필터링된 데이터 차트에 반영
     setDatasets(
       Object.keys(filteredData).map((key) => ({
         label: key,
@@ -134,7 +137,7 @@ const DataBinding = () => {
       <div className="w-full flex flex-col pt-10 pb-10">
         <h2 className="text-lg font-semibold mb-4">Data Binding</h2>
 
-        {/* ✅ API vs Query 선택 토글 */}
+        {/* API vs Query 선택 토글 */}
         <div className="flex flex-col mb-6">
           <label className="text-sm2 text-text2 mb-2">
             Select Binding Method
@@ -148,7 +151,7 @@ const DataBinding = () => {
           />
         </div>
 
-        {/* ✅ API Binding 옵션 */}
+        {/* API Binding 옵션 */}
         {isApiBinding === "API" ? (
           <>
             {/* API URL 입력 */}
@@ -177,7 +180,7 @@ const DataBinding = () => {
           </>
         ) : (
           <>
-            {/* ✅ 테이블 선택 */}
+            {/* 테이블 선택 */}
             <div className="flex flex-col mb-6">
               <label className="text-sm2 text-text2 mb-2">Select Table</label>
               <Dropdown
@@ -192,7 +195,7 @@ const DataBinding = () => {
               />
             </div>
 
-            {/* ✅ 컬럼 선택 */}
+            {/* 컬럼 선택 */}
             {selectedTable && (
               <div className="flex flex-col mb-6">
                 <label className="text-sm2 text-text2 mb-2">
@@ -226,7 +229,7 @@ const DataBinding = () => {
                 )}
               </div>
             )}
-            {/* ✅ SQL 쿼리 입력 */}
+            {/* SQL 쿼리 입력 */}
             <div className="flex flex-col mb-6">
               <label className="text-sm2 text-text2 mb-2">Write Query</label>
               <TextArea
@@ -237,7 +240,7 @@ const DataBinding = () => {
               />
             </div>
 
-            {/* ✅ 쿼리 실행 버튼 */}
+            {/* 쿼리 실행 버튼 */}
             <button
               className="bg-navy-btn text-white p-2 rounded w-[250px] hover:bg-navy-btn_hover"
               onClick={handleQueryExecute}
