@@ -184,7 +184,7 @@ const DetailDashboard = () => {
                   className="relative flex justify-center"
                 >
                   <div
-                    className="relative flex flex-col items-center h-[200px] max-w-[350px] w-full"
+                    className="relative flex flex-col items-center h-[180px] max-w-[350px] w-full"
                     onClick={(e) => e.stopPropagation()}
                   >
                     <div className="absolute top-2 right-2 z-10">
