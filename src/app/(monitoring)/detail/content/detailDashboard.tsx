@@ -55,10 +55,6 @@ const DetailDashboard = () => {
   const [alertMessage, setAlertMessage] = useState<string>("");
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
 
-  const openCloneModal = () => {
-    setIsCloneModalOpen(true);
-  };
-
   const closeCloneModal = () => {
     setIsCloneModalOpen(false);
     setSelectedDashboard(null);
@@ -332,7 +328,45 @@ const DetailDashboard = () => {
           )}
         </div>
       )}
-
+      {isCloneModalOpen && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-[100]">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+            <h2 className="text-lg font-bold mb-4">대시보드 선택</h2>
+            <ul>
+              {dashboardList.map((dashboard) => (
+                <li
+                  key={dashboard.id}
+                  onClick={() => setSelectedDashboard(dashboard.id)}
+                  className={`cursor-pointer p-2 rounded ${
+                    selectedDashboard === dashboard.id
+                      ? "bg-navy-btn text-white"
+                      : "hover:bg-gray-100"
+                  }`}
+                >
+                  {dashboard.label}
+                </li>
+              ))}
+            </ul>
+            <div className="flex justify-end mt-4">
+              <button
+                onClick={closeCloneModal}
+                className="mr-2 px-4 py-2 bg-gray-200 rounded text-md2"
+              >
+                취소
+              </button>
+              <button
+                onClick={confirmClone}
+                disabled={!selectedDashboard}
+                className={`px-4 py-2 rounded text-md2 text-white ${
+                  selectedDashboard ? "bg-navy-btn" : "bg-navy-btn opacity-80"
+                }`}
+              >
+                확인
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {/* 알림 메시지 */}
       {alertMessage && <Alert message={alertMessage} />}
     </div>
