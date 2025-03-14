@@ -419,7 +419,7 @@ const OptionPanel = () => {
             <div className="flex flex-col gap-1 mb-6">
               <label className="text-sm2 text-text2">포인트 표시</label>
               <ToggleSwitch
-                checked={showCrosshair}
+                checked={chartType !== "line" ? false : showCrosshair}
                 onChange={(checked) => setOptions({ showCrosshair: checked })}
               />
             </div>
@@ -450,7 +450,7 @@ const OptionPanel = () => {
               <SliderToggle
                 value={radius}
                 onChange={(value) => setOptions({ radius: value })}
-                enabled={showCrosshair}
+                enabled={chartType !== "line" ? false : showCrosshair}
                 onToggle={(enabled) => setOptions({ showCrosshair: enabled })}
                 className="w-[200px]"
               />
@@ -461,7 +461,7 @@ const OptionPanel = () => {
               <SliderToggle
                 value={crosshairWidth}
                 onChange={(value) => setOptions({ crosshairWidth: value })}
-                enabled={true}
+                enabled={chartType !== "line" ? false : true}
                 onToggle={() => {}}
                 className="w-[200px]"
               />
@@ -502,7 +502,7 @@ const OptionPanel = () => {
                 onChange={(mode) => setOptions({ zoomMode: mode })}
               />
             </div>
-            <div className="flex flex-col gap-1 mb-6">
+            {/* <div className="flex flex-col gap-1 mb-6">
               <label className="text-sm2 text-text2">줌 민감도</label>
               <SliderToggle
                 value={zoomSensitivity}
@@ -511,7 +511,7 @@ const OptionPanel = () => {
                 onToggle={(enabled) => setOptions({ enableZoom: enabled })}
                 className="w-[200px]"
               />
-            </div>
+            </div> */}
           </div>
 
           {isPickerVisible && (
