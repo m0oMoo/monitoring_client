@@ -62,6 +62,39 @@ const DetailDashboard = () => {
   const [gridLayout, setGridLayout] = useState<
     { i: string; x: number; y: number; w: number; h: number }[]
   >([]);
+  const [maxWidth, setMaxWidth] = useState(window.innerWidth + 500);
+  const [maxHeight, setMaxHeight] = useState(window.innerHeight - 100);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      // 브라우저에서만 실행
+      setMaxWidth(window.innerWidth);
+      setMaxHeight(window.innerHeight - 100);
+
+      const handleResize = () => {
+        setMaxWidth(window.innerWidth);
+        setMaxHeight(window.innerHeight - 100);
+      };
+
+      window.addEventListener("resize", handleResize);
+      return () => window.removeEventListener("resize", handleResize);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const savedLayout = localStorage.getItem("dashboard-layout");
+      if (savedLayout) {
+        setGridLayout(JSON.parse(savedLayout)); // 저장된 위치 적용
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("dashboard-layout", JSON.stringify(gridLayout));
+    }
+  }, [gridLayout]);
 
   const chartDataList = chartIds
     .map((chartId) =>
@@ -174,8 +207,19 @@ const DetailDashboard = () => {
     setSelectedDashboard(null);
   };
 
+  useEffect(() => {
+    const savedLayout = localStorage.getItem("dashboard-layout");
+    if (savedLayout) {
+      setGridLayout(JSON.parse(savedLayout)); // 저장된 위치 적용
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("dashboard-layout", JSON.stringify(gridLayout));
+  }, [gridLayout]);
+
   return (
-    <div className="bg-ivory-bg_sub min-h-[calc(100vh-90px)]">
+    <div className="bg-ivory-bg_sub min-h-[calc(100vh-80px)]">
       <AddChartBar
         isEdit={false}
         onCreateClick={() => router.push(`/d?id=${dashboardId}`)}
@@ -194,123 +238,163 @@ const DetailDashboard = () => {
         }
         onRefreshChange={setRefreshTime}
       />
+      <div className="relative w-full" style={{ maxHeight }}>
+        <ResponsiveGridLayout
+          className="layout"
+          layouts={{ lg: gridLayout }}
+          breakpoints={{ lg: 1200, md: 996, sm: 768 }}
+          rowHeight={50} // 세밀한 배치를 위해 행 높이 조정
+          isDraggable={true} // 드래그 활성화
+          isResizable={true} // 크기 조절 가능
+          compactType={null} // 위젯 자동 정렬 해제 (자유롭게 배치 가능)
+          preventCollision={false} // 겹침 방지
+          onLayoutChange={(layout) => setGridLayout(layout)} // 변경된 배치를 상태에 저장
+          draggableHandle=".drag-handle" // 특정 영역만 드래그 가능하도록 설정
+          resizeHandles={["se"]} // 크기 조절 핸들 추가
+        >
+          {chartDataList.map((chart) => {
+            const chartLayout = gridLayout.find(
+              (item) => item.i === chart.chartId
+            ) || {
+              i: chart.chartId,
+              x: 0,
+              y: Infinity,
+              w: Math.min(4, maxWidth / 250),
+              h: 4,
+            };
 
-      <ResponsiveGridLayout
-        className="layout"
-        layouts={{ lg: gridLayout }}
-        breakpoints={{ lg: 1200, md: 996, sm: 768 }}
-        cols={{ lg: 4, md: 2, sm: 1 }}
-        rowHeight={150}
-        onLayoutChange={(layout) => setGridLayout(layout)}
-        draggableHandle=".drag-handle"
-        resizeHandles={["se"]}
-      >
-        {chartDataList.map((chart) => (
-          <div key={chart.chartId}>
-            <div className="border rounded-lg bg-white p-4 shadow-md h-full flex flex-col relative">
-              {/* 메뉴 아이콘 및 TabMenu */}
-              <div className="absolute top-2 right-2 z-10">
-                <MoreVertical
-                  className="cursor-pointer hover:text-gray-500"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setMenuOpenIndex(
-                      menuOpenIndex === chart.chartId ? null : chart.chartId
-                    );
-                  }}
-                />
-                {menuOpenIndex === chart.chartId && (
-                  <TabMenu
-                    index={chart.chartId}
-                    setEditingTabIndex={() =>
-                      router.push(
-                        `/d?id=${dashboardId}&chartId=${chart.chartId}`
-                      )
-                    }
-                    setMenuOpenIndex={setMenuOpenIndex}
-                    handleTabDelete={() =>
-                      removeChart(dashboardId, chart.chartId)
-                    }
-                    handleTabClone={handleTabClone}
-                    setIsModalOpen={() => {}}
-                  />
-                )}
+            return (
+              <div
+                key={chart.chartId}
+                data-grid={chartLayout}
+                className={`drag-handle cursor-grab ${
+                  chart.chartOptions.displayMode === "table"
+                    ? "max-h-[500px]"
+                    : ""
+                }`}
+              >
+                <div className="border rounded-lg bg-white p-4 shadow-md h-full flex flex-col relative">
+                  {/* 메뉴 버튼 (기존 유지) */}
+                  <div className="absolute top-2 right-2 z-10">
+                    <MoreVertical
+                      className="text-text3 cursor-pointer hover:text-text2"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setMenuOpenIndex(
+                          menuOpenIndex === chart.chartId ? null : chart.chartId
+                        );
+                      }}
+                    />
+                    {menuOpenIndex === chart.chartId && (
+                      <TabMenu
+                        index={chart.chartId}
+                        setEditingTabIndex={() =>
+                          router.push(
+                            `/d?id=${dashboardId}&chartId=${chart.chartId}`
+                          )
+                        }
+                        setIsModalOpen={() => {}}
+                        setMenuOpenIndex={setMenuOpenIndex}
+                        handleTabDelete={() =>
+                          removeChart(dashboardId, chart.chartId)
+                        }
+                        handleTabClone={handleTabClone}
+                      />
+                    )}
+                  </div>
+
+                  {/* 제목 */}
+                  <h2 className="text-lg font-semibold mb-2">
+                    {chart.chartOptions.titleText}
+                  </h2>
+
+                  {/* 차트 또는 테이블 렌더링 */}
+                  <div className="flex-1 overflow-hidden">
+                    {chart.chartOptions.displayMode === "chart" ? (
+                      <ChartWidget
+                        type={chart.chartOptions.chartType}
+                        datasets={chart.datasets || []}
+                        options={chart.chartOptions}
+                      />
+                    ) : (
+                      <CustomTable
+                        columns={[
+                          { key: "name", label: "ID" },
+                          ...chart.datasets.map((dataset) => ({
+                            key: dataset.label,
+                            label: dataset.label,
+                          })),
+                        ]}
+                        data={convertToTableData(chart.datasets).rows}
+                        title={chart.chartOptions.titleText}
+                      />
+                    )}
+                  </div>
+                </div>
               </div>
+            );
+          })}
 
-              {/* 제목 */}
-              <h2 className="text-lg font-semibold mb-2">
-                {chart.chartOptions.titleText}
-              </h2>
+          {widgetDataList.map((widget) => {
+            const widgetLayout = gridLayout.find(
+              (item) => item.i === widget.widgetId
+            ) || {
+              i: widget.widgetId,
+              x: 0,
+              y: Infinity,
+              w: Math.min(2, maxWidth / 250),
+              h: 3,
+            };
 
-              {/* 차트 또는 테이블 렌더링 */}
-              <div className="flex-1 overflow-hidden">
-                {chart.chartOptions.displayMode === "chart" ? (
-                  <ChartWidget
-                    type={chart.chartOptions.chartType}
-                    datasets={chart.datasets || []}
-                    options={chart.chartOptions}
+            return (
+              <div
+                key={widget.widgetId}
+                data-grid={widgetLayout}
+                // style={{ maxWidth }}
+                className="drag-handle cursor-grab max-h-[230px] max-w-[530px]"
+              >
+                <div className="relative flex flex-col h-full">
+                  <div className="absolute top-2 right-2 z-10">
+                    <MoreVertical
+                      className="text-text3 cursor-pointer hover:text-text2"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setMenuOpenIndex(
+                          menuOpenIndex === widget.widgetId
+                            ? null
+                            : widget.widgetId
+                        );
+                      }}
+                    />
+                    {menuOpenIndex === widget.widgetId && (
+                      <TabMenu
+                        index={widget.widgetId}
+                        setEditingTabIndex={() =>
+                          router.push(
+                            `/d?id=${dashboardId}&chartId=${widget.widgetId}`
+                          )
+                        }
+                        setIsModalOpen={() => {}}
+                        setMenuOpenIndex={setMenuOpenIndex}
+                        handleTabDelete={() =>
+                          removeWidget(dashboardId, widget.widgetId)
+                        }
+                        handleTabClone={handleTabClone}
+                      />
+                    )}
+                  </div>
+                  {/* 위젯 렌더링 */}
+                  <CommonWidget
+                    backgroundColor={widget.widgetOptions.widgetBackgroundColor}
+                    {...widget.widgetOptions}
+                    className="scale-[1] w-full h-full"
                   />
-                ) : (
-                  <CustomTable
-                    columns={[
-                      { key: "name", label: "ID" },
-                      ...chart.datasets.map((dataset) => ({
-                        key: dataset.label,
-                        label: dataset.label,
-                      })),
-                    ]}
-                    data={convertToTableData(chart.datasets).rows}
-                    title={chart.chartOptions.titleText}
-                  />
-                )}
+                </div>
               </div>
-            </div>
-          </div>
-        ))}
-
-        {widgetDataList.map((widget) => (
-          <div
-            key={widget.widgetId}
-            data-grid={gridLayout.find((item) => item.i === widget.widgetId)}
-          >
-            <div className="relative flex flex-col shadow-md h-full">
-              <div className="absolute top-2 right-2 z-10">
-                <MoreVertical
-                  className="cursor-pointer hover:text-gray-500"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setMenuOpenIndex(
-                      menuOpenIndex === widget.widgetId ? null : widget.widgetId
-                    );
-                  }}
-                />
-                {menuOpenIndex === widget.widgetId && (
-                  <TabMenu
-                    index={widget.widgetId}
-                    setEditingTabIndex={() =>
-                      router.push(
-                        `/d?id=${dashboardId}&chartId=${widget.widgetId}`
-                      )
-                    }
-                    setMenuOpenIndex={setMenuOpenIndex}
-                    handleTabDelete={() =>
-                      removeWidget(dashboardId, widget.widgetId)
-                    }
-                    handleTabClone={handleTabClone}
-                    setIsModalOpen={() => {}}
-                  />
-                )}
-              </div>
-              <CommonWidget
-                backgroundColor={widget.widgetOptions.widgetBackgroundColor}
-                {...widget.widgetOptions}
-                className="scale-[1] max-w-[300px] w-full h-full"
-              />
-            </div>
-          </div>
-        ))}
-      </ResponsiveGridLayout>
-
+            );
+          })}
+        </ResponsiveGridLayout>
+      </div>
       {isCloneModalOpen && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-[100]">
           <div className="bg-white p-6 rounded-lg shadow-lg w-96">
