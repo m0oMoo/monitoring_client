@@ -4,7 +4,7 @@ import { Dataset } from "../context/chartOptionContext";
 import { useDashboardStore } from "./useDashboardStore";
 import { ChartOptions } from "../types/options";
 
-interface Chart {
+export interface Chart {
   chartId: string;
   chartOptions: ChartOptions;
   datasets: Dataset[];

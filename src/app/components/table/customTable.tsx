@@ -22,8 +22,9 @@ const CustomTable: React.FC<TableProps> = ({ columns, data, title }) => {
   }));
 
   return (
-    <div className="p-4 border border-gray-300 rounded-lg shadow-md bg-white w-full">
-      {title && <h2 className="text-lg font-semibold mb-2">{title}</h2>}
+    <div className="p-4 bg-white w-full">
+      {/* <div className="p-4 border border-gray-300 rounded-lg shadow-md bg-white w-full"> */}
+      {/* {title && <h2 className="text-lg font-semibold mb-2">{title}</h2>} */}
 
       {isClient ? (
         <ReactTabulator
