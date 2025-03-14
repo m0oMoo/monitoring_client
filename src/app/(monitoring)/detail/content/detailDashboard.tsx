@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Chart, useChartStore } from "@/app/store/useChartStore";
 import { useDashboardStore } from "@/app/store/useDashboardStore";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -31,6 +31,22 @@ const DetailDashboard = () => {
   const { dashboardChartMap, addChartToDashboard, dashboardList } =
     useDashboardStore();
 
+  const [, forceUpdate] = useState(0);
+
+  useEffect(() => {
+    console.log(
+      "🚀 Zustand 상태 확인 (차트):",
+      useChartStore.getState().charts
+    );
+    console.log(
+      "🚀 Zustand 상태 확인 (위젯):",
+      useWidgetStore.getState().widgets
+    );
+
+    // 🚀 강제로 상태 업데이트
+    forceUpdate((prev) => prev + 1);
+  }, []);
+
   const chartIds = dashboardChartMap[dashboardId] || [];
   const [from, setFrom] = useState<string | null>(null);
   const [to, setTo] = useState<string | null>(null);
@@ -43,18 +59,21 @@ const DetailDashboard = () => {
   );
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
   const [alertMessage, setAlertMessage] = useState<string>("");
+  const [gridLayout, setGridLayout] = useState<
+    { i: string; x: number; y: number; w: number; h: number }[]
+  >([]);
 
   const chartDataList = chartIds
     .map((chartId) =>
       charts[dashboardId]?.find((chart) => chart?.chartId === chartId)
     )
-    .filter((chart): chart is Chart => !!chart); // ✅ 명확하게 타입 보장
+    .filter((chart): chart is Chart => !!chart);
 
   const widgetDataList = chartIds
     .map((widgetId) =>
       widgets[dashboardId]?.find((widget) => widget?.widgetId === widgetId)
     )
-    .filter((widget): widget is Widget => !!widget); // ✅ 명확하게 타입 보장
+    .filter((widget): widget is Widget => !!widget); // 명확하게 타입 보장
 
   const handleTabClone = (itemId: string) => {
     setSelectedItem(itemId);
@@ -67,7 +86,7 @@ const DetailDashboard = () => {
     const targetDashboardId = selectedDashboard;
     let newItemId: string | null = null;
 
-    // ✅ 차트 복제
+    // 차트 복제
     const existingChart = Object.values(charts)
       .flat()
       .find((chart) => chart.chartId === selectedItem);
@@ -84,7 +103,7 @@ const DetailDashboard = () => {
       newItemId = newChartId;
     }
 
-    // ✅ 위젯 복제
+    // 위젯 복제
     const existingWidget = Object.values(widgets)
       .flat()
       .find((widget) => widget.widgetId === selectedItem);
@@ -125,6 +144,31 @@ const DetailDashboard = () => {
     return { headers, rows };
   };
 
+  const initialLayout = useMemo(() => {
+    return [
+      ...chartDataList.map((chart, index) => ({
+        i: chart.chartId,
+        x: index % 2 === 0 ? 0 : 1,
+        y: Math.floor(index / 2),
+        w: 2,
+        h: chart.chartOptions.displayMode === "chart" ? 4 : 5,
+      })),
+      ...widgetDataList.map((widget, index) => ({
+        i: widget.widgetId,
+        x: index % 2 === 0 ? 0 : 1,
+        y: Math.floor(index / 2) + chartDataList.length,
+        w: 1,
+        h: 3,
+      })),
+    ];
+  }, [chartDataList, widgetDataList]);
+
+  useEffect(() => {
+    if (gridLayout.length === 0 && initialLayout.length > 0) {
+      setGridLayout(initialLayout);
+    }
+  }, [initialLayout]);
+
   const closeCloneModal = () => {
     setIsCloneModalOpen(false);
     setSelectedDashboard(null);
@@ -153,10 +197,11 @@ const DetailDashboard = () => {
 
       <ResponsiveGridLayout
         className="layout"
-        layouts={{ lg: [] }}
+        layouts={{ lg: gridLayout }}
         breakpoints={{ lg: 1200, md: 996, sm: 768 }}
         cols={{ lg: 4, md: 2, sm: 1 }}
         rowHeight={150}
+        onLayoutChange={(layout) => setGridLayout(layout)}
         draggableHandle=".drag-handle"
         resizeHandles={["se"]}
       >
@@ -224,8 +269,11 @@ const DetailDashboard = () => {
         ))}
 
         {widgetDataList.map((widget) => (
-          <div key={widget.widgetId}>
-            <div className="border rounded-lg bg-white p-4 shadow-md h-full flex flex-col relative">
+          <div
+            key={widget.widgetId}
+            data-grid={gridLayout.find((item) => item.i === widget.widgetId)}
+          >
+            <div className="relative flex flex-col shadow-md h-full">
               <div className="absolute top-2 right-2 z-10">
                 <MoreVertical
                   className="cursor-pointer hover:text-gray-500"
@@ -253,13 +301,10 @@ const DetailDashboard = () => {
                   />
                 )}
               </div>
-              <h2 className="text-lg font-semibold mb-2">
-                {widget.widgetOptions.label}
-              </h2>
               <CommonWidget
                 backgroundColor={widget.widgetOptions.widgetBackgroundColor}
                 {...widget.widgetOptions}
-                className="scale-[1] max-w-[300px]"
+                className="scale-[1] max-w-[300px] w-full h-full"
               />
             </div>
           </div>
