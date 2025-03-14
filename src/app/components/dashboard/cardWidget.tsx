@@ -35,7 +35,7 @@ const CardWidget = ({
   subText,
   changePercent,
   backgroundColor,
-  textColor = "#000",
+  textColor,
   arrowVisible,
   className,
 }: CardWidgetProps) => {
@@ -47,7 +47,9 @@ const CardWidget = ({
       style={{ backgroundColor }}
     >
       {/* 제목 */}
-      <div className="text-white text-sm font-semibold">{title}</div>
+      <div className="text-sm font-semibold" style={{ color: textColor }}>
+        {title}
+      </div>
 
       {/* 메인 값 */}
       <div className="text-2xl font-bold flex items-center gap-1">
@@ -62,7 +64,11 @@ const CardWidget = ({
       </div>
 
       {/* 부가 정보 */}
-      {subText && <div className="text-white text-xs">{subText}</div>}
+      {subText && (
+        <div className="text-xs" style={{ color: textColor }}>
+          {subText}
+        </div>
+      )}
     </div>
   );
 };
