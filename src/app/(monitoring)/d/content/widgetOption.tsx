@@ -90,6 +90,7 @@ const WidgetOption = () => {
                   <TextInput
                     value={label}
                     onChange={(e) => setWidgetOptions({ label: e })}
+                    className="w-[250px]"
                   />
                 </div>
                 <div className="flex flex-col gap-1 mb-6">
@@ -97,6 +98,7 @@ const WidgetOption = () => {
                   <NumberInput
                     value={maxValue.toString()}
                     onChange={(e) => setWidgetOptions({ maxValue: Number(e) })}
+                    className="w-[250px]"
                   />
                 </div>
               </>
@@ -109,6 +111,7 @@ const WidgetOption = () => {
                   <TextInput
                     value={label}
                     onChange={(e) => setWidgetOptions({ label: e })}
+                    className="w-[250px]"
                   />
                 </div>
                 <div className="flex flex-col gap-1 mb-6">
@@ -116,6 +119,7 @@ const WidgetOption = () => {
                   <TextInput
                     value={subText}
                     onChange={(e) => setWidgetOptions({ subText: e })}
+                    className="w-[250px]"
                   />
                 </div>
                 <div className="flex flex-col gap-1 mb-6">
@@ -135,6 +139,7 @@ const WidgetOption = () => {
                       setWidgetOptions({ changePercent: Number(e) })
                     }
                     disabled={!arrowVisible}
+                    className="w-[250px]"
                   />
                 </div>
               </>
@@ -161,6 +166,7 @@ const WidgetOption = () => {
                   <TextInput
                     value={unit}
                     onChange={(e) => setWidgetOptions({ unit: e })}
+                    className="w-[250px]"
                   />
                 </div>
                 <div className="flex flex-col gap-1 mb-6">
@@ -180,6 +186,7 @@ const WidgetOption = () => {
                       setWidgetOptions({ changePercent: Number(e) })
                     }
                     disabled={!arrowVisible}
+                    className="w-[250px]"
                   />
                 </div>
               </>
@@ -250,7 +257,7 @@ const WidgetOption = () => {
                   )}
                 </div>
               </>
-            )}
+            )}  
           </div>
           {isPickerVisible && (
             <div className="absolute z-10">
