@@ -2,9 +2,9 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import { Chart, useChartStore } from "@/app/store/useChartStore";
-import { useDashboardStore } from "@/app/store/useDashboardStore";
+import { PanelLayout, useDashboardStore } from "@/app/store/useDashboardStore";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Responsive, WidthProvider } from "react-grid-layout";
+import { Layout, Responsive, WidthProvider } from "react-grid-layout";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
 import AddChartBar from "@/app/components/bar/addChartBar";
@@ -28,7 +28,7 @@ const DetailDashboard = () => {
 
   const { charts, addChart, removeChart } = useChartStore();
   const { widgets, addWidget, removeWidget } = useWidgetStore();
-  const { dashboardChartMap, addChartToDashboard, dashboardList } =
+  const { dashboardPanels, addPanelToDashboard, dashboardList, saveDashboard } =
     useDashboardStore();
 
   const [, forceUpdate] = useState(0);
@@ -43,17 +43,23 @@ const DetailDashboard = () => {
       useWidgetStore.getState().widgets
     );
 
+    console.log(
+      "🚀 Zustand 상태 확인 (대시보드):",
+      useDashboardStore.getState().dashboardPanels
+    );
+
     // 🚀 강제로 상태 업데이트
     forceUpdate((prev) => prev + 1);
   }, []);
 
-  const chartIds = dashboardChartMap[dashboardId] || [];
+  const chartIds =
+    dashboardPanels[dashboardId]?.map((panel) => panel.panelId) || [];
   const [from, setFrom] = useState<string | null>(null);
   const [to, setTo] = useState<string | null>(null);
   const [refreshTime, setRefreshTime] = useState<number | "autoType">(10);
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
   const [menuOpenIndex, setMenuOpenIndex] = useState<string | null>(null);
-  const [isCloneModalOpen, setIsCloneModalOpen] = useState(false);
+  const [isCloneModalOpen, setIsCloneModalOpen] = useState<boolean>(false);
   const [selectedDashboard, setSelectedDashboard] = useState<string | null>(
     null
   );
@@ -62,8 +68,32 @@ const DetailDashboard = () => {
   const [gridLayout, setGridLayout] = useState<
     { i: string; x: number; y: number; w: number; h: number }[]
   >([]);
-  const [maxWidth, setMaxWidth] = useState(window.innerWidth + 500);
-  const [maxHeight, setMaxHeight] = useState(window.innerHeight - 100);
+  const [maxWidth, setMaxWidth] = useState<number>(500);
+  const [maxHeight, setMaxHeight] = useState<number>(500);
+  const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [prevLayout, setPrevLayout] = useState<Layout[]>([]);
+
+  const layouts = useMemo(() => ({ lg: gridLayout }), [gridLayout]);
+
+  const handleEditClick = () => {
+    if (isEditing) {
+      // "Save" 버튼을 눌렀을 때 위치 및 크기 저장
+      const updatedLayouts: PanelLayout[] = gridLayout.map((layout) => ({
+        panelId: layout.i,
+        type:
+          dashboardPanels[dashboardId]?.find(
+            (panel) => panel.panelId === layout.i
+          )?.type || "chart",
+        x: layout.x,
+        y: layout.y,
+        w: layout.w,
+        h: layout.h,
+      }));
+
+      saveDashboard(dashboardId, updatedLayouts);
+    }
+    setIsEditing((prev) => !prev);
+  };
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -83,30 +113,23 @@ const DetailDashboard = () => {
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const savedLayout = localStorage.getItem("dashboard-layout");
-      if (savedLayout) {
-        setGridLayout(JSON.parse(savedLayout)); // 저장된 위치 적용
-      }
-    }
-  }, []);
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
       localStorage.setItem("dashboard-layout", JSON.stringify(gridLayout));
     }
   }, [gridLayout]);
 
-  const chartDataList = chartIds
-    .map((chartId) =>
-      charts[dashboardId]?.find((chart) => chart?.chartId === chartId)
+  const chartDataList = (dashboardPanels[dashboardId] || [])
+    .filter((panel) => panel.type === "chart")
+    .map((panel) =>
+      charts[dashboardId]?.find((chart) => chart?.chartId === panel.panelId)
     )
     .filter((chart): chart is Chart => !!chart);
 
-  const widgetDataList = chartIds
-    .map((widgetId) =>
-      widgets[dashboardId]?.find((widget) => widget?.widgetId === widgetId)
+  const widgetDataList = (dashboardPanels[dashboardId] || [])
+    .filter((panel) => panel.type === "widget")
+    .map((panel) =>
+      widgets[dashboardId]?.find((widget) => widget?.widgetId === panel.panelId)
     )
-    .filter((widget): widget is Widget => !!widget); // 명확하게 타입 보장
+    .filter((widget): widget is Widget => !!widget);
 
   const handleTabClone = (itemId: string) => {
     setSelectedItem(itemId);
@@ -132,7 +155,8 @@ const DetailDashboard = () => {
       }));
 
       addChart(targetDashboardId, clonedChartOptions, clonedDatasets);
-      addChartToDashboard(targetDashboardId, newChartId);
+      addPanelToDashboard(targetDashboardId, newChartId, "chart");
+
       newItemId = newChartId;
     }
 
@@ -149,6 +173,7 @@ const DetailDashboard = () => {
       };
 
       addWidget(targetDashboardId, clonedWidgetOptions);
+      addPanelToDashboard(targetDashboardId, newWidgetId, "widget");
       newItemId = newWidgetId;
     }
 
@@ -218,14 +243,62 @@ const DetailDashboard = () => {
     localStorage.setItem("dashboard-layout", JSON.stringify(gridLayout));
   }, [gridLayout]);
 
+  const handleLayoutChange = (layout: Layout[]) => {
+    // 변경 사항이 없으면 상태 업데이트 하지 않음
+    if (JSON.stringify(prevLayout) === JSON.stringify(layout)) {
+      return;
+    }
+
+    console.log("📌 변경된 레이아웃:", layout);
+    setGridLayout(layout);
+    setPrevLayout(layout); // 이전 상태 업데이트
+
+    // Zustand에 저장
+    const updatedLayouts: PanelLayout[] = layout.map((l) => ({
+      panelId: l.i,
+      type:
+        dashboardPanels[dashboardId]?.find((p) => p.panelId === l.i)?.type ||
+        "chart",
+      x: l.x,
+      y: l.y,
+      w: l.w,
+      h: l.h,
+    }));
+
+    saveDashboard(dashboardId, updatedLayouts);
+  };
+
+  useEffect(() => {
+    // 초기화 시 Zustand 상태에서 가져와 적용
+    if (
+      dashboardPanels[dashboardId] &&
+      dashboardPanels[dashboardId].length > 0 &&
+      gridLayout.length === 0
+    ) {
+      const savedLayout = dashboardPanels[dashboardId].map((panel) => ({
+        i: panel.panelId,
+        x: panel.x,
+        y: panel.y,
+        w: panel.w,
+        h: panel.h,
+      }));
+
+      console.log("📌 Zustand에서 불러온 gridLayout 설정: ", savedLayout);
+      setGridLayout(savedLayout);
+      setPrevLayout(savedLayout); // 초기값 설정
+    }
+  }, [dashboardPanels, dashboardId]);
+
   return (
     <div className="bg-ivory-bg_sub min-h-[calc(100vh-80px)]">
       <AddChartBar
-        isEdit={false}
+        isEdit={isEditing}
         onCreateClick={() => router.push(`/d?id=${dashboardId}`)}
         gridCols={2}
         onGridChange={() => {}}
         gridVisible={true}
+        modifiable={true}
+        onEditClick={handleEditClick}
       />
 
       <TimeRangeBar
@@ -241,16 +314,16 @@ const DetailDashboard = () => {
       <div className="relative w-full" style={{ maxHeight }}>
         <ResponsiveGridLayout
           className="layout"
-          layouts={{ lg: gridLayout }}
+          layouts={layouts} // `layouts` 객체로 전달
           breakpoints={{ lg: 1200, md: 996, sm: 768 }}
-          rowHeight={50} // 세밀한 배치를 위해 행 높이 조정
-          isDraggable={true} // 드래그 활성화
-          isResizable={true} // 크기 조절 가능
-          compactType={null} // 위젯 자동 정렬 해제 (자유롭게 배치 가능)
-          preventCollision={false} // 겹침 방지
-          onLayoutChange={(layout) => setGridLayout(layout)} // 변경된 배치를 상태에 저장
-          draggableHandle=".drag-handle" // 특정 영역만 드래그 가능하도록 설정
-          resizeHandles={["se"]} // 크기 조절 핸들 추가
+          rowHeight={50}
+          isDraggable={isEditing}
+          isResizable={isEditing}
+          compactType={null}
+          preventCollision={false}
+          onLayoutChange={handleLayoutChange}
+          draggableHandle=".drag-handle"
+          resizeHandles={["se"]}
         >
           {chartDataList.map((chart) => {
             const chartLayout = gridLayout.find(
@@ -275,7 +348,7 @@ const DetailDashboard = () => {
               >
                 <div className="border rounded-lg bg-white p-4 shadow-md h-full flex flex-col relative">
                   {/* 메뉴 버튼 (기존 유지) */}
-                  <div className="absolute top-2 right-2 z-10">
+                  <div className="absolute top-2 right-2 z-10 pointer-events-auto">
                     <MoreVertical
                       className="text-text3 cursor-pointer hover:text-text2"
                       onClick={(e) => {
@@ -354,7 +427,7 @@ const DetailDashboard = () => {
                 className="drag-handle cursor-grab max-h-[230px] max-w-[530px]"
               >
                 <div className="relative flex flex-col h-full">
-                  <div className="absolute top-2 right-2 z-10">
+                  <div className="absolute top-2 right-2 z-10 pointer-events-auto">
                     <MoreVertical
                       className="text-text3 cursor-pointer hover:text-text2"
                       onClick={(e) => {
