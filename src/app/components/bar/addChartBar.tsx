@@ -5,19 +5,23 @@ import { useDashboardStore } from "@/app/store/useDashboardStore";
 interface AddChartBarProps {
   isEdit: boolean;
   onCreateClick: () => void;
+  onEditClick?: () => void;
   onSaveClick?: () => void;
   gridCols?: number;
   onGridChange?: (change: number) => void;
   gridVisible?: boolean;
+  modifiable?: boolean;
 }
 
 const AddChartBar = ({
   isEdit,
   onCreateClick,
+  onEditClick,
   onSaveClick,
   gridCols,
   onGridChange,
   gridVisible = false,
+  modifiable = false,
 }: AddChartBarProps) => {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -70,13 +74,25 @@ const AddChartBar = ({
             </button>
           </div>
         )}
-        <button
-          className="text-ivory-text text-sm_bold bg-navy-btn
+        <div className="flex flex-row gap-2">
+          {modifiable && (
+            <button
+              className="text-navy-btn text-sm_bold border border-navy-btn
+        px-2 py-0.5 rounded-sm"
+              onClick={onEditClick}
+            >
+              {isEdit ? "Save" : "Edit"}
+            </button>
+          )}
+
+          <button
+            className="text-ivory-text text-sm_bold bg-navy-btn
         px-2 py-1 rounded-sm"
-          onClick={onCreateClick}
-        >
-          {isEdit ? "Save" : "Create"}
-        </button>
+            onClick={onCreateClick}
+          >
+            Create
+          </button>
+        </div>
       </div>
     </div>
   );
