@@ -15,6 +15,7 @@ import CommonWidget from "@/app/components/dashboard/commonWidget";
 import { useWidgetOptions } from "@/app/context/widgetOptionContext";
 import { useWidgetStore } from "@/app/store/useWidgetStore";
 import { ChartOptions, WidgetOptions } from "@/app/types/options";
+import { useDashboardStore } from "@/app/store/useDashboardStore";
 
 Chart.register(zoomPlugin);
 
@@ -76,6 +77,7 @@ const ChartSection = () => {
 
   const { charts, addChart, updateChart, removeChart } = useChartStore();
   const { widgets, addWidget, updateWidget, removeWidget } = useWidgetStore();
+  const { addPanelToDashboard } = useDashboardStore();
 
   const existingChart = chartId
     ? charts[dashboardId]?.find((chart) => chart.chartId === chartId)
@@ -169,6 +171,9 @@ const ChartSection = () => {
   };
 
   const handleCreateClick = () => {
+    const newChartId = uuidv4();
+    const newWidgetId = uuidv4();
+
     if (chartId) {
       // 기존 차트가 있는 경우
       if (existingChart) {
@@ -180,6 +185,7 @@ const ChartSection = () => {
         else {
           removeChart(dashboardId, chartId);
           addWidget(dashboardId, newWidgetOptions);
+          addPanelToDashboard(dashboardId, newWidgetId, "widget");
         }
       }
       // 기존 위젯이 있는 경우
@@ -192,14 +198,17 @@ const ChartSection = () => {
         else {
           removeWidget(dashboardId, chartId);
           addChart(dashboardId, newChartOptions, datasets);
+          addPanelToDashboard(dashboardId, newChartId, "chart");
         }
       }
       // 기존 차트/위젯이 없으면 새로 추가
       else {
         if (selectedSection === "chartOption") {
           addChart(dashboardId, newChartOptions, datasets);
+          addPanelToDashboard(dashboardId, newChartId, "chart");
         } else if (selectedSection === "widgetOption") {
           addWidget(dashboardId, newWidgetOptions);
+          addPanelToDashboard(dashboardId, newWidgetId, "widget");
         }
       }
     }
@@ -207,8 +216,10 @@ const ChartSection = () => {
     else {
       if (selectedSection === "chartOption") {
         addChart(dashboardId, newChartOptions, datasets);
+        addPanelToDashboard(dashboardId, newChartId, "chart"); // ✅ 패널 추가
       } else if (selectedSection === "widgetOption") {
         addWidget(dashboardId, newWidgetOptions);
+        addPanelToDashboard(dashboardId, newWidgetId, "widget"); // ✅ 패널 추가
       }
     }
 
