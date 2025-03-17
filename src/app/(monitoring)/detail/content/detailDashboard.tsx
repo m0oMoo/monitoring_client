@@ -202,30 +202,53 @@ const DetailDashboard = () => {
     return { headers, rows };
   };
 
+  const MIN_CHART_WIDTH = 6; // 차트 최소 가로 크기
+  const MIN_CHART_HEIGHT = 5; // 차트 최소 세로 크기
+  const MAX_CHART_HEIGHT = 10; // 차트 최소 세로 크기
+  const MIN_WIDGET_WIDTH = 3; // 위젯 최소 가로 크기
+  const MIN_WIDGET_HEIGHT = 4; // 위젯 최소 세로 크기
+  const MAX_WIDGET_HEIGHT = 6; // 위젯 최소 세로 크기
+
   const initialLayout = useMemo(() => {
     return [
       ...chartDataList.map((chart, index) => ({
         i: chart.chartId,
-        x: index % 2 === 0 ? 0 : 1,
-        y: Math.floor(index / 2),
-        w: 2,
-        h: chart.chartOptions.displayMode === "chart" ? 4 : 5,
+        x: (index * 6) % 12, // 한 줄에 2개 배치
+        y: Math.floor(index / 2) * 5, // 차트 배치 간격 조정
+        w: Math.max(MIN_CHART_WIDTH, maxWidth / 200), // 최소 크기 보장
+        h: Math.max(
+          MIN_CHART_HEIGHT,
+          chart.chartOptions.displayMode === "chart" ? 5 : 6
+        ),
       })),
       ...widgetDataList.map((widget, index) => ({
         i: widget.widgetId,
-        x: index % 2 === 0 ? 0 : 1,
-        y: Math.floor(index / 2) + chartDataList.length,
-        w: 1,
-        h: 3,
+        x: (index * 3) % 12, // 한 줄에 최대 4개 배치
+        y: Math.floor(index / 4) * 4 + chartDataList.length * 5,
+        w: Math.max(MIN_WIDGET_WIDTH, maxWidth / 250), // 최소 크기 보장
+        h: MIN_WIDGET_HEIGHT,
       })),
     ];
-  }, [chartDataList, widgetDataList]);
+  }, [chartDataList, widgetDataList, maxWidth]);
 
   useEffect(() => {
-    if (gridLayout.length === 0 && initialLayout.length > 0) {
+    const savedLayout = localStorage.getItem("dashboard-layout");
+    if (savedLayout) {
+      // ✅ 기존에 저장된 레이아웃이 있으면 그걸 적용
+      console.log(
+        "📌 LocalStorage에서 불러온 레이아웃:",
+        JSON.parse(savedLayout)
+      );
+      setGridLayout(JSON.parse(savedLayout));
+    } else if (gridLayout.length === 0 && initialLayout.length > 0) {
+      // ✅ 기존에 저장된 값이 없고, 초기 레이아웃이 있을 때만 설정
+      console.log(
+        "📌 저장된 레이아웃 없음, 초기 레이아웃 적용:",
+        initialLayout
+      );
       setGridLayout(initialLayout);
     }
-  }, [initialLayout]);
+  }, []);
 
   const closeCloneModal = () => {
     setIsCloneModalOpen(false);
@@ -242,7 +265,6 @@ const DetailDashboard = () => {
   useEffect(() => {
     localStorage.setItem("dashboard-layout", JSON.stringify(gridLayout));
   }, [gridLayout]);
-
   const handleLayoutChange = (layout: Layout[]) => {
     // 변경 사항이 없으면 상태 업데이트 하지 않음
     if (JSON.stringify(prevLayout) === JSON.stringify(layout)) {
@@ -252,10 +274,9 @@ const DetailDashboard = () => {
     console.log("📌 변경된 레이아웃:", layout);
     setGridLayout(layout);
     setPrevLayout(layout); // 이전 상태 업데이트
-
-    // Zustand에 저장
+    // ✅ `i`를 `panelId`로 변환하여 저장
     const updatedLayouts: PanelLayout[] = layout.map((l) => ({
-      panelId: l.i,
+      panelId: l.i, // ✅ `i`를 `panelId`로 매핑
       type:
         dashboardPanels[dashboardId]?.find((p) => p.panelId === l.i)?.type ||
         "chart",
@@ -265,7 +286,13 @@ const DetailDashboard = () => {
       h: l.h,
     }));
 
-    saveDashboard(dashboardId, updatedLayouts);
+    console.log("📌 변경된 레이아웃:", updatedLayouts);
+
+    if (JSON.stringify(prevLayout) !== JSON.stringify(updatedLayouts)) {
+      setGridLayout(layout); // ✅ gridLayout에는 `i`를 유지
+      setPrevLayout(layout);
+      saveDashboard(dashboardId, updatedLayouts); // ✅ Zustand에는 `panelId`로 저장
+    }
   };
 
   useEffect(() => {
@@ -315,13 +342,15 @@ const DetailDashboard = () => {
         <ResponsiveGridLayout
           className="layout"
           layouts={layouts} // `layouts` 객체로 전달
-          breakpoints={{ lg: 1200, md: 996, sm: 768 }}
-          rowHeight={50}
+          rowHeight={70}
           isDraggable={isEditing}
           isResizable={isEditing}
           compactType={null}
-          preventCollision={false}
+          // compactType="vertical" // 자동으로 세로 정렬 유지
+          preventCollision={true} // 패널 간 충돌 방지 여부
+          // preventCollision={false}
           onLayoutChange={handleLayoutChange}
+          maxRows={20} // 최대 줄 수 제한
           draggableHandle=".drag-handle"
           resizeHandles={["se"]}
         >
@@ -331,7 +360,7 @@ const DetailDashboard = () => {
             ) || {
               i: chart.chartId,
               x: 0,
-              y: Infinity,
+              y: MAX_CHART_HEIGHT,
               w: Math.min(4, maxWidth / 250),
               h: 4,
             };
@@ -414,7 +443,7 @@ const DetailDashboard = () => {
             ) || {
               i: widget.widgetId,
               x: 0,
-              y: Infinity,
+              y: MAX_WIDGET_HEIGHT,
               w: Math.min(2, maxWidth / 250),
               h: 3,
             };
