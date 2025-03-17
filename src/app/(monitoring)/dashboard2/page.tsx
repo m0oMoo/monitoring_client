@@ -18,15 +18,16 @@ const Dashboard2Page = () => {
     dashboardList,
     addDashboard,
     removeDashboard,
-    dashboardChartMap,
-    addChartToDashboard,
+    dashboardPanels,
+    addPanelToDashboard,
     updateDashboard,
   } = useDashboardStore();
   const { charts, addChart } = useChartStore();
-  const { widgets, cloneWidget } = useWidgetStore();
+  const { widgets, addWidget } = useWidgetStore();
+
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [editingTabIndex, setEditingTabIndex] = useState<string | null>(null);
-  const [menuOpenIndex, setMenuOpenIndex] = useState<number | null>(null);
+  const [menuOpenIndex, setMenuOpenIndex] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [alertMessage, setAlertMessage] = useState<string>("");
 
@@ -40,7 +41,7 @@ const Dashboard2Page = () => {
       tab.label.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // ✅ 대시보드 추가
+  // 대시보드 추가
   const handleTabAdd = (newTabName: string, newTabDescription: string) => {
     addDashboard({
       id: uuidv4(),
@@ -51,7 +52,7 @@ const Dashboard2Page = () => {
     setAlertMessage("새로운 탭이 추가되었습니다!");
   };
 
-  // ✅ 대시보드 수정
+  // 대시보드 수정
   const handleTabEdit = (
     id: string,
     newName: string,
@@ -62,7 +63,7 @@ const Dashboard2Page = () => {
     setAlertMessage("탭이 수정되었습니다!");
   };
 
-  // ✅ 대시보드 삭제
+  // 대시보드 삭제
   const handleTabDelete = (dashboardId: string) => {
     removeDashboard(dashboardId);
     setMenuOpenIndex(null);
@@ -70,7 +71,7 @@ const Dashboard2Page = () => {
     setAlertMessage("대시보드가 삭제되었습니다!");
   };
 
-  // ✅ 대시보드 복제 (차트 포함)
+  // 대시보드 복제 (차트 & 위젯 포함)
   const handleTabClone = (
     dashboardId: string,
     label: string,
@@ -79,48 +80,51 @@ const Dashboard2Page = () => {
     const newDashboardId = uuidv4();
     const newLabel = `${label}_copy`;
 
+    // 새 대시보드 추가
     addDashboard({ id: newDashboardId, label: newLabel, description });
 
-    // ✅ 기존 차트 복제
-    const chartsToClone = dashboardChartMap[dashboardId] || [];
-    const newChartIds: string[] = [];
+    // 기존 대시보드의 패널 리스트 가져오기
+    const panelsToClone = dashboardPanels[dashboardId] || [];
 
-    chartsToClone.forEach((chartId) => {
-      const existingChart = Object.values(charts)
-        .flat()
-        .find((chart) => chart.chartId === chartId);
+    panelsToClone.forEach((panel) => {
+      const { panelId, type } = panel;
 
-      if (existingChart) {
-        const newChartId = uuidv4();
-        const clonedChartOptions = { ...existingChart.chartOptions };
-        const clonedDatasets = existingChart.datasets.map((dataset) => ({
-          ...dataset,
-        }));
+      if (type === "chart") {
+        // 기존 차트 복제
+        const existingChart = Object.values(charts)
+          .flat()
+          .find((chart) => chart.chartId === panelId);
 
-        addChart(newDashboardId, clonedChartOptions, clonedDatasets);
-        addChartToDashboard(newDashboardId, newChartId);
-        newChartIds.push(newChartId);
+        if (existingChart) {
+          const newChartId = uuidv4();
+          const clonedChartOptions = { ...existingChart.chartOptions };
+          const clonedDatasets = existingChart.datasets.map((dataset) => ({
+            ...dataset,
+          }));
+
+          addChart(newDashboardId, clonedChartOptions, clonedDatasets); // 차트 추가
+          addPanelToDashboard(newDashboardId, newChartId, "chart"); // 패널에도 등록
+        }
+      }
+
+      if (type === "widget") {
+        // 기존 위젯 복제
+        const existingWidget = Object.values(widgets)
+          .flat()
+          .find((widget) => widget.widgetId === panelId);
+
+        if (existingWidget) {
+          const newWidgetId = uuidv4();
+          const clonedWidgetOptions = {
+            ...existingWidget.widgetOptions,
+            widgetId: newWidgetId,
+          };
+
+          addWidget(newDashboardId, clonedWidgetOptions); // 위젯 추가
+          addPanelToDashboard(newDashboardId, newWidgetId, "widget"); // 패널에도 등록
+        }
       }
     });
-
-    // ✅ 기존 대시보드의 위젯 복제
-    const widgetsToClone = widgets[dashboardId] || [];
-    const newWidgetIds: string[] = [];
-
-    widgetsToClone.forEach((widget) => {
-      const newWidgetId = uuidv4();
-      const clonedWidgetOptions = {
-        ...widget.widgetOptions,
-        widgetId: newWidgetId,
-      };
-
-      useWidgetStore.getState().addWidget(newDashboardId, clonedWidgetOptions);
-      newWidgetIds.push(newWidgetId);
-    });
-
-    console.log("📌 새로운 대시보드 ID:", newDashboardId);
-    console.log("📌 복제된 차트 ID 리스트:", newChartIds);
-    console.log("📌 복제된 위젯 ID 리스트:", newWidgetIds);
 
     setAlertMessage("대시보드가 복제되었습니다!");
   };
@@ -176,11 +180,11 @@ const Dashboard2Page = () => {
                 <MoreVertical
                   className="text-text3 cursor-pointer hover:text-text2"
                   onClick={(e) => {
-                    e.stopPropagation();
-                    setMenuOpenIndex(menuOpenIndex === index ? null : index);
+                    e.stopPropagation(); // 메뉴 클릭 유지
+                    setMenuOpenIndex(menuOpenIndex === tab.id ? null : tab.id);
                   }}
                 />
-                {menuOpenIndex === index && (
+                {menuOpenIndex === tab.id && (
                   <TabMenu
                     index={tab.id}
                     setEditingTabIndex={() => setEditingTabIndex(tab.id)}
