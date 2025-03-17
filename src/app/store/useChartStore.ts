@@ -30,6 +30,7 @@ interface ChartStore {
 export const useChartStore = create<ChartStore>((set, get) => ({
   charts: {},
 
+  // 차트 추가
   addChart: (dashboardId, chartOptions, datasets) => {
     const newChartId = uuidv4();
     set((state) => ({
@@ -41,11 +42,14 @@ export const useChartStore = create<ChartStore>((set, get) => ({
         ],
       },
     }));
+
+    // 대시보드에도 패널 추가
     useDashboardStore
       .getState()
-      .dashboardChartMap[dashboardId]?.push(newChartId);
+      .addPanelToDashboard(dashboardId, newChartId, "chart");
   },
 
+  // 차트 수정
   updateChart: (dashboardId, chartId, chartOptions, datasets) => {
     set((state) => ({
       charts: {
@@ -59,6 +63,7 @@ export const useChartStore = create<ChartStore>((set, get) => ({
     }));
   },
 
+  // 차트 삭제
   removeChart: (dashboardId, chartId) => {
     set((state) => ({
       charts: {
@@ -68,12 +73,12 @@ export const useChartStore = create<ChartStore>((set, get) => ({
         ),
       },
     }));
-    useDashboardStore.getState().dashboardChartMap[dashboardId] =
-      useDashboardStore
-        .getState()
-        .dashboardChartMap[dashboardId]?.filter((id) => id !== chartId);
+
+    // 대시보드에서도 패널 제거
+    useDashboardStore.getState().removeChartFromDashboard(dashboardId, chartId);
   },
 
+  // 차트 복제
   cloneChart: (dashboardId, chartId) => {
     const state = get();
     const chart = state.charts[dashboardId]?.find((c) => c.chartId === chartId);
@@ -89,8 +94,10 @@ export const useChartStore = create<ChartStore>((set, get) => ({
         ],
       },
     }));
+
+    // 대시보드에도 패널 추가
     useDashboardStore
       .getState()
-      .dashboardChartMap[dashboardId]?.push(newChartId);
+      .addPanelToDashboard(dashboardId, newChartId, "chart");
   },
 }));
