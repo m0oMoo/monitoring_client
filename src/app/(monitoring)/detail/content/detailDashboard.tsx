@@ -39,6 +39,8 @@ const DetailDashboard = () => {
   const { dashboardPanels, addPanelToDashboard, dashboardList, saveDashboard } =
     useDashboardStore();
 
+  console.log(charts);
+
   const [from, setFrom] = useState<string | null>(null);
   const [to, setTo] = useState<string | null>(null);
   const [refreshTime, setRefreshTime] = useState<number | "autoType">(10);
@@ -77,6 +79,13 @@ const DetailDashboard = () => {
     }
     setIsEditing((prev) => !prev);
   };
+  // 대시보드 목록을 콘솔에 출력하여 복제된 대시보드가 포함되어 있는지 확인
+  useEffect(() => {
+    console.log("전체 대시보드 목록:", dashboardList);
+  }, [dashboardList]);
+
+  const clonedPanels = dashboardPanels[dashboardId] || [];
+  console.log("대시보드의 패널:", clonedPanels);
 
   const chartDataList = (dashboardPanels[dashboardId] || [])
     .filter((panel) => panel.type === "chart")
@@ -91,6 +100,8 @@ const DetailDashboard = () => {
       widgets[dashboardId]?.find((widget) => widget?.widgetId === panel.panelId)
     )
     .filter((widget): widget is Widget => !!widget);
+
+  console.log(chartDataList);
 
   const handleTabClone = (itemId: string) => {
     setSelectedItem(itemId);
@@ -175,7 +186,6 @@ const DetailDashboard = () => {
     setPrevLayout(layout); // 이전 레이아웃 갱신
     saveDashboard(dashboardId, updatedLayouts); // Zustand에 레이아웃 저장
   };
-
   useEffect(() => {
     // 초기화 시 Zustand 상태에서 가져와 적용
     if (
