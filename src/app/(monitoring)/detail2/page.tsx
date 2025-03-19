@@ -1,7 +1,7 @@
 "use client";
 
 import React, { Suspense } from "react";
-import DetailDashboard from "./content/detailDashboard";
+import DetailDashboard from "../detail/content/detailDashboard";
 
 const DashboardDetailPage = () => {
   return (
