@@ -86,7 +86,6 @@ const Dashboard2Page = () => {
 
     // 기존 대시보드의 패널 리스트 가져오기
     const panelsToClone = dashboardPanels[dashboardId] || [];
-
     const newDashboardPanels: PanelLayout[] = [];
 
     panelsToClone.forEach((panel) => {
@@ -96,7 +95,7 @@ const Dashboard2Page = () => {
         // 기존 차트 복제
         const existingChart = Object.values(charts)
           .flat()
-          .find((chart) => chart.chartId === panel.panelId);
+          .find((chart) => chart.chartId === panelId);
 
         if (existingChart) {
           const newChartId = uuidv4();
@@ -108,13 +107,13 @@ const Dashboard2Page = () => {
           // 복제된 차트를 새로운 대시보드에 추가
           addChart(newDashboardId, clonedChartOptions, clonedDatasets); // 차트 추가
 
-          // 패널에 차트 추가
+          // 패널에 차트 추가 (위치 정보 포함)
           addPanelToDashboard(newDashboardId, newChartId, "chart");
 
           newDashboardPanels.push({
             panelId: newChartId,
             type: "chart",
-            x,
+            x, // 위치 정보 추가
             y,
             w,
             h,
@@ -126,7 +125,7 @@ const Dashboard2Page = () => {
         // 기존 위젯 복제
         const existingWidget = Object.values(widgets)
           .flat()
-          .find((widget) => widget.widgetId === panel.panelId);
+          .find((widget) => widget.widgetId === panelId);
 
         if (existingWidget) {
           const newWidgetId = uuidv4();
@@ -136,14 +135,15 @@ const Dashboard2Page = () => {
           };
 
           // 복제된 위젯을 새로운 대시보드에 추가
-          addWidget(newDashboardId, clonedWidgetOptions);
-          // 패널에 위젯 추가
+          addWidget(newDashboardId, clonedWidgetOptions); // 위젯 추가
+
+          // 패널에 위젯 추가 (위치 정보 포함)
           addPanelToDashboard(newDashboardId, newWidgetId, "widget");
 
           newDashboardPanels.push({
             panelId: newWidgetId,
             type: "widget",
-            x,
+            x, // 위치 정보 추가
             y,
             w,
             h,
@@ -152,10 +152,14 @@ const Dashboard2Page = () => {
       }
     });
 
-    // 대시보드 패널 리스트를 `saveDashboard`를 통해 업데이트
-    saveDashboard(newDashboardId, newDashboardPanels);
+    // 대시보드 패널 리스트를 `saveDashboard`를 통해 업데이트 (위치 정보 포함)
+    // saveDashboard(newDashboardId, newDashboardPanels);
 
+    // 상태 업데이트 후 데이터를 다시 불러오기 (강제 리렌더링)
     setAlertMessage("대시보드가 복제되었습니다!");
+
+    // 대시보드 페이지로 이동
+    router.push(`/detail?id=${newDashboardId}`);
   };
 
   const handleTabClick = (tab: any) => {
