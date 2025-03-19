@@ -8,7 +8,7 @@ import SearchInput from "@/app/components/search/searchInput";
 import Alert from "@/app/components/alert/alert";
 import { useRouter } from "next/navigation";
 import TabMenu from "@/app/components/menu/tabMenu";
-import { useDashboardStore } from "@/app/store/useDashboardStore";
+import { PanelLayout, useDashboardStore } from "@/app/store/useDashboardStore";
 import { useChartStore } from "@/app/store/useChartStore";
 import { useWidgetStore } from "@/app/store/useWidgetStore";
 
@@ -24,6 +24,7 @@ const Dashboard2Page = () => {
   } = useDashboardStore();
   const { charts, addChart } = useChartStore();
   const { widgets, addWidget } = useWidgetStore();
+  const { saveDashboard } = useDashboardStore();
 
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [editingTabIndex, setEditingTabIndex] = useState<string | null>(null);
@@ -86,8 +87,10 @@ const Dashboard2Page = () => {
     // 기존 대시보드의 패널 리스트 가져오기
     const panelsToClone = dashboardPanels[dashboardId] || [];
 
+    const newDashboardPanels: PanelLayout[] = [];
+
     panelsToClone.forEach((panel) => {
-      const { panelId, type } = panel;
+      const { panelId, type, x, y, w, h } = panel;
 
       if (type === "chart") {
         // 기존 차트 복제
@@ -103,7 +106,18 @@ const Dashboard2Page = () => {
           }));
 
           addChart(newDashboardId, clonedChartOptions, clonedDatasets); // 차트 추가
-          addPanelToDashboard(newDashboardId, newChartId, "chart"); // 패널에도 등록
+          // 패널에 차트 추가
+          addPanelToDashboard(newDashboardId, newChartId, "chart");
+
+          // 패널 위치 정보 복제
+          newDashboardPanels.push({
+            panelId: newChartId,
+            type: "chart",
+            x,
+            y,
+            w,
+            h,
+          });
         }
       }
 
@@ -121,10 +135,24 @@ const Dashboard2Page = () => {
           };
 
           addWidget(newDashboardId, clonedWidgetOptions); // 위젯 추가
-          addPanelToDashboard(newDashboardId, newWidgetId, "widget"); // 패널에도 등록
+          // 패널에 위젯 추가
+          addPanelToDashboard(newDashboardId, newWidgetId, "widget");
+
+          // 위젯 위치 정보 복제
+          newDashboardPanels.push({
+            panelId: newWidgetId,
+            type: "widget",
+            x,
+            y,
+            w,
+            h,
+          });
         }
       }
     });
+
+    // 대시보드 패널 리스트를 `saveDashboard`를 통해 업데이트
+    saveDashboard(newDashboardId, newDashboardPanels);
 
     setAlertMessage("대시보드가 복제되었습니다!");
   };
