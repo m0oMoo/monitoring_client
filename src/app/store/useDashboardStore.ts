@@ -5,6 +5,7 @@ interface Dashboard {
   id: string;
   label: string;
   description: string;
+  panels?: PanelLayout[];
 }
 
 export interface PanelLayout {
@@ -34,6 +35,15 @@ interface DashboardStore {
   removeChartFromDashboard: (dashboardId: string, chartId: string) => void;
   removeDashboard: (dashboardId: string) => void;
   cloneDashboard: (dashboardId: string) => void;
+  // 새롭게 추가된 함수들
+  getDashboardById: (dashboardId: string) => Dashboard | undefined; // 대시보드 조회
+  createDashboard: (label: string, description: string) => void; // 대시보드 생성
+  updateDashboardDetails: (
+    dashboardId: string,
+    label: string,
+    description: string
+  ) => void; // 대시보드 수정
+  cloneDashboardWithPanels: (dashboardId: string) => void; // 대시보드 복제 (패널 포함)
 }
 
 export const useDashboardStore = create<DashboardStore>()(
@@ -132,6 +142,69 @@ export const useDashboardStore = create<DashboardStore>()(
             [newDashboardId]: [...(state.dashboardPanels[dashboardId] || [])],
           },
         }));
+      },
+
+      // 대시보드 조회 (ID로 대시보드 정보 조회)
+      getDashboardById: (dashboardId) => {
+        const state = get();
+        return state.dashboardList.find(
+          (dashboard) => dashboard.id === dashboardId
+        );
+      },
+
+      // 대시보드 생성
+      createDashboard: (label, description) => {
+        const newDashboardId = crypto.randomUUID();
+        set((state) => ({
+          dashboardList: [
+            ...state.dashboardList,
+            { id: newDashboardId, label, description },
+          ],
+          dashboardPanels: {
+            ...state.dashboardPanels,
+            [newDashboardId]: [],
+          },
+        }));
+      },
+
+      // 대시보드 수정 (이름 및 설명 수정)
+      updateDashboardDetails: (dashboardId, label, description) => {
+        set((state) => ({
+          dashboardList: state.dashboardList.map((dashboard) =>
+            dashboard.id === dashboardId
+              ? { ...dashboard, label, description }
+              : dashboard
+          ),
+        }));
+      },
+
+      // 대시보드 복제 (패널 포함)
+      cloneDashboardWithPanels: (dashboardId: string) => {
+        const newDashboardId = crypto.randomUUID();
+        const state = get();
+        const dashboardToClone = state.dashboardList.find(
+          (d) => d.id === dashboardId
+        );
+
+        if (dashboardToClone) {
+          // 패널 복제 (옵션 및 위치 정보 포함)
+          const newPanels = dashboardToClone.panels?.map((panel) => ({
+            ...panel,
+            panelId: crypto.randomUUID(), // 새로운 panelId 생성
+          }));
+
+          // 새 대시보드 생성 (패널 정보 포함)
+          const newDashboard = {
+            ...dashboardToClone,
+            id: newDashboardId,
+            label: `${dashboardToClone.label}_copy`,
+            panels: newPanels,
+          };
+
+          set((state) => ({
+            dashboardList: [...state.dashboardList, newDashboard],
+          }));
+        }
       },
     })),
     {
