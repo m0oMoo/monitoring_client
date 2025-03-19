@@ -96,7 +96,7 @@ const Dashboard2Page = () => {
         // 기존 차트 복제
         const existingChart = Object.values(charts)
           .flat()
-          .find((chart) => chart.chartId === panelId);
+          .find((chart) => chart.chartId === panel.panelId);
 
         if (existingChart) {
           const newChartId = uuidv4();
@@ -105,11 +105,12 @@ const Dashboard2Page = () => {
             ...dataset,
           }));
 
+          // 복제된 차트를 새로운 대시보드에 추가
           addChart(newDashboardId, clonedChartOptions, clonedDatasets); // 차트 추가
+
           // 패널에 차트 추가
           addPanelToDashboard(newDashboardId, newChartId, "chart");
 
-          // 패널 위치 정보 복제
           newDashboardPanels.push({
             panelId: newChartId,
             type: "chart",
@@ -125,7 +126,7 @@ const Dashboard2Page = () => {
         // 기존 위젯 복제
         const existingWidget = Object.values(widgets)
           .flat()
-          .find((widget) => widget.widgetId === panelId);
+          .find((widget) => widget.widgetId === panel.panelId);
 
         if (existingWidget) {
           const newWidgetId = uuidv4();
@@ -134,11 +135,11 @@ const Dashboard2Page = () => {
             widgetId: newWidgetId,
           };
 
-          addWidget(newDashboardId, clonedWidgetOptions); // 위젯 추가
+          // 복제된 위젯을 새로운 대시보드에 추가
+          addWidget(newDashboardId, clonedWidgetOptions);
           // 패널에 위젯 추가
           addPanelToDashboard(newDashboardId, newWidgetId, "widget");
 
-          // 위젯 위치 정보 복제
           newDashboardPanels.push({
             panelId: newWidgetId,
             type: "widget",
