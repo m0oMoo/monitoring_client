@@ -84,15 +84,14 @@ const Dashboard2Page = () => {
     // 새 대시보드 추가
     addDashboard({ id: newDashboardId, label: newLabel, description });
 
-    // 기존 대시보드의 패널 리스트 가져오기
+    // 대시보드가 추가된 후 패널을 복제
     const panelsToClone = dashboardPanels[dashboardId] || [];
     const newDashboardPanels: PanelLayout[] = [];
 
     panelsToClone.forEach((panel) => {
-      const { panelId, type, x, y, w, h } = panel;
+      const { panelId, type, gridPos } = panel;
 
       if (type === "chart") {
-        // 기존 차트 복제
         const existingChart = Object.values(charts)
           .flat()
           .find((chart) => chart.chartId === panelId);
@@ -104,25 +103,25 @@ const Dashboard2Page = () => {
             ...dataset,
           }));
 
-          // 복제된 차트를 새로운 대시보드에 추가
-          addChart(newDashboardId, clonedChartOptions, clonedDatasets); // 차트 추가
+          const clonedGridPos = { ...gridPos };
 
-          // 패널에 차트 추가 (위치 정보 포함)
+          addChart(
+            newDashboardId,
+            clonedChartOptions,
+            clonedDatasets,
+            clonedGridPos
+          );
           addPanelToDashboard(newDashboardId, newChartId, "chart");
 
           newDashboardPanels.push({
             panelId: newChartId,
             type: "chart",
-            x, // 위치 정보 추가
-            y,
-            w,
-            h,
+            gridPos: clonedGridPos,
           });
         }
       }
 
       if (type === "widget") {
-        // 기존 위젯 복제
         const existingWidget = Object.values(widgets)
           .flat()
           .find((widget) => widget.widgetId === panelId);
@@ -134,31 +133,25 @@ const Dashboard2Page = () => {
             widgetId: newWidgetId,
           };
 
-          // 복제된 위젯을 새로운 대시보드에 추가
-          addWidget(newDashboardId, clonedWidgetOptions); // 위젯 추가
+          const clonedGridPos = { ...gridPos };
 
-          // 패널에 위젯 추가 (위치 정보 포함)
+          addWidget(newDashboardId, clonedWidgetOptions, clonedGridPos);
           addPanelToDashboard(newDashboardId, newWidgetId, "widget");
 
           newDashboardPanels.push({
             panelId: newWidgetId,
             type: "widget",
-            x, // 위치 정보 추가
-            y,
-            w,
-            h,
+            gridPos: clonedGridPos,
           });
         }
       }
     });
 
-    // 대시보드 패널 리스트를 `saveDashboard`를 통해 업데이트 (위치 정보 포함)
-    // saveDashboard(newDashboardId, newDashboardPanels);
+    // 복제된 패널을 저장할 때 `dashboardPanels` 업데이트
+    console.log("복제된 패널 리스트:", newDashboardPanels);
+    saveDashboard(newDashboardId, newDashboardPanels);
 
-    // 상태 업데이트 후 데이터를 다시 불러오기 (강제 리렌더링)
     setAlertMessage("대시보드가 복제되었습니다!");
-
-    // 대시보드 페이지로 이동
     router.push(`/detail?id=${newDashboardId}`);
   };
 
@@ -193,7 +186,7 @@ const Dashboard2Page = () => {
         onClick={() => setIsModalOpen(true)}
         className="flex bg-navy-btn py-1.5 px-2 rounded-lg text-white text-sm hover:bg-navy-btn_hover mb-4 justify-self-end"
       >
-        + 항목 추가
+        + 대시보드 추가
       </button>
       {alertMessage && <Alert message={alertMessage} />}
       <div className="w-full mb-2 border-b border-0.5 border-navy-border" />
