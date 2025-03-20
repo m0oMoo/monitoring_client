@@ -4,21 +4,31 @@ import { v4 as uuidv4 } from "uuid";
 import { useDashboardStore } from "./useDashboardStore";
 import { WidgetOptions } from "../types/options";
 
+interface GridPosition {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
 export interface Widget {
   widgetId: string;
   widgetOptions: WidgetOptions;
+  gridPos: GridPosition; // gridPos를 필수 필드로 변경
 }
 
 interface WidgetStore {
   widgets: Record<string, Widget[]>; // 대시보드 ID → 위젯 배열
   addWidget: (
     dashboardId: string,
-    widgetOptions: Omit<WidgetOptions, "widgetId">
+    widgetOptions: Omit<WidgetOptions, "widgetId">,
+    gridPos?: GridPosition
   ) => void;
   updateWidget: (
     dashboardId: string,
     widgetId: string,
-    widgetOptions: WidgetOptions
+    widgetOptions: WidgetOptions,
+    gridPos?: GridPosition
   ) => void;
   removeWidget: (dashboardId: string, widgetId: string) => void;
   cloneWidget: (dashboardId: string, widgetId: string) => void;
@@ -29,12 +39,17 @@ export const useWidgetStore = create<WidgetStore>()(
     devtools((set, get) => ({
       widgets: {},
 
-      // 위젯 추가
-      addWidget: (dashboardId, widgetOptions) => {
+      // 위젯 추가 (gridPos 기본값 추가)
+      addWidget: (
+        dashboardId,
+        widgetOptions,
+        gridPos = { x: 0, y: 0, w: 4, h: 4 }
+      ) => {
         const newWidgetId = uuidv4();
         const newWidget: Widget = {
           widgetId: newWidgetId,
-          widgetOptions: { ...widgetOptions, widgetId: newWidgetId }, // widgetId 포함
+          widgetOptions: { ...widgetOptions, widgetId: newWidgetId },
+          gridPos,
         };
 
         set((state) => ({
@@ -44,78 +59,31 @@ export const useWidgetStore = create<WidgetStore>()(
           },
         }));
 
-        // 대시보드에도 패널 추가
         useDashboardStore
           .getState()
-          .addPanelToDashboard(dashboardId, newWidgetId, "widget");
+          .addPanelToDashboard(dashboardId, newWidgetId, "widget", gridPos);
       },
 
-      // 위젯 수정
-      updateWidget: (dashboardId, widgetId, widgetOptions) => {
+      // 위젯 수정 (gridPos 필수 적용)
+      updateWidget: (dashboardId, widgetId, widgetOptions, gridPos) => {
         set((state) => ({
           widgets: {
             ...state.widgets,
             [dashboardId]: state.widgets[dashboardId]?.map((widget) =>
               widget.widgetId === widgetId
-                ? { ...widget, widgetOptions }
+                ? {
+                    ...widget,
+                    widgetOptions,
+                    gridPos: gridPos || widget.gridPos,
+                  }
                 : widget
             ),
           },
         }));
       },
-
-      // 위젯 삭제
-      removeWidget: (dashboardId, widgetId) => {
-        set((state) => ({
-          widgets: {
-            ...state.widgets,
-            [dashboardId]: state.widgets[dashboardId]?.filter(
-              (widget) => widget.widgetId !== widgetId
-            ),
-          },
-        }));
-
-        // 대시보드에서도 패널 제거
-        useDashboardStore
-          .getState()
-          .removeChartFromDashboard(dashboardId, widgetId);
-      },
-
-      // 위젯 복제
-      cloneWidget: (dashboardId, widgetId) => {
-        const state = get();
-        const originalWidget = state.widgets[dashboardId]?.find(
-          (w) => w.widgetId === widgetId
-        );
-        if (!originalWidget) return;
-
-        const newWidgetId = uuidv4();
-        const clonedWidget: Widget = {
-          widgetId: newWidgetId,
-          widgetOptions: {
-            ...originalWidget.widgetOptions,
-            widgetId: newWidgetId,
-          },
-        };
-
-        set((state) => ({
-          widgets: {
-            ...state.widgets,
-            [dashboardId]: [
-              ...(state.widgets[dashboardId] || []),
-              clonedWidget,
-            ],
-          },
-        }));
-
-        // 대시보드에도 패널 추가
-        useDashboardStore
-          .getState()
-          .addPanelToDashboard(dashboardId, newWidgetId, "widget");
-      },
     })),
     {
-      name: "widget-storage", // localStorage에 저장될 key 값
+      name: "widget-storage",
     }
   )
 );
