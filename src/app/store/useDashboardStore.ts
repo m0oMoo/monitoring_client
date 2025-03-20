@@ -11,10 +11,12 @@ interface Dashboard {
 export interface PanelLayout {
   panelId: string;
   type: "chart" | "widget" | "table";
-  x: number;
-  y: number;
-  w: number;
-  h: number;
+  gridPos: {
+    x: number;
+    y: number;
+    w: number;
+    h: number;
+  };
 }
 
 interface DashboardStore {
@@ -29,7 +31,13 @@ interface DashboardStore {
   addPanelToDashboard: (
     dashboardId: string,
     panelId: string,
-    type: "chart" | "widget" | "table"
+    type: "chart" | "widget" | "table",
+    gridPos?: {
+      x: number;
+      y: number;
+      w: number;
+      h: number;
+    }
   ) => void;
   saveDashboard: (dashboardId: string, layouts: PanelLayout[]) => void;
   removeChartFromDashboard: (dashboardId: string, chartId: string) => void;
@@ -75,13 +83,18 @@ export const useDashboardStore = create<DashboardStore>()(
       },
 
       // 패널 추가 (차트, 위젯, 테이블)
-      addPanelToDashboard: (dashboardId, panelId, type) => {
+      addPanelToDashboard: (
+        dashboardId,
+        panelId,
+        type,
+        gridPos = { x: 0, y: 0, w: 4, h: 4 }
+      ) => {
         set((state) => ({
           dashboardPanels: {
             ...state.dashboardPanels,
             [dashboardId]: [
               ...(state.dashboardPanels[dashboardId] || []),
-              { panelId, type, x: 0, y: 0, w: 2, h: 2 }, // 기본 위치
+              { panelId, type, gridPos },
             ],
           },
         }));
@@ -92,7 +105,16 @@ export const useDashboardStore = create<DashboardStore>()(
         set((state) => ({
           dashboardPanels: {
             ...state.dashboardPanels,
-            [dashboardId]: layouts,
+            [dashboardId]: layouts.map((layout) => ({
+              panelId: layout.panelId,
+              type: layout.type,
+              gridPos: {
+                x: layout.gridPos?.x ?? 0,
+                y: layout.gridPos?.y ?? 0,
+                w: layout.gridPos?.w ?? 4,
+                h: layout.gridPos?.h ?? 4,
+              },
+            })),
           },
         }));
       },
