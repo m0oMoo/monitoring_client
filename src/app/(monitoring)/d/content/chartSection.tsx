@@ -173,57 +173,56 @@ const ChartSection = () => {
   const handleCreateClick = () => {
     const newChartId = uuidv4();
     const newWidgetId = uuidv4();
+    const defaultGridPos = { x: 0, y: 0, w: 4, h: 4 }; // ✅ 기본 위치값
 
     if (chartId) {
-      // 기존 차트가 있는 경우
       if (existingChart) {
-        // 선택된 섹션이 "chartOption"이면 업데이트
         if (selectedSection === "chartOption") {
-          updateChart(dashboardId, chartId, newChartOptions, datasets);
-        }
-        // 선택된 섹션이 "widgetOption"이면 변환 (차트 → 위젯)
-        else {
+          updateChart(
+            dashboardId,
+            chartId,
+            newChartOptions,
+            datasets,
+            existingChart.gridPos
+          );
+        } else {
           removeChart(dashboardId, chartId);
-          addWidget(dashboardId, newWidgetOptions);
+          addWidget(
+            dashboardId,
+            newWidgetOptions,
+            existingChart.gridPos || defaultGridPos
+          );
           addPanelToDashboard(dashboardId, newWidgetId, "widget");
         }
-      }
-      // 기존 위젯이 있는 경우
-      else if (existingWidget) {
-        // 선택된 섹션이 "widgetOption"이면 업데이트
+      } else if (existingWidget) {
         if (selectedSection === "widgetOption") {
-          updateWidget(dashboardId, chartId, newWidgetOptions);
-        }
-        // 선택된 섹션이 "chartOption"이면 변환 (위젯 → 차트)
-        else {
+          updateWidget(
+            dashboardId,
+            chartId,
+            newWidgetOptions,
+            existingWidget.gridPos
+          );
+        } else {
           removeWidget(dashboardId, chartId);
-          addChart(dashboardId, newChartOptions, datasets);
+          addChart(
+            dashboardId,
+            newChartOptions,
+            datasets,
+            existingWidget.gridPos || defaultGridPos
+          );
           addPanelToDashboard(dashboardId, newChartId, "chart");
         }
       }
-      // 기존 차트/위젯이 없으면 새로 추가
-      else {
-        if (selectedSection === "chartOption") {
-          addChart(dashboardId, newChartOptions, datasets);
-          addPanelToDashboard(dashboardId, newChartId, "chart");
-        } else if (selectedSection === "widgetOption") {
-          addWidget(dashboardId, newWidgetOptions);
-          addPanelToDashboard(dashboardId, newWidgetId, "widget");
-        }
-      }
-    }
-    //  차트 ID가 없으면 새로운 차트/위젯 추가
-    else {
+    } else {
       if (selectedSection === "chartOption") {
-        addChart(dashboardId, newChartOptions, datasets);
-        addPanelToDashboard(dashboardId, newChartId, "chart"); // ✅ 패널 추가
+        addChart(dashboardId, newChartOptions, datasets, defaultGridPos);
+        addPanelToDashboard(dashboardId, newChartId, "chart");
       } else if (selectedSection === "widgetOption") {
-        addWidget(dashboardId, newWidgetOptions);
-        addPanelToDashboard(dashboardId, newWidgetId, "widget"); // ✅ 패널 추가
+        addWidget(dashboardId, newWidgetOptions, defaultGridPos);
+        addPanelToDashboard(dashboardId, newWidgetId, "widget");
       }
     }
 
-    // 저장 후 대시보드 상세 페이지로 이동
     router.push(`/detail?id=${dashboardId}`);
   };
 
