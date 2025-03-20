@@ -5,10 +5,18 @@ import { Dataset } from "../context/chartOptionContext";
 import { useDashboardStore } from "./useDashboardStore";
 import { ChartOptions } from "../types/options";
 
+interface GridPosition {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
 export interface Chart {
   chartId: string;
   chartOptions: ChartOptions;
   datasets: Dataset[];
+  gridPos: GridPosition; // gridPos를 필수 필드로 변경
 }
 
 interface ChartStore {
@@ -16,13 +24,15 @@ interface ChartStore {
   addChart: (
     dashboardId: string,
     chartOptions: ChartOptions,
-    datasets: Dataset[]
+    datasets: Dataset[],
+    gridPos?: GridPosition
   ) => void;
   updateChart: (
     dashboardId: string,
     chartId: string,
     chartOptions: ChartOptions,
-    datasets: Dataset[]
+    datasets: Dataset[],
+    gridPos?: GridPosition
   ) => void;
   removeChart: (dashboardId: string, chartId: string) => void;
   cloneChart: (dashboardId: string, chartId: string) => void;
@@ -33,33 +43,42 @@ export const useChartStore = create<ChartStore>()(
     devtools((set, get) => ({
       charts: {},
 
-      // 차트 추가
-      addChart: (dashboardId, chartOptions, datasets) => {
+      // 차트 추가 (gridPos 기본값 추가)
+      addChart: (
+        dashboardId,
+        chartOptions,
+        datasets,
+        gridPos = { x: 0, y: 0, w: 4, h: 4 }
+      ) => {
         const newChartId = uuidv4();
         set((state) => ({
           charts: {
             ...state.charts,
             [dashboardId]: [
               ...(state.charts[dashboardId] || []),
-              { chartId: newChartId, chartOptions, datasets },
+              { chartId: newChartId, chartOptions, datasets, gridPos },
             ],
           },
         }));
 
-        // 대시보드에도 패널 추가
         useDashboardStore
           .getState()
-          .addPanelToDashboard(dashboardId, newChartId, "chart");
+          .addPanelToDashboard(dashboardId, newChartId, "chart", gridPos);
       },
 
-      // 차트 수정
-      updateChart: (dashboardId, chartId, chartOptions, datasets) => {
+      // 차트 수정 (gridPos 필수 적용)
+      updateChart: (dashboardId, chartId, chartOptions, datasets, gridPos) => {
         set((state) => ({
           charts: {
             ...state.charts,
             [dashboardId]: state.charts[dashboardId]?.map((chart) =>
               chart.chartId === chartId
-                ? { ...chart, chartOptions, datasets }
+                ? {
+                    ...chart,
+                    chartOptions,
+                    datasets,
+                    gridPos: gridPos || chart.gridPos,
+                  }
                 : chart
             ),
           },
@@ -77,13 +96,12 @@ export const useChartStore = create<ChartStore>()(
           },
         }));
 
-        // 대시보드에서도 패널 제거
         useDashboardStore
           .getState()
           .removeChartFromDashboard(dashboardId, chartId);
       },
 
-      // 차트 복제
+      // 차트 복제 (gridPos 포함)
       cloneChart: (dashboardId, chartId) => {
         const state = get();
         const chart = state.charts[dashboardId]?.find(
@@ -97,19 +115,18 @@ export const useChartStore = create<ChartStore>()(
             ...state.charts,
             [dashboardId]: [
               ...state.charts[dashboardId],
-              { ...chart, chartId: newChartId },
+              { ...chart, chartId: newChartId, gridPos: { ...chart.gridPos } },
             ],
           },
         }));
 
-        // 대시보드에도 패널 추가
         useDashboardStore
           .getState()
           .addPanelToDashboard(dashboardId, newChartId, "chart");
       },
     })),
     {
-      name: "chart-storage", // localStorage에 저장될 key 값
+      name: "chart-storage",
     }
   )
 );
