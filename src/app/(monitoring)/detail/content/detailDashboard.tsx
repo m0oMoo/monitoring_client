@@ -39,6 +39,9 @@ const DetailDashboard = () => {
   const { dashboardPanels, addPanelToDashboard, dashboardList, saveDashboard } =
     useDashboardStore();
 
+  console.log("📌 현재 대시보드 ID:", dashboardId);
+  console.log("📌 해당 대시보드의 차트 목록:", charts[dashboardId]);
+
   console.log(charts);
 
   const [from, setFrom] = useState<string | null>(null);
@@ -62,46 +65,31 @@ const DetailDashboard = () => {
 
   const handleEditClick = () => {
     if (isEditing) {
-      // "Save" 버튼을 눌렀을 때 위치 및 크기 저장
       const updatedLayouts: PanelLayout[] = gridLayout.map((layout) => ({
         panelId: layout.i,
-        type:
-          dashboardPanels[dashboardId]?.find(
-            (panel) => panel.panelId === layout.i
-          )?.type || "chart",
-        x: layout.x,
-        y: layout.y,
-        w: layout.w,
-        h: layout.h,
+        type: charts[dashboardId]?.some((chart) => chart.chartId === layout.i)
+          ? "chart"
+          : "widget",
+        gridPos: {
+          x: layout.x,
+          y: layout.y,
+          w: layout.w,
+          h: layout.h,
+        },
       }));
 
+      console.log("✅ 저장할 패널 데이터:", updatedLayouts);
       saveDashboard(dashboardId, updatedLayouts);
+      setPrevLayout(
+        updatedLayouts.map((panel) => ({ ...panel.gridPos, i: panel.panelId }))
+      );
     }
     setIsEditing((prev) => !prev);
   };
-  // 대시보드 목록을 콘솔에 출력하여 복제된 대시보드가 포함되어 있는지 확인
-  useEffect(() => {
-    console.log("전체 대시보드 목록:", dashboardList);
-  }, [dashboardList]);
 
-  const clonedPanels = dashboardPanels[dashboardId] || [];
-  console.log("대시보드의 패널:", clonedPanels);
+  const chartDataList = charts[dashboardId] || [];
 
-  const chartDataList = (dashboardPanels[dashboardId] || [])
-    .filter((panel) => panel.type === "chart")
-    .map((panel) =>
-      charts[dashboardId]?.find((chart) => chart?.chartId === panel.panelId)
-    )
-    .filter((chart): chart is Chart => !!chart);
-
-  const widgetDataList = (dashboardPanels[dashboardId] || [])
-    .filter((panel) => panel.type === "widget")
-    .map((panel) =>
-      widgets[dashboardId]?.find((widget) => widget?.widgetId === panel.panelId)
-    )
-    .filter((widget): widget is Widget => !!widget);
-
-  console.log(chartDataList);
+  const widgetDataList = widgets[dashboardId] || [];
 
   const handleTabClone = (itemId: string) => {
     setSelectedItem(itemId);
@@ -126,10 +114,22 @@ const DetailDashboard = () => {
         ...dataset,
       }));
 
+      // ✅ gridPos 복사 (기존 위치 유지)
+      const clonedGridPos = { ...existingChart.gridPos };
+
       addChart(targetDashboardId, clonedChartOptions, clonedDatasets);
       addPanelToDashboard(targetDashboardId, newChartId, "chart");
 
       newItemId = newChartId;
+
+      saveDashboard(targetDashboardId, [
+        ...(dashboardPanels[targetDashboardId] || []),
+        {
+          panelId: newChartId,
+          type: "chart",
+          gridPos: clonedGridPos, // ✅ 기존 gridPos를 유지
+        },
+      ]);
     }
 
     // 위젯 복제
@@ -141,53 +141,34 @@ const DetailDashboard = () => {
       const newWidgetId = uuidv4();
       const clonedWidgetOptions = {
         ...existingWidget.widgetOptions,
-        widgetId: newWidgetId, // 새로운 ID 적용
+        widgetId: newWidgetId,
       };
+
+      // ✅ gridPos 복사 (기존 위치 유지)
+      const clonedGridPos = { ...existingWidget.gridPos };
 
       addWidget(targetDashboardId, clonedWidgetOptions);
       addPanelToDashboard(targetDashboardId, newWidgetId, "widget");
+
       newItemId = newWidgetId;
-    }
 
-    if (newItemId) {
-      setAlertMessage("선택한 차트/위젯이 복제되었습니다!");
-    } else {
-      setAlertMessage("복제할 항목이 없습니다.");
+      saveDashboard(targetDashboardId, [
+        ...(dashboardPanels[targetDashboardId] || []),
+        {
+          panelId: newWidgetId,
+          type: "widget",
+          gridPos: clonedGridPos, // ✅ 기존 gridPos를 유지
+        },
+      ]);
     }
 
     setIsCloneModalOpen(false);
+    setAlertMessage("복제 완료!");
   };
 
-  const closeCloneModal = () => {
-    setIsCloneModalOpen(false);
-    setSelectedDashboard(null);
-  };
+  console.log("이거 왜 안보일까 >>>", dashboardPanels[dashboardId]);
 
-  const handleLayoutChange = (layout: Layout[]) => {
-    // 상태가 변경되지 않았다면 업데이트하지 않음
-    if (JSON.stringify(prevLayout) === JSON.stringify(layout)) {
-      return;
-    }
-
-    // 레이아웃이 변경된 경우에만 처리
-    const updatedLayouts: PanelLayout[] = layout.map((l) => ({
-      panelId: l.i, // `i`를 `panelId`로 매핑
-      type:
-        dashboardPanels[dashboardId]?.find((p) => p.panelId === l.i)?.type ||
-        "chart",
-      x: l.x,
-      y: l.y,
-      w: l.w,
-      h: l.h,
-    }));
-
-    // 레이아웃 변경이 실제로 있을 때만 상태 업데이트
-    setGridLayout(layout);
-    setPrevLayout(layout); // 이전 레이아웃 갱신
-    saveDashboard(dashboardId, updatedLayouts); // Zustand에 레이아웃 저장
-  };
   useEffect(() => {
-    // 초기화 시 Zustand 상태에서 가져와 적용
     if (
       dashboardPanels[dashboardId] &&
       dashboardPanels[dashboardId].length > 0 &&
@@ -195,17 +176,53 @@ const DetailDashboard = () => {
     ) {
       const savedLayout = dashboardPanels[dashboardId].map((panel) => ({
         i: panel.panelId,
-        x: panel.x,
-        y: panel.y,
-        w: panel.w,
-        h: panel.h,
+        x: panel.gridPos?.x ?? 0,
+        y: panel.gridPos?.y ?? 0,
+        w: panel.gridPos?.w ?? 4,
+        h: panel.gridPos?.h ?? 4,
       }));
 
       console.log("📌 Zustand에서 불러온 gridLayout 설정: ", savedLayout);
       setGridLayout(savedLayout);
-      setPrevLayout(savedLayout); // 초기값 설정
+      setPrevLayout(savedLayout);
     }
   }, [dashboardPanels, dashboardId]);
+
+  const closeCloneModal = () => {
+    setIsCloneModalOpen(false);
+    setSelectedDashboard(null);
+  };
+
+  const handleLayoutChange = (layout: Layout[]) => {
+    if (JSON.stringify(prevLayout) === JSON.stringify(layout)) {
+      return;
+    }
+
+    const updatedLayouts: PanelLayout[] = layout.map((l) => {
+      const chartExists = charts[dashboardId]?.some(
+        (chart) => chart.chartId === l.i
+      );
+      const widgetExists = widgets[dashboardId]?.some(
+        (widget) => widget.widgetId === l.i
+      );
+
+      return {
+        panelId: l.i,
+        type: chartExists ? "chart" : widgetExists ? "widget" : "chart",
+        gridPos: {
+          // ✅ gridPos를 올바르게 업데이트
+          x: l.x,
+          y: l.y,
+          w: l.w,
+          h: l.h,
+        },
+      };
+    });
+
+    setGridLayout(layout);
+    setPrevLayout(layout);
+    saveDashboard(dashboardId, updatedLayouts);
+  };
 
   return (
     <div className="bg-ivory-bg_sub min-h-[calc(100vh-80px)]">
