@@ -76,22 +76,22 @@ const DetailDashboard = () => {
   const layouts = useMemo(() => ({ lg: gridLayout }), [gridLayout]);
 
   const handleEditClick = () => {
-    if (isEditing) {
-      // "Save" 버튼을 눌렀을 때 위치 및 크기 저장
-      const updatedLayouts: PanelLayout[] = gridLayout.map((layout) => ({
-        panelId: layout.i,
-        type:
-          dashboardPanels[dashboardId]?.find(
-            (panel) => panel.panelId === layout.i
-          )?.type || "chart",
-        x: layout.x,
-        y: layout.y,
-        w: layout.w,
-        h: layout.h,
-      }));
+    // if (isEditing) {
+    //   // "Save" 버튼을 눌렀을 때 위치 및 크기 저장
+    //   const updatedLayouts: PanelLayout[] = gridLayout.map((layout) => ({
+    //     panelId: layout.i,
+    //     type:
+    //       dashboardPanels[dashboardId]?.find(
+    //         (panel) => panel.panelId === layout.i
+    //       )?.type || "chart",
+    //     x: layout.x,
+    //     y: layout.y,
+    //     w: layout.w,
+    //     h: layout.h,
+    //   }));
 
-      saveDashboard(dashboardId, updatedLayouts);
-    }
+    //   saveDashboard(dashboardId, updatedLayouts);
+    // }
     setIsEditing((prev) => !prev);
   };
 
@@ -296,7 +296,6 @@ const DetailDashboard = () => {
   };
 
   useEffect(() => {
-    // 초기화 시 Zustand 상태에서 가져와 적용
     if (
       dashboardPanels[dashboardId] &&
       dashboardPanels[dashboardId].length > 0 &&
@@ -304,15 +303,15 @@ const DetailDashboard = () => {
     ) {
       const savedLayout = dashboardPanels[dashboardId].map((panel) => ({
         i: panel.panelId,
-        x: panel.x,
-        y: panel.y,
-        w: panel.w,
-        h: panel.h,
+        x: panel.gridPos?.x ?? 0,
+        y: panel.gridPos?.y ?? 0,
+        w: panel.gridPos?.w ?? 4,
+        h: panel.gridPos?.h ?? 4,
       }));
 
       console.log("📌 Zustand에서 불러온 gridLayout 설정: ", savedLayout);
       setGridLayout(savedLayout);
-      setPrevLayout(savedLayout); // 초기값 설정
+      setPrevLayout(savedLayout);
     }
   }, [dashboardPanels, dashboardId]);
 
