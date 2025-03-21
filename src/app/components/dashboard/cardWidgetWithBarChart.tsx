@@ -1,7 +1,7 @@
 import {
   Chart as ChartJS,
-  CategoryScale, // ✅ X축용 (범주형 데이터)
-  LinearScale, // ✅ Y축용 (숫자형 데이터) 추가
+  CategoryScale,
+  LinearScale,
   BarElement,
   Tooltip,
   Legend,
@@ -39,7 +39,7 @@ const CardWidgetWithBarChart = ({
   changePercent,
   chartData,
   backgroundColor,
-  textColor = "#000",
+  textColor,
   arrowVisible,
   className,
 }: CardWidgetProps) => {
@@ -51,7 +51,9 @@ const CardWidgetWithBarChart = ({
       style={{ backgroundColor }}
     >
       {/* 제목 */}
-      <div className="text-white text-sm font-semibold">{title}</div>
+      <div className="text-sm font-semibold" style={{ color: textColor }}>
+        {title}
+      </div>
 
       {/* 메인 값 */}
       <div className="text-2xl font-bold flex items-center gap-1">
@@ -66,7 +68,11 @@ const CardWidgetWithBarChart = ({
       </div>
 
       {/* 부가 정보 */}
-      {subText && <div className="text-white text-xs">{subText}</div>}
+      {subText && (
+        <div className="text-xs" style={{ color: textColor }}>
+          {subText}
+        </div>
+      )}
 
       {/* 작은 차트 (미니 바 차트) */}
       {chartData && (
